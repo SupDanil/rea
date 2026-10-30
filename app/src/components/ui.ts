@@ -26,13 +26,13 @@ const vtSupported = typeof document !== 'undefined' && 'startViewTransition' in 
 export const sheetEnter = vtSupported ? '' : 'animate-sheet-in'
 // Unfolded: a wider centred sheet with the menu dimmed around it.
 export const sheet = cx(
-  'fixed inset-0 z-20 mx-auto flex max-w-[480px] flex-col bg-bg [view-transition-name:sheet] wide:max-w-[640px] wide:shadow-[0_0_0_100vmax_rgba(0,0,0,0.45)]',
+  'fixed inset-0 z-20 mx-auto flex max-w-[480px] flex-col overflow-y-auto overscroll-contain bg-bg [view-transition-name:sheet] wide:max-w-[640px] wide:shadow-[0_0_0_100vmax_rgba(0,0,0,0.45)]',
   sheetEnter,
 )
 export const sheetHead =
   'grid min-h-14 grid-cols-[44px_1fr_auto] items-center gap-2 px-3 pt-[calc(8px+env(safe-area-inset-top))] pb-1'
 export const sheetTitle = 'text-[24px]'
-export const sheetBody = 'flex-1 overflow-y-auto overscroll-contain px-3 pt-1 pb-6'
+export const sheetBody = 'min-h-0 flex-1 overflow-y-auto overscroll-contain px-3 pt-1 pb-6'
 export const sheetDock = 'px-2 pt-2 pb-[calc(10px+env(safe-area-inset-bottom))]'
 
 export const textBtn = (danger = false) =>

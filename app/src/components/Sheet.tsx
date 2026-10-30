@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import type { ReactNode, Ref } from 'react'
 import { useEscape } from '../hooks/useEscape'
 import { BackIcon } from './icons'
 import { iconBtn, sheet, sheetBody, sheetDock, sheetHead, sheetTitle } from './ui'
@@ -33,10 +33,18 @@ export function Sheet({ label, title, onBack, backLabel = 'Назад', locked =
   )
 }
 
-export function SheetBody({ className, children }: { className?: string; children: ReactNode }) {
-  return <div className={className ? `${sheetBody} ${className}` : sheetBody}>{children}</div>
+export function SheetBody({ className, children, ref }: { className?: string; children: ReactNode; ref?: Ref<HTMLDivElement> }) {
+  return (
+    <div ref={ref} className={className ? `${sheetBody} ${className}` : sheetBody}>
+      {children}
+    </div>
+  )
 }
 
-export function SheetDock({ children }: { children: ReactNode }) {
-  return <footer className={sheetDock}>{children}</footer>
+export function SheetDock({ children, ref }: { children: ReactNode; ref?: Ref<HTMLElement> }) {
+  return (
+    <footer ref={ref} className={sheetDock}>
+      {children}
+    </footer>
+  )
 }

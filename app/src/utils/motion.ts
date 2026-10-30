@@ -78,3 +78,40 @@ export function pop(el: Element | null) {
   if (!el || prefersReducedMotion()) return
   el.animate([{ transform: 'scale(1)' }, { transform: 'scale(1.25)' }, { transform: 'scale(1)' }], { duration: 420, easing: SPRING })
 }
+
+/**
+ * Removes a list row: it slides aside and fades, then its height (and margin)
+ * collapses so the rows below glide up. Resolves when it is gone; the caller
+ * then drops it from state. The element is left collapsed until it unmounts.
+ */
+export async function collapseOut(el: HTMLElement | null, delay = 0) {
+  if (!el || prefersReducedMotion()) return
+  const h = el.offsetHeight
+  el.style.pointerEvents = 'none'
+  await el.animate(
+    [
+      { transform: 'translateX(0)', opacity: 1 },
+      { transform: 'translateX(-28%) scale(0.96)', opacity: 0 },
+    ],
+    { duration: 260, delay, easing: 'cubic-bezier(0.4, 0, 1, 1)', fill: 'forwards' },
+  ).finished
+  el.style.overflow = 'hidden'
+  await el.animate(
+    [
+      { height: `${h}px`, marginBottom: '0px' },
+      // The list uses gap-2: pull the next row up by the gap as well.
+      { height: '0px', marginBottom: '-8px', paddingTop: '0px', paddingBottom: '0px' },
+    ],
+    { duration: 260, easing: 'cubic-bezier(0.2, 0.8, 0.2, 1)', fill: 'forwards' },
+  ).finished
+}
+
+/** Fades blocks down and out together (the cart's form when the last item goes). */
+export function fadeAway(els: (Element | null)[], duration = 260) {
+  if (prefersReducedMotion()) return Promise.resolve()
+  return Promise.all(
+    els.filter((el): el is Element => !!el).map(
+      (el) => el.animate([{ opacity: 1, transform: 'none' }, { opacity: 0, transform: 'translateY(14px)' }], { duration, easing: 'ease-in', fill: 'forwards' }).finished,
+    ),
+  ).then(() => undefined)
+}

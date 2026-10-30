@@ -1,4 +1,4 @@
-import type { CSSProperties } from 'react'
+import { useRef, type CSSProperties } from 'react'
 import { TrashIcon } from '../../components/icons'
 import { ItemArt } from '../../components/ItemArt'
 import { addonLabel, countAddons } from '../../data/menu'
@@ -16,16 +16,18 @@ type Props = {
   disabled: boolean
   onOpen: () => void
   onQty: (qty: number) => void
-  onRemove: () => void
+  /** Gets the row so the page can animate it out before dropping it */
+  onRemove: (row: HTMLLIElement | null) => void
 }
 
 export function CartLineItem({ line, disabled, onOpen, onQty, onRemove }: Props) {
   const sharedArt = useSharedArt(line.item.id, (path) => path === '/cart')
+  const rowRef = useRef<HTMLLIElement>(null)
   const meta = [line.variant.size !== 'ONE' && `${sizeText[line.variant.size]} · ${line.variant.volume}`, ...countAddons(line.ingredients).map((a) => `+ ${addonLabel(a)}`)]
     .filter(Boolean)
     .join(', ')
   return (
-    <li className={cx('grid grid-cols-[76px_1fr] gap-3 rounded-[22px] p-2 animate-fade-in', panel)}>
+    <li ref={rowRef} className={cx('grid grid-cols-[76px_1fr] gap-3 rounded-[22px] p-2 animate-fade-in', panel)}>
       <button
         className="art-glow grid size-[76px] place-items-center rounded-2xl"
         style={{ '--tint': line.item.art.bg } as CSSProperties}
@@ -42,7 +44,7 @@ export function CartLineItem({ line, disabled, onOpen, onQty, onRemove }: Props)
           <div className="flex items-center rounded-full bg-surface-2" role="group" aria-label={`Количество: ${line.qty}`}>
             <button
               className={stepBtn}
-              onClick={() => (line.qty === 1 ? onRemove() : onQty(line.qty - 1))}
+              onClick={() => (line.qty === 1 ? onRemove(rowRef.current) : onQty(line.qty - 1))}
               aria-label={line.qty === 1 ? 'Удалить' : 'Меньше'}
               disabled={disabled}
             >

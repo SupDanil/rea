@@ -75,7 +75,7 @@ function ProductView({ item }: { item: MenuItem }) {
       className={cx(
         // Phone: one column (header, details, cup, controls). Unfolded: cup on the left,
         // everything else in a right column; the rest of the screen is dimmed around it.
-        'tinted fixed inset-0 z-20 mx-auto grid max-w-[480px] grid-cols-[minmax(0,1fr)] grid-rows-[auto_auto_minmax(0,1fr)_auto] overflow-hidden text-pd-ink [view-transition-name:sheet]',
+        'tinted fixed inset-0 z-20 mx-auto grid max-w-[480px] grid-cols-[minmax(0,1fr)] grid-rows-[auto_auto_minmax(0,1fr)_auto] overflow-x-hidden overflow-y-auto overscroll-contain text-pd-ink [view-transition-name:sheet]',
         'wide:max-w-[1040px] wide:grid-cols-[minmax(0,1fr)_minmax(340px,420px)] wide:shadow-[0_0_0_100vmax_rgba(0,0,0,0.55)]',
         sheetEnter && 'animate-[sheet-in_0.36s_var(--ease-soft)]',
       )}

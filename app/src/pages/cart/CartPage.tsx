@@ -11,6 +11,7 @@ import { giftValue } from '../../state/loyalty'
 import type { PaymentMethod, Pickup } from '../../state/orders'
 import { cx } from '../../utils/cx'
 import { formatPrice } from '../../utils/format'
+import { collapseOut, fadeAway } from '../../utils/motion'
 import { readSavedName } from '../../utils/storage'
 import { CartLineItem } from './CartLineItem'
 import { cartPricing, type CartLoyalty } from './cartPricing'
@@ -41,15 +42,31 @@ export function CartPage() {
   const inCart = new Set(cart.lines.map((l) => l.itemId))
   const upsell = menuItems.filter((i) => !isDrink(i) && !inCart.has(i.id)).slice(0, 6)
 
-  const remove = (line: ResolvedLine) => {
-    // Restore from the stored line (without the resolved menu data) at its old place.
+  const bodyRef = useRef<HTMLDivElement>(null)
+  const dockRef = useRef<HTMLElement>(null)
+  const listRef = useRef<HTMLUListElement>(null)
+  const removing = useRef(new Set<string>())
+
+  // The row plays its exit first; when it was the last one, the rest of the
+  // cart fades away too, and only then does the empty state take over.
+  const remove = async (line: ResolvedLine, row: HTMLLIElement | null) => {
+    if (removing.current.has(line.key)) return
+    removing.current.add(line.key)
     const index = cart.lines.findIndex((l) => l.key === line.key)
     const stored = cart.lines[index]
+    const last = cart.lines.length - removing.current.size === 0
+    await collapseOut(row)
+    if (last) await fadeAway([bodyRef.current, dockRef.current])
+    removing.current.delete(line.key)
     cart.setQty(line.key, 0)
     showToast({ text: `${line.item.name} удалён`, action: { label: 'Вернуть', run: () => cart.restore(stored, index) } })
   }
-  const clear = () => {
+  const clear = async () => {
     const snapshot = cart.lines
+    const rows = [...(listRef.current?.children ?? [])] as HTMLElement[]
+    // Rows leave in a quick cascade from the bottom, then the form fades out.
+    await Promise.all(rows.reverse().map((row, i) => collapseOut(row, i * 60)))
+    await fadeAway([bodyRef.current, dockRef.current])
     cart.clear()
     showToast({ text: 'Корзина очищена', action: { label: 'Вернуть', run: () => snapshot.forEach((l, i) => cart.restore(l, i)) } })
   }
@@ -70,7 +87,7 @@ export function CartPage() {
   })
 
   const clearButton = lines.length > 0 && (
-    <button className={textBtn()} onClick={clear} disabled={paying}>
+    <button className={textBtn()} onClick={() => void clear()} disabled={paying}>
       Очистить
     </button>
   )
@@ -80,8 +97,8 @@ export function CartPage() {
       {lines.length === 0 ? (
         <EmptyState art={<EmptyCartArt />} title="Пока пусто" text="Загляните в меню — там капучино с зайцем и тёплые круассаны" actionLabel="В меню" onAction={back} />
       ) : (
-        <SheetBody>
-          <ul className="flex flex-col gap-2">
+        <SheetBody ref={bodyRef}>
+          <ul ref={listRef} className="flex flex-col gap-2">
             {lines.map((line) => (
               <CartLineItem
                 key={line.key}
@@ -89,7 +106,7 @@ export function CartPage() {
                 disabled={paying}
                 onOpen={() => go(`/product/${line.item.id}`)}
                 onQty={(qty) => cart.setQty(line.key, qty)}
-                onRemove={() => remove(line)}
+                onRemove={(row) => void remove(line, row)}
               />
             ))}
           </ul>
@@ -120,7 +137,7 @@ export function CartPage() {
       )}
 
       {lines.length > 0 && (
-        <SheetDock>
+        <SheetDock ref={dockRef}>
           <button className={cx(addBtn, 'w-full shadow-lift')} onClick={() => void pay(name)} disabled={paying} aria-busy={paying}>
             {paying ? (
               <span className="flex w-full items-center justify-center gap-2.5">
