@@ -73,10 +73,10 @@ function ProductView({ item }: { item: MenuItem }) {
   return (
     <div
       className={cx(
-        // Phone: one column (header, details, cup, controls). Unfolded: cup on the left,
-        // everything else in a right column; the rest of the screen is dimmed around it.
+        // One column on every screen. Unfolded/tablet: the same card, wider, centred
+        // over the dimmed menu.
         'tinted fixed inset-0 z-20 mx-auto grid max-w-[480px] grid-cols-[minmax(0,1fr)] grid-rows-[auto_auto_minmax(0,1fr)_auto] overflow-x-hidden overflow-y-auto overscroll-contain text-pd-ink [view-transition-name:sheet]',
-        'wide:max-w-[1040px] wide:grid-cols-[minmax(0,1fr)_minmax(340px,420px)] wide:shadow-[0_0_0_100vmax_rgba(0,0,0,0.55)]',
+        'wide:max-w-[560px] wide:shadow-[0_0_0_100vmax_rgba(0,0,0,0.55)]',
         sheetEnter && 'animate-[sheet-in_0.36s_var(--ease-soft)]',
       )}
       style={{
@@ -90,7 +90,7 @@ function ProductView({ item }: { item: MenuItem }) {
       aria-label={item.name}
     >
       {/* Above the add-on backdrop: the macros stay readable while add-ons are picked. */}
-      <div ref={topRef} className="relative z-[31] wide:col-start-2 wide:row-start-1">
+      <div ref={topRef} className="relative z-[31]">
       <header className="grid grid-cols-[40px_1fr_40px] items-center px-3 pt-[calc(10px+env(safe-area-inset-top))] pb-0.5">
         <h1 key={item.id} className="col-start-2 text-center text-[19px] xs:text-[20px] sm:text-[22px] font-bold text-pd-ink tracking-tight truncate px-1 animate-fade-in">
           {item.name}
@@ -106,27 +106,33 @@ function ProductView({ item }: { item: MenuItem }) {
 
       <NutritionBar nutrition={config.nutrition} />
       </div>
-      <div className="wide:col-start-2 wide:row-start-2">
+      <div>
         <ProductDetails item={item} open={showDetails} onToggle={() => setShowDetails((v) => !v)} hidden={!!openGroupId} />
       </div>
 
       <div
-        className="relative grid min-h-0 place-items-center py-1 sm:py-2 wide:col-start-1 wide:row-span-4 wide:row-start-1 wide:py-8"
+        className="relative grid min-h-0 place-items-center py-1 sm:py-2"
         onClick={() => {
           setOpenGroupId(null)
           setShowDetails(false)
         }}
       >
         <div
-          className="relative grid h-full max-h-[300px] sm:max-h-[360px] wide:max-h-[min(72dvh,600px)] place-items-center transition-transform duration-[420ms] ease-[cubic-bezier(0.34,1.4,0.64,1)]"
+          className="relative grid h-full max-h-[300px] sm:max-h-[360px] wide:max-h-[min(56dvh,460px)] place-items-center transition-transform duration-[420ms] ease-[cubic-bezier(0.34,1.4,0.64,1)]"
           style={{ transform: `scale(${variant.size === 'L' ? 1.08 : variant.size === 'S' ? 0.88 : 1})` }}
         >
-          <div ref={cupRef} className="grid h-full origin-bottom place-items-center animate-[float-soft_6s_ease-in-out_0.5s_infinite]">
+          {/* The shadow lives on this wrapper, not on the art: a filter on the
+              view-transition element widens its snapshot, so on real GPUs the
+              cup flew in at one size and snapped to another when it landed. */}
+          <div
+            ref={cupRef}
+            className="grid h-full origin-bottom place-items-center drop-shadow-[0_16px_28px_var(--pd-cup-shadow)] animate-[float-soft_6s_ease-in-out_0.5s_infinite]"
+          >
             <ItemArt
               key={item.id}
               art={item.art}
               className={cx(
-                'h-full max-h-[260px] sm:max-h-[320px] wide:max-h-[min(64dvh,540px)] w-auto aspect-[200/220] select-none pointer-events-none drop-shadow-[0_16px_28px_var(--pd-cup-shadow)]',
+                'h-full max-h-[260px] sm:max-h-[320px] wide:max-h-[min(50dvh,420px)] w-auto aspect-[200/220] select-none pointer-events-none',
                 // Hot ↔ iced swap without View Transitions (which morph the cup themselves);
                 // never on open, where the cup already morphs in from the card.
                 sheetEnter && item.id !== openedWith && 'animate-[swap-in_0.4s_var(--ease-soft)_both]',
@@ -137,7 +143,7 @@ function ProductView({ item }: { item: MenuItem }) {
         </div>
       </div>
 
-      <div ref={bottomRef} className="relative z-30 wide:col-start-2 wide:row-start-4">
+      <div ref={bottomRef} className="relative z-30">
         {panelGroup && (
           <AddonPanel
             group={panelGroup}
