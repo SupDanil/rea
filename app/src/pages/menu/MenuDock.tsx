@@ -37,14 +37,14 @@ export function MenuDock() {
       )}
       {count > 0 && (
         <button
-          className="flex h-15 flex-1 items-center gap-3 rounded-full bg-[#3d2c55] hover:bg-[#322347] px-2.5 text-white shadow-[0_8px_24px_rgba(61,44,85,0.4)] border border-white/10 transition-[transform,background-color] duration-150 active:scale-98"
+          className="flex h-15 flex-1 items-center gap-3 rounded-full bg-[#3d2c55] hover:bg-[#322347] px-2.5 text-white shadow-[0_8px_24px_rgba(61,44,85,0.4)] border border-white/10 transition-[transform,scale,background-color] duration-150 active:scale-98"
           onClick={() => go('/cart')}
           data-cart-target="dock"
         >
           <span
             key={count}
             data-cart-badge
-            className="grid size-10 sm:size-11 place-items-center rounded-full bg-[#c5c7d7] text-[#362452] font-black animate-[pop_0.45s_var(--ease-soft)_0.25s_both] shadow-sm"
+            className="grid size-10 sm:size-11 place-items-center rounded-full bg-[#c5c7d7] text-[#362452] font-black animate-[pop_0.4s_var(--ease-soft)_both] shadow-sm"
             style={catcher}
           >
             {count}

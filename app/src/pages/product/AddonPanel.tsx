@@ -16,6 +16,10 @@ type Props = {
   onPick: (ingredient: Ingredient, art: Element | null) => void
   onRemove: (ingredient: Ingredient) => void
   onClose?: () => void
+  /** Closing: plays the exit animation before the panel unmounts */
+  leaving?: boolean
+  /** Room between the macros and the chips; the panel scrolls inside beyond it */
+  maxHeight?: number
 }
 
 /**
@@ -23,7 +27,7 @@ type Props = {
  * switch groups: the height eases to the new content and the tiles slide in
  * from the side of the chip you tapped.
  */
-export function AddonPanel({ group, groupIndex, qtyOf, total, canAdd, onPick, onRemove, onClose }: Props) {
+export function AddonPanel({ group, groupIndex, qtyOf, total, canAdd, onPick, onRemove, onClose, leaving = false, maxHeight }: Props) {
   const contentRef = useRef<HTMLDivElement>(null)
   const [height, setHeight] = useState<number>()
   const [shown, setShown] = useState({ id: group.id, index: groupIndex, dir: 'up' as 'up' | 'left' | 'right' })
@@ -46,14 +50,20 @@ export function AddonPanel({ group, groupIndex, qtyOf, total, canAdd, onPick, on
     <>
       {onClose && (
         <div
-          className="fixed inset-0 z-20 bg-black/45 backdrop-blur-[2px] transition-opacity animate-fade-in"
+          className={cx(
+            'fixed inset-0 z-20 bg-black/45 backdrop-blur-[2px]',
+            leaving ? 'pointer-events-none animate-[fade-out_0.22s_ease_both]' : 'animate-[fade-only_0.24s_ease_both]',
+          )}
           onClick={onClose}
           aria-hidden="true"
         />
       )}
       <div
-        className="absolute right-2 sm:right-2.5 bottom-[calc(100%+8px)] sm:bottom-[calc(100%+10px)] left-2 sm:left-2.5 z-30 max-h-[min(54dvh,calc(100dvh-170px))] overflow-x-hidden overflow-y-auto overscroll-contain rounded-[24px] sm:rounded-[28px] bg-[#22140f]/92 text-white shadow-[0_20px_50px_rgba(0,0,0,0.65)] backdrop-blur-2xl border border-white/12 transition-[height] duration-300 ease-soft animate-[rise_0.24s_var(--ease-soft)]"
-        style={{ height }}
+        className={cx(
+          'absolute right-2 sm:right-2.5 bottom-[calc(100%+8px)] sm:bottom-[calc(100%+10px)] left-2 sm:left-2.5 z-30 overflow-x-hidden overflow-y-auto overscroll-contain rounded-[24px] sm:rounded-[28px] bg-[#22140f]/92 text-white shadow-[0_20px_50px_rgba(0,0,0,0.65)] backdrop-blur-2xl border border-white/12 transition-[height] duration-300 ease-soft',
+          leaving ? 'pointer-events-none animate-[sink_0.22s_cubic-bezier(0.4,0,1,1)_both]' : 'animate-[rise_0.28s_var(--ease-soft)_both]',
+        )}
+        style={{ height: height && maxHeight ? Math.min(height, maxHeight) : height, maxHeight }}
         role="group"
         aria-label={group.name}
       >
@@ -99,7 +109,7 @@ function ChoiceTile({ ingredient, selected, style, onPick }: ChoiceProps) {
   return (
     <button
       className={cx(
-        'flex flex-col items-center justify-between rounded-[18px] sm:rounded-[22px] p-2 sm:p-2.5 text-center min-h-[136px] sm:min-h-[148px] border transition-[background-color,color,transform,box-shadow] duration-200 ease-soft active:scale-95 animate-[tile-in_0.32s_var(--ease-soft)_both]',
+        'flex flex-col items-center justify-between rounded-[18px] sm:rounded-[22px] p-2 sm:p-2.5 text-center min-h-[136px] sm:min-h-[148px] border transition-[background-color,color,transform,scale,box-shadow] duration-200 ease-soft active:scale-95 animate-[tile-in_0.32s_var(--ease-soft)_both]',
         selected
           ? 'bg-white text-zinc-950 border-white shadow-[0_10px_25px_rgba(0,0,0,0.32)] scale-[1.02]'
           : 'bg-white/10 hover:bg-white/15 border-white/10 text-white backdrop-blur-xl',
@@ -121,12 +131,13 @@ function ChoiceTile({ ingredient, selected, style, onPick }: ChoiceProps) {
       </span>
       <span
         className={cx(
-          'mt-1 grid size-5 sm:size-6 place-items-center rounded-full text-[11px] sm:text-[12px] font-bold transition-[background,border-color,transform] duration-200',
+          'mt-1 grid size-5 sm:size-6 place-items-center rounded-full text-[11px] sm:text-[12px] font-bold transition-[background,border-color,transform,scale] duration-200',
           selected ? 'bg-zinc-950 text-white shadow-sm animate-pop' : 'border border-white/25 text-white/40',
         )}
         aria-hidden="true"
       >
-        {selected ? '✓' : '+'}
+        {/* Empty ring, not "+": these groups take exactly one choice. */}
+        {selected && '✓'}
       </span>
     </button>
   )

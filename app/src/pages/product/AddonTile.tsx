@@ -14,7 +14,7 @@ type Props = {
 }
 
 const stepBtn =
-  'grid size-6 sm:size-7 place-items-center rounded-full text-[15px] sm:text-[17px] leading-none font-bold transition-[transform,opacity] duration-150 active:scale-90 disabled:opacity-25'
+  'grid size-6 sm:size-7 place-items-center rounded-full text-[15px] sm:text-[17px] leading-none font-bold transition-[transform,scale,opacity] duration-150 active:scale-90 disabled:opacity-25'
 
 /** Drinkit counter add-on tile (syrups, protein, shots): frosted glass when 0, solid white when selected. */
 export function AddonTile({ ingredient, qty, canAdd, style, onAdd, onRemove }: Props) {
@@ -23,7 +23,7 @@ export function AddonTile({ ingredient, qty, canAdd, style, onAdd, onRemove }: P
   return (
     <div
       className={cx(
-        'flex flex-col items-center justify-between rounded-[18px] sm:rounded-[22px] p-2 sm:p-2.5 text-center min-h-[136px] sm:min-h-[148px] border transition-[background-color,color,transform,box-shadow] duration-200 ease-soft animate-[tile-in_0.32s_var(--ease-soft)_both]',
+        'flex flex-col items-center justify-between rounded-[18px] sm:rounded-[22px] p-2 sm:p-2.5 text-center min-h-[136px] sm:min-h-[148px] border transition-[background-color,color,transform,scale,box-shadow] duration-200 ease-soft animate-[tile-in_0.32s_var(--ease-soft)_both]',
         on
           ? 'bg-white text-zinc-950 border-white shadow-[0_10px_25px_rgba(0,0,0,0.32)] scale-[1.02]'
           : 'bg-white/10 hover:bg-white/15 border-white/10 text-white backdrop-blur-xl',

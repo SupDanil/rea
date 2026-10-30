@@ -1,5 +1,6 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { subcategoriesOf, topCategories } from '../../data/menu'
+import { animateWindowScroll } from '../../utils/scrollTo'
 
 /** Must match the sections' `scroll-mt-(--tabs-h)` (--tabs-h in index.css). */
 const SECTION_SCROLL_MARGIN = 96
@@ -62,10 +63,14 @@ export function useMenuScrollSpy() {
     if (!el) return
     setActiveSub(subId)
     scrollLock.current = true
-    const release = () => (scrollLock.current = false)
-    window.addEventListener('scrollend', release, { once: true })
-    window.setTimeout(release, 1200)
-    el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    // Park the section right under the sticky bar, measured live: the bar can
+    // gain or lose its subcategory row while we travel.
+    const target = () => el.getBoundingClientRect().top + window.scrollY - (navRef.current?.offsetHeight ?? SECTION_SCROLL_MARGIN)
+    void animateWindowScroll(target).then(() => {
+      scrollLock.current = false
+      // Settle on whatever is really under the bar (the user may have taken over).
+      window.dispatchEvent(new Event('scroll'))
+    })
   }
 
   return { sections, activeSub, activeTop, activeSubs, showSubtabs, navRef, scrollToSub }

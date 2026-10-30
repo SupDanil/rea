@@ -1,5 +1,6 @@
 import { itemById, itemsOf } from '../../data/menu'
 import { useAppNavigate } from '../../hooks/useAppNavigate'
+import { cx } from '../../utils/cx'
 import { CategoryNav } from './CategoryNav'
 import { HeroBanner } from './HeroBanner'
 import { MenuHeader } from './MenuHeader'
@@ -26,8 +27,16 @@ export function MenuPage() {
         onSelect={spy.scrollToSub}
       />
       <main>
-        {spy.sections.map(({ sub }) => (
-          <section key={sub.id} id={sectionId(sub.id)} className="scroll-mt-(--tabs-h) px-2.5 sm:px-3 pt-3.5 sm:pt-[18px] pb-1">
+        {spy.sections.map(({ sub }, i) => (
+          <section
+            key={sub.id}
+            id={sectionId(sub.id)}
+            className={cx(
+              'scroll-mt-(--tabs-h) px-2.5 sm:px-3 pt-3.5 sm:pt-[18px] pb-1',
+              // Tall enough to scroll up under the tab bar, so its tab can land on it and stay lit.
+              i === spy.sections.length - 1 && 'min-h-[calc(100dvh-var(--tabs-h)-24px)]',
+            )}
+          >
             <h2 className="mx-1 mb-2.5 sm:mb-3 text-[20px] sm:text-[22px]">{sub.name}</h2>
             <div className="grid grid-cols-2 gap-2 sm:gap-2.5">
               {itemsOf(sub.id).map((item) => (

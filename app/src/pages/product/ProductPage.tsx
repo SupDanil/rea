@@ -1,4 +1,4 @@
-import { useRef, useState, type CSSProperties } from 'react'
+import { useLayoutEffect, useRef, useState, type CSSProperties, type RefObject } from 'react'
 import { flushSync } from 'react-dom'
 import { Navigate, useParams } from 'react-router'
 import { CloseIcon } from '../../components/icons'
@@ -7,6 +7,7 @@ import { sheetEnter } from '../../components/ui'
 import { itemById, type Ingredient, type IngredientGroup, type MenuItem } from '../../data/menu'
 import { useAppNavigate } from '../../hooks/useAppNavigate'
 import { useEscape } from '../../hooks/useEscape'
+import { useExitTransition } from '../../hooks/useExitTransition'
 import { PRODUCT_ART } from '../../hooks/useSharedArt'
 import { useApp } from '../../state/AppContext'
 import { cx } from '../../utils/cx'
@@ -36,15 +37,20 @@ function ProductView({ item }: { item: MenuItem }) {
   const { variant, openGroupId, setOpenGroupId } = config
   const [showDetails, setShowDetails] = useState(false)
   const [added, setAdded] = useState(false)
+  const [openedWith] = useState(item.id)
   const cupRef = useRef<HTMLDivElement>(null)
-  const openGroup = config.groups.find((g) => g.id === openGroupId)
+  const topRef = useRef<HTMLDivElement>(null)
+  const bottomRef = useRef<HTMLDivElement>(null)
+  const panelMax = usePanelRoom(topRef, bottomRef)
+  // The panel lingers for its exit animation after the group is closed.
+  const { rendered: panelGroup, leaving: panelLeaving } = useExitTransition(config.groups.find((g) => g.id === openGroupId), 220)
 
   useEscape(() => (openGroupId ? setOpenGroupId(null) : back()))
 
   const pick = (group: IngredientGroup, ingredient: Ingredient) => {
     const landed = group.counter ? config.addOne(group, ingredient) : config.toggle(group, ingredient.id)
     if (landed && cupRef.current) {
-      bounce(cupRef.current, 0.35)
+      bounce(cupRef.current, 0.6)
     }
   }
 
@@ -54,8 +60,13 @@ function ProductView({ item }: { item: MenuItem }) {
     window.setTimeout(() => {
       // Name the cart badge as the art's destination before the transition snapshots.
       flushSync(() => setFlightId(item.id))
+      // Switches the cup's view transition to its flight timing (see index.css).
+      document.documentElement.dataset.flight = ''
       back()
-      window.setTimeout(() => setFlightId(null), 900)
+      window.setTimeout(() => {
+        setFlightId(null)
+        delete document.documentElement.dataset.flight
+      }, 900)
     }, CONFIRM_MS)
   }
 
@@ -74,12 +85,14 @@ function ProductView({ item }: { item: MenuItem }) {
       aria-modal="true"
       aria-label={item.name}
     >
+      {/* Above the add-on backdrop: the macros stay readable while add-ons are picked. */}
+      <div ref={topRef} className="relative z-[31]">
       <header className="grid grid-cols-[40px_1fr_40px] sm:grid-cols-[44px_1fr_44px] items-center px-3 sm:px-4 pt-[calc(10px+env(safe-area-inset-top))] pb-0.5">
         <h1 key={item.id} className="col-start-2 text-center text-[19px] xs:text-[20px] sm:text-[22px] font-bold text-white tracking-tight truncate px-1 animate-fade-in">
           {item.name}
         </h1>
         <button
-          className="col-start-3 size-9 sm:size-10 grid place-items-center rounded-full bg-white/10 hover:bg-white/15 text-white backdrop-blur-md border border-white/10 transition-colors active:scale-95"
+          className="col-start-3 size-9 sm:size-10 grid place-items-center rounded-full bg-white/10 hover:bg-white/15 text-white backdrop-blur-md border border-white/10 transition-[background-color,color,border-color,scale] active:scale-95"
           onClick={back}
           aria-label="Закрыть"
         >
@@ -88,6 +101,7 @@ function ProductView({ item }: { item: MenuItem }) {
       </header>
 
       <NutritionBar nutrition={config.nutrition} />
+      </div>
       <ProductDetails item={item} open={showDetails} onToggle={() => setShowDetails((v) => !v)} hidden={!!openGroupId} />
 
       <div
@@ -98,31 +112,38 @@ function ProductView({ item }: { item: MenuItem }) {
         }}
       >
         <div
-          className="relative grid h-full max-h-[300px] sm:max-h-[360px] place-items-center transition-transform duration-300 ease-soft"
+          className="relative grid h-full max-h-[300px] sm:max-h-[360px] place-items-center transition-transform duration-[420ms] ease-[cubic-bezier(0.34,1.4,0.64,1)]"
           style={{ transform: `scale(${variant.size === 'L' ? 1.08 : variant.size === 'S' ? 0.88 : 1})` }}
         >
-          <div ref={cupRef} className="grid h-full origin-bottom place-items-center">
+          <div ref={cupRef} className="grid h-full origin-bottom place-items-center animate-[float-soft_6s_ease-in-out_0.5s_infinite]">
             <ItemArt
               key={item.id}
               art={item.art}
-              className="h-full max-h-[260px] sm:max-h-[320px] w-auto aspect-[200/220] select-none pointer-events-none drop-shadow-[0_16px_28px_rgba(0,0,0,0.35)]"
+              className={cx(
+                'h-full max-h-[260px] sm:max-h-[320px] w-auto aspect-[200/220] select-none pointer-events-none drop-shadow-[0_16px_28px_rgba(0,0,0,0.35)]',
+                // Hot ↔ iced swap without View Transitions (which morph the cup themselves);
+                // never on open, where the cup already morphs in from the card.
+                sheetEnter && item.id !== openedWith && 'animate-[swap-in_0.4s_var(--ease-soft)_both]',
+              )}
               style={{ viewTransitionName: PRODUCT_ART }}
             />
           </div>
         </div>
       </div>
 
-      <div className="relative z-30">
-        {openGroup && (
+      <div ref={bottomRef} className="relative z-30">
+        {panelGroup && (
           <AddonPanel
-            group={openGroup}
-            groupIndex={config.groups.indexOf(openGroup)}
-            qtyOf={(id) => config.qtyOf(openGroup, id)}
-            total={config.totalOf(openGroup)}
-            canAdd={(ing) => config.canAdd(openGroup, ing)}
-            onPick={(ing) => pick(openGroup, ing)}
-            onRemove={(ing) => config.removeOne(openGroup, ing.id)}
+            group={panelGroup}
+            groupIndex={config.groups.indexOf(panelGroup)}
+            qtyOf={(id) => config.qtyOf(panelGroup, id)}
+            total={config.totalOf(panelGroup)}
+            canAdd={(ing) => config.canAdd(panelGroup, ing)}
+            onPick={(ing) => pick(panelGroup, ing)}
+            onRemove={(ing) => config.removeOne(panelGroup, ing.id)}
             onClose={() => setOpenGroupId(null)}
+            leaving={panelLeaving}
+            maxHeight={panelMax}
           />
         )}
         <AddonChips
@@ -134,11 +155,36 @@ function ProductView({ item }: { item: MenuItem }) {
           onOpenGroup={setOpenGroupId}
           onOpenRelated={(next) => replace(`/product/${next.id}`)}
         />
-        <footer className="mx-2.5 sm:mx-4 mb-[calc(12px+env(safe-area-inset-bottom))] flex items-center gap-2 sm:gap-2.5">
+        <footer className="relative z-[25] mx-2.5 sm:mx-4 mb-[calc(12px+env(safe-area-inset-bottom))] flex items-center gap-2 sm:gap-2.5">
           {variant.size !== 'ONE' && <SizePicker variants={item.variants} selected={config.variantIdx} onSelect={config.setVariantIdx} />}
           <AddToCartButton price={config.price} soldOut={config.soldOut} added={added} onAdd={add} />
         </footer>
       </div>
     </div>
   )
+}
+
+/**
+ * Height the add-on panel may take: the gap between the macros and the chips
+ * row, minus breathing room — so on a short screen (Fold cover display, landscape)
+ * the panel scrolls inside instead of covering the macros.
+ */
+function usePanelRoom(topRef: RefObject<HTMLElement | null>, bottomRef: RefObject<HTMLElement | null>) {
+  const [room, setRoom] = useState<number>()
+  useLayoutEffect(() => {
+    const top = topRef.current
+    const bottom = bottomRef.current
+    if (!top || !bottom) return
+    const measure = () => setRoom(Math.max(160, bottom.getBoundingClientRect().top - top.getBoundingClientRect().bottom - 18))
+    measure()
+    const ro = new ResizeObserver(measure)
+    ro.observe(top)
+    ro.observe(bottom)
+    window.addEventListener('resize', measure)
+    return () => {
+      ro.disconnect()
+      window.removeEventListener('resize', measure)
+    }
+  }, [topRef, bottomRef])
+  return room
 }

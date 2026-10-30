@@ -18,12 +18,15 @@ export function CategoryNav({ navRef, activeTop, activeSub, activeSubs, showSubt
   const tabIndicator = useSlidingIndicator(tabsRef, activeTop.id)
   const subIndicator = useSlidingIndicator(subTabsRef, showSubtabs ? activeSub : '')
 
-  // Keep the active tabs visible inside their horizontal scrollers. Scroll the
-  // rows directly: scrollIntoView here would cancel the page's smooth scroll.
+  // Keep the active tabs visible inside their horizontal scrollers — only when a
+  // row actually overflows and the tab is cut off, so we never start a scroll
+  // for nothing (some browsers let one smooth scroll cancel another).
   useEffect(() => {
     for (const row of [tabsRef.current, subTabsRef.current]) {
       const tab = row?.querySelector<HTMLElement>('[aria-selected="true"]')
-      if (!row || !tab) continue
+      if (!row || !tab || row.scrollWidth <= row.clientWidth + 1) continue
+      const visible = tab.offsetLeft >= row.scrollLeft && tab.offsetLeft + tab.offsetWidth <= row.scrollLeft + row.clientWidth
+      if (visible) continue
       row.scrollTo({ left: tab.offsetLeft - (row.clientWidth - tab.offsetWidth) / 2, behavior: 'smooth' })
     }
   }, [activeSub])
@@ -32,7 +35,7 @@ export function CategoryNav({ navRef, activeTop, activeSub, activeSubs, showSubt
     <nav className="sticky top-0 z-5 mt-2.5 bg-sticky pt-3 pb-2.5 backdrop-blur-[14px] backdrop-saturate-140" aria-label="Категории меню" ref={navRef}>
       <div className="no-scrollbar relative flex gap-3.5 sm:gap-[22px] overflow-x-auto px-3 sm:px-4" role="tablist" ref={tabsRef}>
         <span
-          className="pointer-events-none absolute bottom-0 left-0 h-[3px] rounded-[2px] bg-ink opacity-0 transition-[transform,width] duration-350 ease-soft"
+          className="pointer-events-none absolute bottom-0 left-0 h-[3px] rounded-[2px] bg-ink opacity-0 transition-[transform,scale,width] duration-350 ease-soft"
           ref={tabIndicator}
           aria-hidden="true"
         />
@@ -51,7 +54,7 @@ export function CategoryNav({ navRef, activeTop, activeSub, activeSubs, showSubt
       {showSubtabs && (
         <div className="no-scrollbar relative mt-2.5 flex gap-1.5 overflow-x-auto px-3 sm:px-4 animate-fade-in" role="tablist" ref={subTabsRef}>
           <span
-            className="pointer-events-none absolute top-0 bottom-0 left-0 rounded-full bg-inverse opacity-0 transition-[transform,width] duration-350 ease-soft"
+            className="pointer-events-none absolute top-0 bottom-0 left-0 rounded-full bg-inverse opacity-0 transition-[transform,scale,width] duration-350 ease-soft"
             ref={subIndicator}
             aria-hidden="true"
           />

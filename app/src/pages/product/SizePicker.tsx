@@ -19,7 +19,7 @@ export function SizePicker({ variants, selected, onSelect }: Props) {
     >
       <span
         ref={pill}
-        className="pointer-events-none absolute top-0.5 bottom-0.5 sm:top-1 sm:bottom-1 left-0 rounded-full bg-white opacity-0 shadow-[0_2px_10px_rgba(0,0,0,0.28)] transition-[transform,width] duration-[460ms] ease-[cubic-bezier(0.34,1.56,0.64,1)]"
+        className="pointer-events-none absolute top-0.5 bottom-0.5 sm:top-1 sm:bottom-1 left-0 rounded-full bg-white opacity-0 shadow-[0_2px_10px_rgba(0,0,0,0.28)] transition-[transform,scale,width] duration-[380ms] ease-[cubic-bezier(0.34,1.25,0.64,1)]"
         aria-hidden="true"
       />
       {variants.map((v, idx) => (
@@ -28,7 +28,7 @@ export function SizePicker({ variants, selected, onSelect }: Props) {
           role="radio"
           aria-checked={idx === selected}
           disabled={v.stopped}
-          className="relative z-1 flex h-[46px] sm:h-[50px] min-w-[40px] sm:min-w-[48px] flex-col items-center justify-center rounded-full px-2 sm:px-3 text-white/75 transition-[color] duration-300 disabled:opacity-30 aria-checked:min-w-[58px] sm:aria-checked:min-w-[70px] aria-checked:text-zinc-950 active:scale-95"
+          className="relative z-1 flex h-[46px] sm:h-[50px] min-w-[40px] sm:min-w-[48px] flex-col items-center justify-center rounded-full px-2 sm:px-3 text-white/75 transition-[color,scale] duration-200 disabled:opacity-30 aria-checked:min-w-[58px] sm:aria-checked:min-w-[70px] aria-checked:text-zinc-950 active:scale-95"
           onClick={() => onSelect(idx)}
         >
           <span className="text-[15px] sm:text-[17px] leading-none font-extrabold">{sizeLabel[v.size]}</span>

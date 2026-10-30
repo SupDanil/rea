@@ -45,16 +45,17 @@ export function ProductCard({ item, onOpen }: { item: MenuItem; onOpen: () => vo
       })
       const target = getCartTarget()
       if (artRef.current && target) {
-        void flyTo(artRef.current, target, { duration: 520, endScale: 0.2 }).then(() => {
-          if (target instanceof Element) bounce(target, 1.25)
-        })
+        void flyTo(artRef.current, target, { duration: 520, endScale: 0.2 }).then(() =>
+          bounce(document.querySelector('[data-cart-target="dock"]'), 0.5),
+        )
       }
     } else {
       // Subsequent items: dock is already up at the bottom, fly down to the badge and bump count on impact.
       const target = getCartTarget()
       const land = () => {
         cart.add(item.id, variant.id, [])
-        if (target instanceof Element) bounce(target, 1.2)
+        // The badge remounts on the new count (and pops itself); nudge the whole bar.
+        bounce(document.querySelector('[data-cart-target="dock"]'), 0.5)
       }
       if (artRef.current && target) {
         void flyTo(artRef.current, target, { duration: 520, endScale: 0.2 }).then(land)
