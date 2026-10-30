@@ -30,7 +30,7 @@ export function CategoryNav({ navRef, activeTop, activeSub, activeSubs, showSubt
 
   return (
     <nav className="sticky top-0 z-5 mt-2.5 bg-sticky pt-3 pb-2.5 backdrop-blur-[14px] backdrop-saturate-140" aria-label="Категории меню" ref={navRef}>
-      <div className="no-scrollbar relative flex gap-[22px] overflow-x-auto px-4" role="tablist" ref={tabsRef}>
+      <div className="no-scrollbar relative flex gap-3.5 sm:gap-[22px] overflow-x-auto px-3 sm:px-4" role="tablist" ref={tabsRef}>
         <span
           className="pointer-events-none absolute bottom-0 left-0 h-[3px] rounded-[2px] bg-ink opacity-0 transition-[transform,width] duration-350 ease-soft"
           ref={tabIndicator}
@@ -41,7 +41,7 @@ export function CategoryNav({ navRef, activeTop, activeSub, activeSubs, showSubt
             key={top.id}
             role="tab"
             aria-selected={top.id === activeTop.id}
-            className="relative pt-0.5 pb-1.5 text-[21px] font-extrabold tracking-[-0.035em] whitespace-nowrap text-faint transition-[color] duration-250 ease-[ease] aria-selected:text-ink"
+            className="relative pt-0.5 pb-1.5 text-[18px] sm:text-[21px] font-extrabold tracking-[-0.035em] whitespace-nowrap text-faint transition-[color] duration-250 ease-[ease] aria-selected:text-ink"
             onClick={() => onSelect(subcategoriesOf(top.id)[0].id)}
           >
             {top.name}
@@ -49,7 +49,7 @@ export function CategoryNav({ navRef, activeTop, activeSub, activeSubs, showSubt
         ))}
       </div>
       {showSubtabs && (
-        <div className="no-scrollbar relative mt-2.5 flex gap-1.5 overflow-x-auto px-4 animate-fade-in" role="tablist" ref={subTabsRef}>
+        <div className="no-scrollbar relative mt-2.5 flex gap-1.5 overflow-x-auto px-3 sm:px-4 animate-fade-in" role="tablist" ref={subTabsRef}>
           <span
             className="pointer-events-none absolute top-0 bottom-0 left-0 rounded-full bg-inverse opacity-0 transition-[transform,width] duration-350 ease-soft"
             ref={subIndicator}

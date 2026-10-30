@@ -11,21 +11,21 @@ export function MenuHeader() {
   const gifts = loyalty.giftsAvailable
 
   return (
-    <header className="flex items-center justify-between gap-2 px-4 pt-[calc(12px+env(safe-area-inset-top))] pb-2.5">
-      <button className="flex min-w-0 items-center gap-2.5 text-left" aria-label="Кофейня: Покровка, 12, открыто до 22:00">
-        <img className="block size-10 rounded-[13px] shadow-card" src={`${import.meta.env.BASE_URL}icon.svg`} alt="" />
+    <header className="flex items-center justify-between gap-1.5 sm:gap-2 px-2.5 sm:px-4 pt-[calc(12px+env(safe-area-inset-top))] pb-2.5">
+      <button className="flex min-w-0 items-center gap-2 sm:gap-2.5 text-left" aria-label="Кофейня: Покровка, 12, открыто до 22:00">
+        <img className="block size-9 sm:size-10 rounded-[12px] sm:rounded-[13px] shadow-card" src={`${import.meta.env.BASE_URL}icon.svg`} alt="" />
         <div>
-          <div className="flex items-center gap-[5px] text-[15px] font-bold tracking-[-0.01em]">
-            Покровка, 12
+          <div className="flex items-center gap-[5px] text-[14px] sm:text-[15px] font-bold tracking-[-0.01em]">
+            Невский, 12
             <ChevronDownIcon className="text-muted" />
           </div>
-          <div className="mt-px flex items-center gap-1.5 text-[12px] text-muted">
+          <div className="mt-px flex items-center gap-1.5 text-[11px] sm:text-[12px] text-muted">
             <span className={openDot} aria-hidden="true" />
             открыто до 22:00
           </div>
         </div>
       </button>
-      <div className="flex gap-2">
+      <div className="flex gap-1.5 sm:gap-2">
         <button className={roundBtn} onClick={toggleTheme} aria-label={theme === 'dark' ? 'Включить светлую тему' : 'Включить тёмную тему'}>
           <ThemeIcon dark={theme === 'dark'} />
         </button>

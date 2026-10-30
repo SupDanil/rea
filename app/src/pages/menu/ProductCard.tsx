@@ -65,14 +65,14 @@ export function ProductCard({ item, onOpen }: { item: MenuItem; onOpen: () => vo
       <div className={cx('pointer-events-none mx-2 mt-1 line-clamp-2 flex-1 text-[12px] leading-[1.35] text-muted', soldOut && 'opacity-55')}>
         {item.description}
       </div>
-      <div className="mt-2.5 mr-1 ml-2 flex items-center justify-between">
-        <span className={cx('pointer-events-none', soldOut ? 'text-[13px] font-semibold text-muted' : 'text-[15px] font-bold')}>
+      <div className="mt-2 sm:mt-2.5 mr-1 ml-1.5 sm:ml-2 flex items-center justify-between">
+        <span className={cx('pointer-events-none text-[14px] sm:text-[15px] font-bold', soldOut && 'text-[12px] sm:text-[13px] font-semibold text-muted')}>
           {soldOut ? 'Закончилось' : `${item.variants.length > 1 ? 'от ' : ''}${formatPrice(minPrice(item))}`}
         </span>
         {!soldOut && (
           <button
             className={cx(
-              'relative z-1 grid size-8 place-items-center rounded-full transition-[background,color,scale] duration-200 ease-[ease] active:scale-88',
+              'relative z-1 grid size-7 sm:size-8 place-items-center rounded-full transition-[background,color,scale] duration-200 ease-[ease] active:scale-88',
               justAdded ? 'bg-accent text-accent-ink' : 'bg-surface-2 text-ink hover:bg-accent hover:text-accent-ink',
             )}
             onClick={quickAdd}

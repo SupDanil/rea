@@ -22,7 +22,7 @@ export function MenuDock() {
   const status = activeOrder && statusOf(activeOrder, now)
 
   return (
-    <div className="pointer-events-none fixed right-0 bottom-0 left-0 z-10 mx-auto flex max-w-[480px] gap-2 px-2.5 pb-[calc(10px+env(safe-area-inset-bottom))] *:pointer-events-auto *:animate-rise">
+    <div className="pointer-events-none fixed right-0 bottom-0 left-0 z-10 mx-auto flex max-w-[480px] gap-2 px-2 sm:px-2.5 pb-[calc(10px+env(safe-area-inset-bottom))] *:pointer-events-auto *:animate-rise">
       {activeOrder && status && (
         <button
           className="flex h-15 items-center gap-2.5 rounded-full bg-dock px-[18px] text-[14px] whitespace-nowrap text-white shadow-lift backdrop-blur-[12px] only:ml-auto"

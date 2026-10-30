@@ -27,9 +27,9 @@ export function MenuPage() {
       />
       <main>
         {spy.sections.map(({ sub }) => (
-          <section key={sub.id} id={sectionId(sub.id)} className="scroll-mt-(--tabs-h) px-3 pt-[18px] pb-1">
-            <h2 className="mx-1 mb-3 text-[22px]">{sub.name}</h2>
-            <div className="grid grid-cols-2 gap-2.5">
+          <section key={sub.id} id={sectionId(sub.id)} className="scroll-mt-(--tabs-h) px-2.5 sm:px-3 pt-3.5 sm:pt-[18px] pb-1">
+            <h2 className="mx-1 mb-2.5 sm:mb-3 text-[20px] sm:text-[22px]">{sub.name}</h2>
+            <div className="grid grid-cols-2 gap-2 sm:gap-2.5">
               {itemsOf(sub.id).map((item) => (
                 <ProductCard key={item.id} item={item} onOpen={() => open(item.id)} />
               ))}
@@ -37,7 +37,7 @@ export function MenuPage() {
           </section>
         ))}
         <p className="px-8 pt-7 pb-[calc(96px+env(safe-area-inset-bottom))] text-center text-[12px] text-muted">
-          Цены указаны для кофейни на Покровке. Состав и аллергены — в карточке товара.
+          Цены указаны для кофейни на Невском. Состав и аллергены — в карточке товара.
         </p>
       </main>
     </div>

@@ -5,7 +5,7 @@
 import { cx } from '../utils/cx'
 
 export const roundBtn =
-  'relative grid size-11 flex-none place-items-center rounded-full bg-surface shadow-card transition-[background-color] duration-300 ease-[ease]'
+  'relative grid size-10 sm:size-11 flex-none place-items-center rounded-full bg-surface shadow-card transition-[background-color] duration-300 ease-[ease]'
 
 export const avatar = (small = false) =>
   cx(

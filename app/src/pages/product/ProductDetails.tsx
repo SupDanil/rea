@@ -17,7 +17,7 @@ export function ProductDetails({ item, open, onToggle, hidden = false }: Props) 
       </button>
       {open && (
         <div
-          className="absolute top-[calc(100%+8px)] right-4 left-4 z-30 space-y-2 rounded-[22px] bg-[#1c120e]/95 text-white/90 p-4 text-[13px] leading-[1.5] shadow-lift backdrop-blur-2xl border border-white/10 animate-fade-in"
+          className="absolute top-[calc(100%+8px)] right-3 left-3 sm:right-4 sm:left-4 z-30 space-y-2 rounded-[22px] bg-[#1c120e]/95 text-white/90 p-3.5 sm:p-4 text-[12px] sm:text-[13px] leading-[1.5] shadow-lift backdrop-blur-2xl border border-white/10 animate-fade-in"
           id="inside"
         >
           <p>{item.description}</p>

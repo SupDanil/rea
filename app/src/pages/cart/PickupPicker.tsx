@@ -9,7 +9,7 @@ export function PickupPicker({ value, onChange }: { value: Pickup; onChange: (pi
     <section className={block}>
       <h2 className={blockTitle}>Когда забрать</h2>
       <div
-        className="grid grid-cols-4 gap-1 rounded-[18px] bg-surface p-1 shadow-card *:h-[42px] *:rounded-[14px] *:text-[14px] *:font-semibold *:text-ink-2 *:transition-[background,color] *:duration-200 *:ease-[ease] *:aria-checked:bg-inverse *:aria-checked:text-inverse-ink"
+        className="grid grid-cols-4 gap-1 rounded-[18px] bg-surface p-1 shadow-card *:h-[40px] sm:*:h-[42px] *:rounded-[14px] *:text-[12px] sm:*:text-[14px] *:font-semibold *:text-ink-2 *:transition-[background,color] *:duration-200 *:ease-[ease] *:aria-checked:bg-inverse *:aria-checked:text-inverse-ink"
         role="radiogroup"
         aria-label="Когда забрать"
       >
@@ -19,7 +19,7 @@ export function PickupPicker({ value, onChange }: { value: Pickup; onChange: (pi
           </button>
         ))}
       </div>
-      <p className={hint()}>Покровка, 12 · {value.kind === 'asap' ? 'приготовим за 5–7 минут' : 'приготовим к нужному времени'}</p>
+      <p className={hint()}>Невский, 12 · {value.kind === 'asap' ? 'приготовим за 5–7 минут' : 'приготовим к нужному времени'}</p>
     </section>
   )
 }

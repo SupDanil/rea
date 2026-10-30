@@ -74,12 +74,12 @@ function ProductView({ item }: { item: MenuItem }) {
       aria-modal="true"
       aria-label={item.name}
     >
-      <header className="grid grid-cols-[44px_1fr_44px] items-center px-4 pt-[calc(10px+env(safe-area-inset-top))] pb-0.5">
-        <h1 key={item.id} className="col-start-2 text-center text-[22px] font-bold text-white tracking-tight animate-fade-in">
+      <header className="grid grid-cols-[40px_1fr_40px] sm:grid-cols-[44px_1fr_44px] items-center px-3 sm:px-4 pt-[calc(10px+env(safe-area-inset-top))] pb-0.5">
+        <h1 key={item.id} className="col-start-2 text-center text-[19px] xs:text-[20px] sm:text-[22px] font-bold text-white tracking-tight truncate px-1 animate-fade-in">
           {item.name}
         </h1>
         <button
-          className="col-start-3 size-10 grid place-items-center rounded-full bg-white/10 hover:bg-white/15 text-white backdrop-blur-md border border-white/10 transition-colors active:scale-95"
+          className="col-start-3 size-9 sm:size-10 grid place-items-center rounded-full bg-white/10 hover:bg-white/15 text-white backdrop-blur-md border border-white/10 transition-colors active:scale-95"
           onClick={back}
           aria-label="Закрыть"
         >
@@ -91,21 +91,21 @@ function ProductView({ item }: { item: MenuItem }) {
       <ProductDetails item={item} open={showDetails} onToggle={() => setShowDetails((v) => !v)} hidden={!!openGroupId} />
 
       <div
-        className="relative grid min-h-0 flex-1 place-items-center py-2"
+        className="relative grid min-h-0 flex-1 place-items-center py-1 sm:py-2"
         onClick={() => {
           setOpenGroupId(null)
           setShowDetails(false)
         }}
       >
         <div
-          className="relative grid h-full max-h-[360px] place-items-center transition-transform duration-300 ease-soft"
+          className="relative grid h-full max-h-[300px] sm:max-h-[360px] place-items-center transition-transform duration-300 ease-soft"
           style={{ transform: `scale(${variant.size === 'L' ? 1.08 : variant.size === 'S' ? 0.88 : 1})` }}
         >
           <div ref={cupRef} className="grid h-full origin-bottom place-items-center">
             <ItemArt
               key={item.id}
               art={item.art}
-              className="h-full max-h-[320px] w-auto aspect-[200/220] select-none pointer-events-none drop-shadow-[0_16px_28px_rgba(0,0,0,0.35)]"
+              className="h-full max-h-[260px] sm:max-h-[320px] w-auto aspect-[200/220] select-none pointer-events-none drop-shadow-[0_16px_28px_rgba(0,0,0,0.35)]"
               style={{ viewTransitionName: PRODUCT_ART }}
             />
           </div>
@@ -134,7 +134,7 @@ function ProductView({ item }: { item: MenuItem }) {
           onOpenGroup={setOpenGroupId}
           onOpenRelated={(next) => replace(`/product/${next.id}`)}
         />
-        <footer className="mx-4 mb-[calc(14px+env(safe-area-inset-bottom))] flex items-center gap-2.5">
+        <footer className="mx-2.5 sm:mx-4 mb-[calc(12px+env(safe-area-inset-bottom))] flex items-center gap-2 sm:gap-2.5">
           {variant.size !== 'ONE' && <SizePicker variants={item.variants} selected={config.variantIdx} onSelect={config.setVariantIdx} />}
           <AddToCartButton price={config.price} soldOut={config.soldOut} added={added} onAdd={add} />
         </footer>
