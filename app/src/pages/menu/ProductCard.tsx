@@ -52,7 +52,7 @@ export function ProductCard({ item, onOpen }: { item: MenuItem; onOpen: () => vo
         <ItemArt
           ref={artRef}
           art={item.art}
-          className="size-[84%] transition-transform duration-300 ease-soft group-hover:-translate-y-[3px] group-hover:scale-103"
+          className="h-[84%] w-auto aspect-[200/220] transition-transform duration-300 ease-soft group-hover:-translate-y-[3px] group-hover:scale-103"
           style={sharedArt}
         />
         {item.badge && (

@@ -46,9 +46,9 @@ export const btn = (kind: BtnKind, size: 'md' | 'sm' | 'lg' = 'md') =>
     kind === 'danger' && 'bg-danger text-white',
   )
 
-/** Big green pill at the bottom of the product card and the cart. */
+/** Iconic Drinkit royal electric blue pill button. */
 export const addBtn =
-  'flex h-15 flex-1 items-center justify-between rounded-full bg-linear-to-b from-accent-2 to-accent px-[22px] text-[17px] font-bold text-accent-ink transition-transform duration-[120ms] ease-[ease] active:scale-98 disabled:justify-center disabled:bg-none disabled:bg-[#5f5853]'
+  'flex h-15 flex-1 items-center justify-between rounded-full bg-[#334cdb] hover:bg-[#2c41c4] px-[22px] text-[17px] font-bold text-white shadow-[0_6px_20px_rgba(51,76,219,0.35)] transition-[transform,background-color] duration-150 active:scale-98 disabled:justify-center disabled:bg-none disabled:bg-[#5f5853] disabled:shadow-none'
 export const addPrice = 'text-[19px] font-extrabold animate-pop'
 
 /** `xl` is the big centered login input; `code` spreads the SMS digits. */

@@ -3,14 +3,14 @@ import { flushSync } from 'react-dom'
 import { Navigate, useParams } from 'react-router'
 import { CloseIcon } from '../../components/icons'
 import { ItemArt } from '../../components/ItemArt'
-import { iconBtn, sheetEnter } from '../../components/ui'
+import { sheetEnter } from '../../components/ui'
 import { itemById, type Ingredient, type IngredientGroup, type MenuItem } from '../../data/menu'
 import { useAppNavigate } from '../../hooks/useAppNavigate'
 import { useEscape } from '../../hooks/useEscape'
 import { PRODUCT_ART } from '../../hooks/useSharedArt'
 import { useApp } from '../../state/AppContext'
 import { cx } from '../../utils/cx'
-import { bounce, flyTo } from '../../utils/motion'
+import { bounce } from '../../utils/motion'
 import { AddonChips } from './AddonChips'
 import { AddonPanel } from './AddonPanel'
 import { AddToCartButton } from './AddToCartButton'
@@ -41,18 +41,11 @@ function ProductView({ item }: { item: MenuItem }) {
 
   useEscape(() => (openGroupId ? setOpenGroupId(null) : back()))
 
-  // The add-on drops into the top of the cup, then the cup squashes as it lands.
-  const dropIntoCup = (art: Element | null) => {
-    const cup = cupRef.current
-    if (!art || !cup) return
-    const r = cup.getBoundingClientRect()
-    const mouth = new DOMRect(r.left + r.width / 2 - 12, r.top + r.height * 0.18, 24, 24)
-    void flyTo(art, mouth).then(() => bounce(cup))
-  }
-
-  const pick = (group: IngredientGroup, ingredient: Ingredient, art: Element | null) => {
+  const pick = (group: IngredientGroup, ingredient: Ingredient) => {
     const landed = group.counter ? config.addOne(group, ingredient) : config.toggle(group, ingredient.id)
-    if (landed) dropIntoCup(art)
+    if (landed && cupRef.current) {
+      bounce(cupRef.current, 0.35)
+    }
   }
 
   const add = () => {
@@ -69,49 +62,57 @@ function ProductView({ item }: { item: MenuItem }) {
   return (
     <div
       className={cx(
-        'tinted fixed inset-0 z-20 mx-auto flex max-w-[480px] flex-col overflow-hidden bg-[linear-gradient(180deg,var(--tinted)_0%,var(--tinted)_55%,var(--bg)_100%)] [view-transition-name:sheet]',
+        'tinted fixed inset-0 z-20 mx-auto flex max-w-[480px] flex-col overflow-hidden text-white [view-transition-name:sheet]',
         sheetEnter && 'animate-[sheet-in_0.36s_var(--ease-soft)]',
       )}
-      style={{ '--tint': item.art.bg } as CSSProperties}
+      style={{
+        '--tint': item.art.bg,
+        background: `radial-gradient(ellipse 75% 55% at 50% 46%, color-mix(in srgb, var(--tint, #c38b71) 35%, #a75b3f) 0%, color-mix(in srgb, var(--tint, #703722) 20%, #4a271c) 50%, transparent 80%),
+                     linear-gradient(180deg, color-mix(in srgb, var(--tint, #534840) 15%, #382f2a) 0%, #2f1d18 55%, #180d0a 100%)`,
+      } as CSSProperties}
       role="dialog"
       aria-modal="true"
       aria-label={item.name}
     >
-      <header className="grid grid-cols-[44px_1fr_44px] items-center px-3 pt-[calc(10px+env(safe-area-inset-top))] pb-0.5">
-        <h1 key={item.id} className="col-start-2 text-center text-[24px] animate-fade-in">
+      <header className="grid grid-cols-[44px_1fr_44px] items-center px-4 pt-[calc(10px+env(safe-area-inset-top))] pb-0.5">
+        <h1 key={item.id} className="col-start-2 text-center text-[22px] font-bold text-white tracking-tight animate-fade-in">
           {item.name}
         </h1>
-        <button className={iconBtn('right')} onClick={back} aria-label="Закрыть">
+        <button
+          className="col-start-3 size-10 grid place-items-center rounded-full bg-white/10 hover:bg-white/15 text-white backdrop-blur-md border border-white/10 transition-colors active:scale-95"
+          onClick={back}
+          aria-label="Закрыть"
+        >
           <CloseIcon />
         </button>
       </header>
 
       <NutritionBar nutrition={config.nutrition} />
-      <ProductDetails item={item} open={showDetails} onToggle={() => setShowDetails((v) => !v)} />
+      <ProductDetails item={item} open={showDetails} onToggle={() => setShowDetails((v) => !v)} hidden={!!openGroupId} />
 
       <div
-        className="relative grid min-h-0 flex-1 place-items-center py-2 before:absolute before:aspect-square before:w-[78%] before:rounded-full before:bg-[radial-gradient(circle,var(--glow)_0%,transparent_68%)] before:content-['']"
+        className="relative grid min-h-0 flex-1 place-items-center py-2"
         onClick={() => {
           setOpenGroupId(null)
           setShowDetails(false)
         }}
       >
         <div
-          className="relative grid h-full max-h-[360px] place-items-center transition-transform duration-[520ms] ease-[cubic-bezier(0.34,1.56,0.64,1)]"
+          className="relative grid h-full max-h-[360px] place-items-center transition-transform duration-300 ease-soft"
           style={{ transform: `scale(${variant.size === 'L' ? 1.08 : variant.size === 'S' ? 0.88 : 1})` }}
         >
           <div ref={cupRef} className="grid h-full origin-bottom place-items-center">
             <ItemArt
               key={item.id}
               art={item.art}
-              className="h-full w-auto max-w-[80vw] animate-[art-in_0.35s_var(--ease-soft),float_6s_ease-in-out_0.35s_infinite]"
+              className="h-full max-h-[320px] w-auto aspect-[200/220] select-none pointer-events-none drop-shadow-[0_16px_28px_rgba(0,0,0,0.35)]"
               style={{ viewTransitionName: PRODUCT_ART }}
             />
           </div>
         </div>
       </div>
 
-      <div className="relative">
+      <div className="relative z-30">
         {openGroup && (
           <AddonPanel
             group={openGroup}
@@ -119,8 +120,9 @@ function ProductView({ item }: { item: MenuItem }) {
             qtyOf={(id) => config.qtyOf(openGroup, id)}
             total={config.totalOf(openGroup)}
             canAdd={(ing) => config.canAdd(openGroup, ing)}
-            onPick={(ing, art) => pick(openGroup, ing, art)}
+            onPick={(ing) => pick(openGroup, ing)}
             onRemove={(ing) => config.removeOne(openGroup, ing.id)}
+            onClose={() => setOpenGroupId(null)}
           />
         )}
         <AddonChips
@@ -132,7 +134,7 @@ function ProductView({ item }: { item: MenuItem }) {
           onOpenGroup={setOpenGroupId}
           onOpenRelated={(next) => replace(`/product/${next.id}`)}
         />
-        <footer className="mx-2 mb-[calc(10px+env(safe-area-inset-bottom))] flex items-center gap-2 rounded-full bg-dock p-[7px] shadow-lift backdrop-blur-[12px]">
+        <footer className="mx-4 mb-[calc(14px+env(safe-area-inset-bottom))] flex items-center gap-2.5">
           {variant.size !== 'ONE' && <SizePicker variants={item.variants} selected={config.variantIdx} onSelect={config.setVariantIdx} />}
           <AddToCartButton price={config.price} soldOut={config.soldOut} added={added} onAdd={add} />
         </footer>

@@ -37,11 +37,11 @@ export function MenuDock() {
       )}
       {count > 0 && (
         <button
-          className="flex h-15 flex-1 items-center gap-3 rounded-full bg-linear-to-b from-accent-2 to-accent px-2 text-accent-ink shadow-lift"
+          className="flex h-15 flex-1 items-center gap-3 rounded-full bg-[#334cdb] hover:bg-[#2c41c4] px-2 text-white shadow-[0_6px_24px_rgba(51,76,219,0.35)] transition-[transform,background-color] duration-150 active:scale-98"
           onClick={() => go('/cart')}
           data-cart-target="dock"
         >
-          <span key={count} data-cart-badge className="grid size-11 place-items-center rounded-full bg-white/18 font-extrabold animate-[pop_0.45s_var(--ease-soft)_0.25s_both]" style={catcher}>
+          <span key={count} data-cart-badge className="grid size-11 place-items-center rounded-full bg-white/20 font-extrabold animate-[pop_0.45s_var(--ease-soft)_0.25s_both]" style={catcher}>
             {count}
           </span>
           <span className="flex-1 text-left text-[16px] font-bold">Корзина</span>

@@ -27,7 +27,7 @@
   --glow: rgba(255, 255, 255, 0.75);
   --sticky: rgba(244, 240, 234, 0.9);
   --dock: rgba(29, 25, 22, 0.88);
-  --panel: rgba(29, 25, 22, 0.62);
+  --panel: rgba(29, 25, 22, 0.94);
   /* Item tints (light beige in data) are used as-is in light mode */
   --tint-base: #f4f0ea;
   --tint-amount: 100%;
@@ -59,7 +59,7 @@
   --glow: rgba(255, 236, 214, 0.12);
   --sticky: rgba(21, 18, 15, 0.86);
   --dock: rgba(42, 36, 31, 0.92);
-  --panel: rgba(52, 45, 39, 0.78);
+  --panel: rgba(42, 36, 31, 0.95);
   --tint-base: #1b1714;
   --tint-amount: 24%;
   --card-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
@@ -136,39 +136,39 @@
   animation-duration: 0.3s;
 }
 ::view-transition-new(sheet):only-child {
-  animation: sheet-up 0.46s var(--ease-soft) both;
+  animation: sheet-up 0.38s var(--ease-soft) both;
 }
 ::view-transition-old(sheet):only-child {
-  animation: sheet-down 0.34s cubic-bezier(0.4, 0, 1, 1) both;
+  animation: sheet-down 0.32s cubic-bezier(0.4, 0, 1, 1) both;
 }
 ::view-transition-group(sheet) {
-  animation-duration: 0.4s;
+  animation-duration: 0.38s;
   animation-timing-function: var(--ease-soft);
 }
 ::view-transition-group(product-art) {
-  animation-duration: 0.52s;
-  animation-timing-function: cubic-bezier(0.3, 1.18, 0.4, 1);
+  animation-duration: 0.38s;
+  animation-timing-function: var(--ease-soft);
   z-index: 50;
 }
 ::view-transition-old(product-art),
 ::view-transition-new(product-art) {
-  /* Keep the cup's proportions while it resizes instead of stretching the snapshot. */
+  /* Keep exact SVG aspect ratio without letterbox jumping */
+  width: 100%;
   height: 100%;
   object-fit: contain;
+  transform-origin: center center;
 }
-/* The cup stays the thing you see in flight; whatever it lands as (a card
-   thumbnail, the cart badge) only shows up as it arrives. */
 ::view-transition-old(product-art) {
-  animation: art-out 0.52s linear both;
+  animation: art-fade-out 0.22s var(--ease-soft) both;
 }
 ::view-transition-new(product-art) {
-  animation: art-arrive 0.52s linear both;
+  animation: art-fade-in 0.28s var(--ease-soft) both;
 }
 
-@keyframes art-out { 0%, 65% { opacity: 1; } 100% { opacity: 0; } }
-@keyframes art-arrive { 0%, 55% { opacity: 0; } 100% { opacity: 1; } }
-@keyframes sheet-up { from { transform: translateY(72px); opacity: 0; } to { transform: none; opacity: 1; } }
-@keyframes sheet-down { to { transform: translateY(110px); opacity: 0; } }
+@keyframes art-fade-out { from { opacity: 1; } to { opacity: 0; } }
+@keyframes art-fade-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes sheet-up { from { transform: translateY(64px); opacity: 0; } to { transform: none; opacity: 1; } }
+@keyframes sheet-down { to { transform: translateY(80px); opacity: 0; } }
 
 /* ---------- Custom utilities ---------- */
 
