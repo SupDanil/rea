@@ -1,5 +1,5 @@
 import { avatar, openDot, roundBtn } from '../../components/ui'
-import { BagIcon, ChevronDownIcon, PersonIcon } from '../../components/icons'
+import { BagIcon, ChevronDownIcon, PersonIcon, RabbitIcon } from '../../components/icons'
 import { useAppNavigate } from '../../hooks/useAppNavigate'
 import { useApp } from '../../state/AppContext'
 import { countOf } from '../../state/cart'
@@ -12,16 +12,18 @@ export function MenuHeader() {
 
   return (
     <header className="flex items-center justify-between gap-1.5 sm:gap-2 px-2.5 sm:px-4 pt-[calc(12px+env(safe-area-inset-top))] pb-2.5">
-      <button className="flex min-w-0 items-center gap-2 sm:gap-2.5 text-left" aria-label="Кофейня: Покровка, 12, открыто до 22:00">
-        <img className="block size-9 sm:size-10 rounded-[12px] sm:rounded-[13px] shadow-card" src={`${import.meta.env.BASE_URL}icon.svg`} alt="" />
+      <button className="flex min-w-0 items-center gap-2 sm:gap-2.5 text-left" aria-label="shit кофе: Невский, 12, открыто до 22:00">
+        <div className="grid size-9 sm:size-10 place-items-center rounded-[12px] sm:rounded-[13px] bg-ink text-surface shadow-card overflow-hidden">
+          <RabbitIcon size={24} className="size-6 sm:size-7 text-surface" />
+        </div>
         <div>
           <div className="flex items-center gap-[5px] text-[14px] sm:text-[15px] font-bold tracking-[-0.01em]">
-            Невский, 12
+            shit кофе
             <ChevronDownIcon className="text-muted" />
           </div>
           <div className="mt-px flex items-center gap-1.5 text-[11px] sm:text-[12px] text-muted">
             <span className={openDot} aria-hidden="true" />
-            открыто до 22:00
+            Невский, 12 · до 22:00
           </div>
         </div>
       </button>

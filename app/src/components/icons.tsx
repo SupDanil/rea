@@ -42,3 +42,13 @@ export const ChevronDownIcon = ({ className }: { className?: string }) => (
     <path d="M2 4l4 4 4-4" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
   </svg>
 )
+
+export const RabbitIcon = ({ className, size = 24 }: { className?: string; size?: number }) => (
+  <svg className={className} viewBox="0 0 48 48" width={size} height={size} fill="none" aria-hidden="true">
+    <ellipse cx="16" cy="13" rx="5" ry="12" transform="rotate(-12 16 13)" fill="currentColor" />
+    <ellipse cx="31" cy="13" rx="5" ry="11" transform="rotate(14 31 13)" fill="currentColor" />
+    <ellipse cx="24" cy="31" rx="17" ry="14" fill="currentColor" />
+    <circle cx="18" cy="30" r="2.5" fill="var(--bg, #f4f6f8)" />
+    <circle cx="30" cy="30" r="2.5" fill="var(--bg, #f4f6f8)" />
+  </svg>
+)

@@ -22,7 +22,7 @@ export function StampCard({ loyalty }: { loyalty: Loyalty }) {
       <div className="mt-3 grid grid-cols-6 gap-1.5">
         {Array.from({ length: STAMPS_PER_GIFT }, (_, i) => (
           <span key={i} className={stampClass(i < loyalty.stamps, i === STAMPS_PER_GIFT - 1)} aria-hidden="true">
-            {i === STAMPS_PER_GIFT - 1 ? '🎁' : i < loyalty.stamps ? '☕' : ''}
+            {i === STAMPS_PER_GIFT - 1 ? '🎁' : i < loyalty.stamps ? '🐰' : ''}
           </span>
         ))}
       </div>

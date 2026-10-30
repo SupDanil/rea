@@ -56,7 +56,14 @@ export function ItemArt({ art, ...svgProps }: Props) {
           <path d="M50 50 L150 50 L139 196 Q100 206 61 196 Z" fill={url('round')} />
           <ellipse cx="100" cy="50" rx="50" ry="10" fill={top} />
           <ellipse cx="100" cy="50" rx="50" ry="10" fill="none" stroke="#fff" strokeOpacity="0.7" strokeWidth="1.5" />
-          <path d="M100 58 C88 50 84 44 92 42 C96 41 99 44 100 46 C101 44 104 41 108 42 C116 44 112 50 100 58 Z" fill={fill} opacity="0.45" />
+          {/* Signature Rabbit foam art */}
+          <g>
+            <ellipse cx="100" cy="51" rx="14" ry="6.2" fill="#ffffff" opacity="0.95" />
+            <ellipse cx="94.5" cy="45.5" rx="3.2" ry="5" transform="rotate(-12 94.5 45.5)" fill="#ffffff" opacity="0.95" />
+            <ellipse cx="105.5" cy="45.5" rx="3.2" ry="5" transform="rotate(12 105.5 45.5)" fill="#ffffff" opacity="0.95" />
+            <circle cx="96.5" cy="51.2" r="1.15" fill={fill} opacity="0.85" />
+            <circle cx="103.5" cy="51.2" r="1.15" fill={fill} opacity="0.85" />
+          </g>
         </g>
       )}
 
@@ -72,8 +79,14 @@ export function ItemArt({ art, ...svgProps }: Props) {
           <ellipse cx="100" cy="92" rx="60" ry="12" fill="#ece5db" />
           <ellipse cx="100" cy="93" rx="53" ry="9.5" fill={top} />
           <ellipse cx="100" cy="93" rx="53" ry="9.5" fill="none" stroke={fill} strokeOpacity="0.5" strokeWidth="3" />
-          <path d="M100 99 C90 93 87 89 93 87.5 C96 87 99 89 100 90.5 C101 89 104 87 107 87.5 C113 89 110 93 100 99 Z" fill={fill} opacity="0.65" />
-          <path d="M100 99 L100 103" stroke={fill} strokeOpacity="0.5" strokeWidth="1.5" />
+          {/* Signature Rabbit foam art */}
+          <g>
+            <ellipse cx="100" cy="94" rx="15" ry="6.5" fill="#ffffff" opacity="0.95" />
+            <ellipse cx="94" cy="88" rx="3.5" ry="5.5" transform="rotate(-12 94 88)" fill="#ffffff" opacity="0.95" />
+            <ellipse cx="106" cy="88" rx="3.5" ry="5.5" transform="rotate(12 106 88)" fill="#ffffff" opacity="0.95" />
+            <circle cx="96.5" cy="94.2" r="1.2" fill={fill} opacity="0.85" />
+            <circle cx="103.5" cy="94.2" r="1.2" fill={fill} opacity="0.85" />
+          </g>
         </g>
       )}
 
@@ -220,6 +233,42 @@ export function ItemArt({ art, ...svgProps }: Props) {
               <rect x={x - 5} y={y - 5} width="5" height="3" rx="1.5" fill="#fff" opacity="0.25" />
             </g>
           ))}
+        </g>
+      )}
+
+      {kind === 'toy' && (
+        <g>
+          {/* Plush rabbit sitting / hugging */}
+          <ellipse cx="100" cy="188" rx="52" ry="14" fill={url('floor')} />
+          {/* Soft body */}
+          <ellipse cx="100" cy="142" rx="42" ry="46" fill="#ffffff" stroke="#d8e0e5" strokeWidth="2" />
+          <ellipse cx="100" cy="150" rx="28" ry="32" fill="#edf2f6" />
+          {/* Back paws */}
+          <ellipse cx="60" cy="172" rx="15" ry="10" transform="rotate(-15 60 172)" fill="#ffffff" stroke="#d8e0e5" strokeWidth="2" />
+          <ellipse cx="140" cy="172" rx="15" ry="10" transform="rotate(15 140 172)" fill="#ffffff" stroke="#d8e0e5" strokeWidth="2" />
+          {/* Plush ears */}
+          <ellipse cx="76" cy="46" rx="14" ry="40" transform="rotate(-18 76 46)" fill="#ffffff" stroke="#d8e0e5" strokeWidth="2" />
+          <ellipse cx="76" cy="46" rx="8" ry="30" transform="rotate(-18 76 46)" fill="#d8e7ef" />
+          <ellipse cx="124" cy="46" rx="14" ry="40" transform="rotate(18 124 46)" fill="#ffffff" stroke="#d8e0e5" strokeWidth="2" />
+          <ellipse cx="124" cy="46" rx="8" ry="30" transform="rotate(18 124 46)" fill="#d8e7ef" />
+          {/* Round head */}
+          <circle cx="100" cy="94" r="38" fill="#ffffff" stroke="#d8e0e5" strokeWidth="2" />
+          <ellipse cx="100" cy="102" rx="20" ry="14" fill="#edf2f6" />
+          {/* Eyes (dark beads) */}
+          <circle cx="86" cy="92" r="4.5" fill="#26333c" />
+          <circle cx="87.5" cy="90.5" r="1.5" fill="#ffffff" />
+          <circle cx="114" cy="92" r="4.5" fill="#26333c" />
+          <circle cx="115.5" cy="90.5" r="1.5" fill="#ffffff" />
+          {/* Soft nose & cheeks */}
+          <ellipse cx="100" cy="99" rx="3.5" ry="2.5" fill="#d8e7ef" />
+          <circle cx="78" cy="101" r="5.5" fill="#f7d4dc" opacity="0.6" />
+          <circle cx="122" cy="101" r="5.5" fill="#f7d4dc" opacity="0.6" />
+          {/* Hug paws with velcro in front */}
+          <ellipse cx="72" cy="138" rx="15" ry="9" transform="rotate(22 72 138)" fill="#ffffff" stroke="#d8e0e5" strokeWidth="2" />
+          <ellipse cx="128" cy="138" rx="15" ry="9" transform="rotate(-22 128 138)" fill="#ffffff" stroke="#d8e0e5" strokeWidth="2" />
+          {/* Velcro badge */}
+          <rect x="74" y="135" width="6" height="6" rx="1" fill="#c5d5e0" opacity="0.8" />
+          <rect x="120" y="135" width="6" height="6" rx="1" fill="#c5d5e0" opacity="0.8" />
         </g>
       )}
     </svg>

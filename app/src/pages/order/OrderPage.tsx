@@ -46,7 +46,7 @@ function OrderView({ order }: { order: Order }) {
           <div className={cx('flex items-center gap-3 rounded-[18px] px-4 py-3.5', panel)}>
             <span className={openDot} aria-hidden="true" />
             <div>
-              <div className="text-[15px] font-semibold">Невский, 12</div>
+              <div className="text-[15px] font-semibold">shit кофе · Невский, 12</div>
               <div className="mt-0.5 text-[12px] text-muted">
                 {order.pickup.kind === 'asap' ? 'Как можно скорее' : `К ${clockTime(order.readyAt)}`} · заказ от {clockTime(order.createdAt)}
               </div>

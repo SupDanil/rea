@@ -7,60 +7,60 @@
 
 :root {
   color-scheme: light;
-  --bg: #f4f0ea;
+  --bg: #f4f6f8;
   --surface: #ffffff;
-  --surface-2: #faf7f3;
-  --ink: #1d1916;
-  --ink-2: #4a423c;
-  --muted: #958b83;
-  --faint: #bfb6ad;
-  --line: rgba(29, 25, 22, 0.1);
-  --accent: #2f5d50;
-  --accent-2: #3d7566;
-  --accent-soft: #2f5d50;
+  --surface-2: #e8edf0;
+  --ink: #26333c;
+  --ink-2: #3f505c;
+  --muted: #6e7d89;
+  --faint: #b4c2cc;
+  --line: rgba(38, 51, 60, 0.09);
+  --accent: #3b5b6d;
+  --accent-2: #4f7388;
+  --accent-soft: #3b5b6d;
   --accent-ink: #ffffff;
-  --inverse: #1d1916;
+  --inverse: #26333c;
   --inverse-ink: #ffffff;
   /* Frosted controls laid over tinted backgrounds */
-  --glass: rgba(255, 255, 255, 0.55);
-  --glass-strong: rgba(255, 255, 255, 0.8);
-  --glow: rgba(255, 255, 255, 0.75);
-  --sticky: rgba(244, 240, 234, 0.9);
-  --dock: rgba(29, 25, 22, 0.88);
-  --panel: rgba(29, 25, 22, 0.94);
-  /* Item tints (light beige in data) are used as-is in light mode */
-  --tint-base: #f4f0ea;
+  --glass: rgba(255, 255, 255, 0.65);
+  --glass-strong: rgba(255, 255, 255, 0.85);
+  --glow: rgba(216, 231, 239, 0.7);
+  --sticky: rgba(244, 246, 248, 0.92);
+  --dock: rgba(38, 51, 60, 0.92);
+  --panel: rgba(38, 51, 60, 0.95);
+  /* Item tints */
+  --tint-base: #f4f6f8;
   --tint-amount: 100%;
   --tabs-h: 96px;
-  --card-shadow: 0 1px 2px rgba(48, 34, 22, 0.05), 0 4px 14px rgba(48, 34, 22, 0.05);
-  --lift-shadow: 0 2px 6px rgba(48, 34, 22, 0.06), 0 16px 40px rgba(48, 34, 22, 0.1);
+  --card-shadow: 0 1px 2px rgba(38, 51, 60, 0.04), 0 4px 14px rgba(38, 51, 60, 0.05);
+  --lift-shadow: 0 2px 6px rgba(38, 51, 60, 0.06), 0 16px 40px rgba(38, 51, 60, 0.08);
   --ease-soft: cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
-/* Espresso-dark palette: warm near-black, tints mixed down so items keep their hue */
+/* Cold slate rabbit-dark palette: crisp deep dark navy-slate */
 :root[data-theme='dark'] {
   color-scheme: dark;
-  --bg: #15120f;
-  --surface: #211c18;
-  --surface-2: #2a241f;
-  --ink: #f3ece4;
-  --ink-2: #c9bfb5;
-  --muted: #8f857c;
-  --faint: #5c544d;
-  --line: rgba(243, 236, 228, 0.1);
-  --accent: #3f7a69;
-  --accent-2: #4d8f7c;
-  --accent-soft: #8fd1bb;
+  --bg: #161c22;
+  --surface: #202830;
+  --surface-2: #28323c;
+  --ink: #f0f4f8;
+  --ink-2: #c4d0dc;
+  --muted: #7d8e9e;
+  --faint: #4b5866;
+  --line: rgba(240, 244, 248, 0.08);
+  --accent: #5e8aa3;
+  --accent-2: #79a4be;
+  --accent-soft: #88afc7;
   --accent-ink: #ffffff;
-  --inverse: #f3ece4;
-  --inverse-ink: #15120f;
+  --inverse: #f0f4f8;
+  --inverse-ink: #161c22;
   --glass: rgba(255, 255, 255, 0.08);
   --glass-strong: rgba(255, 255, 255, 0.12);
-  --glow: rgba(255, 236, 214, 0.12);
-  --sticky: rgba(21, 18, 15, 0.86);
-  --dock: rgba(42, 36, 31, 0.92);
-  --panel: rgba(42, 36, 31, 0.95);
-  --tint-base: #1b1714;
+  --glow: rgba(216, 231, 239, 0.12);
+  --sticky: rgba(22, 28, 34, 0.9);
+  --dock: rgba(32, 40, 48, 0.94);
+  --panel: rgba(32, 40, 48, 0.96);
+  --tint-base: #1a222a;
   --tint-amount: 24%;
   --card-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
   --lift-shadow: 0 2px 6px rgba(0, 0, 0, 0.3), 0 16px 40px rgba(0, 0, 0, 0.4);

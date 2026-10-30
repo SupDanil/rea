@@ -3,7 +3,7 @@
 
 export type Nutrition = { kcal: number; fat: number; carbs: number; protein: number }
 
-export type ArtKind = 'cup' | 'mug' | 'iced' | 'tea' | 'croissant' | 'sandwich' | 'cake' | 'cookie'
+export type ArtKind = 'cup' | 'mug' | 'iced' | 'tea' | 'croissant' | 'sandwich' | 'cake' | 'cookie' | 'toy'
 
 export type Art = {
   kind: ArtKind
@@ -134,12 +134,12 @@ export const ingredientGroups: IngredientGroup[] = [
 ]
 
 export const categories: Category[] = [
-  { id: 'season', name: 'Осень', heroItemId: 'pumpkin-raf' },
-  { id: 'season-hot', name: 'Согревающее', parentId: 'season' },
-  { id: 'coffee', name: 'Кофе', heroItemId: 'flat-white' },
+  { id: 'coffee', name: 'Кофе', heroItemId: 'rabbit-cappuccino' },
   { id: 'milk-coffee', name: 'С молоком', parentId: 'coffee' },
   { id: 'black-coffee', name: 'Чёрный', parentId: 'coffee' },
   { id: 'iced-coffee', name: 'Холодный', parentId: 'coffee' },
+  { id: 'season', name: 'Осень', heroItemId: 'pumpkin-raf' },
+  { id: 'season-hot', name: 'Согревающее', parentId: 'season' },
   { id: 'nocoffee', name: 'Не кофе', heroItemId: 'matcha' },
   { id: 'tea', name: 'Чай и матча', parentId: 'nocoffee' },
   { id: 'cocoa', name: 'Какао', parentId: 'nocoffee' },
@@ -147,6 +147,8 @@ export const categories: Category[] = [
   { id: 'bakery', name: 'Выпечка', parentId: 'food' },
   { id: 'sandwiches', name: 'Сэндвичи', parentId: 'food' },
   { id: 'desserts', name: 'Десерты', parentId: 'food' },
+  { id: 'merch', name: 'Спутники', heroItemId: 'rabbit-toy' },
+  { id: 'toys', name: 'Игрушки', parentId: 'merch' },
 ]
 
 const milkSizes = (m: number, l: number, base: Nutrition): Variant[] => [
@@ -165,6 +167,29 @@ const one = (price: number, nutrition: Nutrition): Variant[] => [{ id: 'one', si
 const milkGroups = ['milk', 'syrups', 'toppings', 'extra', 'protein']
 
 export const menuItems: MenuItem[] = [
+  {
+    id: 'rabbit-cappuccino',
+    name: 'Капучино с зайцем',
+    description: 'Наш фирменный кофе: нежная микропена, ушки и шоколадные глазки зайца на пене',
+    composition: 'Эспрессо, молоко 3,2%, белая микропена, какао-глазки',
+    allergens: 'Молоко',
+    categoryId: 'milk-coffee',
+    art: { kind: 'cup', fill: '#3b5b6d', top: '#ffffff', bg: '#d8e7ef' },
+    variants: milkSizes(250, 310, n(125, 6.5, 9.6, 6.2)),
+    groupIds: milkGroups,
+    badge: 'Наш герой',
+  },
+  {
+    id: 'rabbit-toy',
+    name: 'Мягкий заяц на стакан',
+    description: 'Мягкий спутник для стакана и сумки. Лапы на липучке обнимают чашку, а потом отправляются с тобой на прогулку',
+    composition: 'Текстиль, гипоаллергенный наполнитель, пришивная липучка',
+    categoryId: 'toys',
+    art: { kind: 'toy', fill: '#26333c', bg: '#d8e7ef' },
+    variants: one(450, n(0, 0, 0, 0)),
+    groupIds: [],
+    badge: 'Игрушка',
+  },
   {
     id: 'pumpkin-raf',
     name: 'Тыквенный раф',

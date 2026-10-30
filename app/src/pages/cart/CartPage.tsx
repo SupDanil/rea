@@ -78,7 +78,7 @@ export function CartPage() {
   return (
     <Sheet label="Корзина" title="Корзина" onBack={back} backLabel="Назад в меню" locked={paying} action={clearButton}>
       {lines.length === 0 ? (
-        <EmptyState art={<EmptyCartArt />} title="Пока пусто" text="Загляните в меню — там тыквенный раф и свежие круассаны" actionLabel="В меню" onAction={back} />
+        <EmptyState art={<EmptyCartArt />} title="Пока пусто" text="Загляните в меню — там капучино с зайцем и тёплые круассаны" actionLabel="В меню" onAction={back} />
       ) : (
         <SheetBody>
           <ul className="flex flex-col gap-2">
@@ -145,9 +145,15 @@ export function CartPage() {
 function EmptyCartArt() {
   return (
     <svg viewBox="0 0 120 120" width="120" height="120" aria-hidden="true">
-      <circle cx="60" cy="60" r="56" fill="var(--surface)" />
-      <path d="M38 46h44l-4 44H42z" fill="none" stroke="var(--faint)" strokeWidth="4" strokeLinejoin="round" />
-      <path d="M50 46a10 10 0 0 1 20 0" fill="none" stroke="var(--faint)" strokeWidth="4" />
+      <circle cx="60" cy="60" r="56" fill="var(--surface-2)" />
+      {/* Little rabbit ears peeking */}
+      <ellipse cx="50" cy="38" rx="6" ry="16" transform="rotate(-12 50 38)" fill="var(--accent)" opacity="0.45" />
+      <ellipse cx="70" cy="38" rx="6" ry="16" transform="rotate(12 70 38)" fill="var(--accent)" opacity="0.45" />
+      <circle cx="60" cy="54" r="18" fill="var(--surface)" />
+      <circle cx="54" cy="52" r="2" fill="var(--ink)" opacity="0.75" />
+      <circle cx="66" cy="52" r="2" fill="var(--ink)" opacity="0.75" />
+      <path d="M38 56h44l-4 40H42z" fill="none" stroke="var(--faint)" strokeWidth="3.5" strokeLinejoin="round" />
+      <path d="M48 56a12 12 0 0 1 24 0" fill="none" stroke="var(--faint)" strokeWidth="3" />
     </svg>
   )
 }

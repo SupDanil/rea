@@ -27,7 +27,7 @@ export function PromoField({ applied, onApply }: { applied: string | null; onApp
         <input
           className={field(!!error)}
           value={input}
-          placeholder="Например, ЗЕРНО10"
+          placeholder="Например, ЗАЯЦ или SHIT10"
           autoCapitalize="characters"
           aria-label="Промокод"
           onChange={(e) => {

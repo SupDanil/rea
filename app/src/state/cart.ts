@@ -34,9 +34,12 @@ export const countOf = (lines: CartLine[]) => lines.reduce((s, l) => s + l.qty, 
 
 /** Demo promo codes; real ones would be validated by the backend. */
 export const promoCodes: Record<string, { percent: number; label: string }> = {
+  SHIT10: { percent: 10, label: '−10% на заказ' },
+  ЗАЯЦ: { percent: 15, label: '−15% от зайца' },
+  RABBIT: { percent: 15, label: '−15% от зайца' },
+  ОСЕНЬ: { percent: 15, label: '−15% на заказ' },
   ЗЕРНО10: { percent: 10, label: '−10% на заказ' },
   ZERNO10: { percent: 10, label: '−10% на заказ' },
-  ОСЕНЬ: { percent: 15, label: '−15% на заказ' },
 }
 export const normalizePromo = (code: string) => code.trim().toUpperCase()
 
