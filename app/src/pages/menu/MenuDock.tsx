@@ -41,7 +41,7 @@ export function MenuDock() {
           onClick={() => go('/cart')}
           data-cart-target="dock"
         >
-          <span key={count} className="grid size-11 place-items-center rounded-full bg-white/18 font-extrabold animate-[pop_0.45s_var(--ease-soft)_0.25s_both]" style={catcher}>
+          <span key={count} data-cart-badge className="grid size-11 place-items-center rounded-full bg-white/18 font-extrabold animate-[pop_0.45s_var(--ease-soft)_0.25s_both]" style={catcher}>
             {count}
           </span>
           <span className="flex-1 text-left text-[16px] font-bold">Корзина</span>

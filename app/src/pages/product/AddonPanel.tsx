@@ -72,7 +72,7 @@ export function AddonPanel({ group, groupIndex, qtyOf, total, canAdd, onPick, on
 
 type ChoiceProps = { ingredient: Ingredient; selected: boolean; style: CSSProperties; onPick: (ingredient: Ingredient, art: Element | null) => void }
 
-/** Single-choice add-on (milk, toppings): the whole tile toggles. */
+/** Single-choice add-on (milk, toppings): the whole tile picks it; tap again to clear. */
 function ChoiceTile({ ingredient, selected, style, onPick }: ChoiceProps) {
   const artRef = useRef<SVGSVGElement>(null)
   return (
@@ -89,11 +89,15 @@ function ChoiceTile({ ingredient, selected, style, onPick }: ChoiceProps) {
       <IngredientArt ref={artRef} color={ingredient.color} className="size-[46px]" />
       <span className="flex min-h-[29px] items-center text-[12px] leading-[1.2] font-semibold">{ingredient.name}</span>
       <span className="text-[11px] opacity-65">{ingredient.stopped ? 'нет в наличии' : `+${formatPrice(ingredient.price)}`}</span>
+      {/* A radio mark, not "+": these groups take exactly one choice. */}
       <span
-        className={cx('mt-0.5 grid size-6 place-items-center rounded-full text-[15px] leading-none', selected ? 'bg-accent text-white animate-pop' : 'bg-white/14')}
+        className={cx(
+          'mt-0.5 grid size-6 place-items-center rounded-full border-2 text-[14px] leading-none font-bold transition-[background,border-color] duration-200',
+          selected ? 'border-accent bg-accent text-white animate-pop' : 'border-current opacity-45',
+        )}
         aria-hidden="true"
       >
-        {selected ? '✓' : '+'}
+        {selected && '✓'}
       </span>
     </button>
   )

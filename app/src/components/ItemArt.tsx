@@ -1,7 +1,7 @@
 import { useId, type Ref, type SVGProps } from 'react'
 import type { Art } from '../data/menu'
 
-type Props = { art: Art } & Omit<SVGProps<SVGSVGElement>, 'viewBox'>
+type Props = { art: Art; ref?: Ref<SVGSVGElement> } & Omit<SVGProps<SVGSVGElement>, 'viewBox'>
 
 /** Hand-drawn product illustrations, so the app ships no third-party photos. */
 export function ItemArt({ art, ...svgProps }: Props) {
