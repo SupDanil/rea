@@ -14,8 +14,8 @@ export function AddToCartButton({ price, soldOut, added, onAdd }: Props) {
         soldOut
           ? 'cursor-not-allowed bg-white/10 text-white/35 shadow-none'
           : added
-          ? 'bg-[#27a868] shadow-[0_4px_16px_rgba(39,168,104,0.35)]'
-          : 'bg-[#334cdb] shadow-[0_6px_20px_rgba(51,76,219,0.38)] hover:bg-[#2b41c4]',
+          ? 'bg-[#355c35] shadow-[0_4px_16px_rgba(53,92,53,0.35)]'
+          : 'bg-[#3b5b6d] shadow-[0_6px_20px_rgba(59,91,109,0.45)] hover:bg-[#476c82] border border-white/12',
       )}
       disabled={soldOut || added}
       onClick={onAdd}

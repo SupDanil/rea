@@ -3,15 +3,15 @@ import { makingProgress, type Order, type OrderStatus } from '../../state/orders
 import { cx } from '../../utils/cx'
 import { statusSubtitle, statusTitles } from './orderCopy'
 
-// Accent-tinted card while in progress, green once ready, plain when cancelled.
+// Clean snow-slate card while in progress, fresh green once ready, plain when cancelled.
 const inProgressBg =
-  '[background:radial-gradient(120%_80%_at_50%_0%,var(--glow),transparent_60%),color-mix(in_oklab,var(--accent)_16%,var(--surface))]'
+  '[background:radial-gradient(120%_85%_at_50%_0%,rgba(216,231,239,0.55),transparent_65%),#ffffff] border border-[#d8e2e8]'
 const statusBg: Record<OrderStatus, string> = {
   paying: inProgressBg,
   accepted: inProgressBg,
   making: inProgressBg,
-  ready: '[background:radial-gradient(120%_80%_at_50%_0%,var(--glow),transparent_60%),color-mix(in_oklab,#3fa66b_26%,var(--surface))]',
-  cancelled: 'bg-surface',
+  ready: '[background:radial-gradient(120%_85%_at_50%_0%,rgba(63,166,107,0.2),transparent_65%),#ffffff] border border-[#3fa66b]/30',
+  cancelled: 'bg-surface border border-line',
 }
 const stepIndex: Record<OrderStatus, number> = { paying: 0, accepted: 1, making: 2, ready: 3, cancelled: -1 }
 

@@ -37,14 +37,19 @@ export function MenuDock() {
       )}
       {count > 0 && (
         <button
-          className="flex h-15 flex-1 items-center gap-3 rounded-full bg-[#334cdb] hover:bg-[#2c41c4] px-2 text-white shadow-[0_6px_24px_rgba(51,76,219,0.35)] transition-[transform,background-color] duration-150 active:scale-98"
+          className="flex h-15 flex-1 items-center gap-3 rounded-full bg-[#243644] hover:bg-[#1c2c38] px-2.5 text-white shadow-[0_8px_24px_rgba(36,54,68,0.35)] border border-white/10 transition-[transform,background-color] duration-150 active:scale-98"
           onClick={() => go('/cart')}
           data-cart-target="dock"
         >
-          <span key={count} data-cart-badge className="grid size-11 place-items-center rounded-full bg-white/20 font-extrabold animate-[pop_0.45s_var(--ease-soft)_0.25s_both]" style={catcher}>
+          <span
+            key={count}
+            data-cart-badge
+            className="grid size-10 sm:size-11 place-items-center rounded-full bg-[#d8e7ef] text-[#243644] font-black animate-[pop_0.45s_var(--ease-soft)_0.25s_both] shadow-sm"
+            style={catcher}
+          >
             {count}
           </span>
-          <span className="flex-1 text-left text-[16px] font-bold">Корзина</span>
+          <span className="flex-1 text-left text-[16px] font-bold tracking-tight">Корзина</span>
           <span className="pr-3.5 text-[17px] font-extrabold animate-pop" key={total}>
             {formatPrice(total)}
           </span>
