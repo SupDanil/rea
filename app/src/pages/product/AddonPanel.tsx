@@ -51,7 +51,7 @@ export function AddonPanel({ group, groupIndex, qtyOf, total, canAdd, onPick, on
       {onClose && (
         <div
           className={cx(
-            'fixed inset-0 z-20 bg-black/45 backdrop-blur-[2px]',
+            'fixed inset-0 z-20 bg-pd-scrim backdrop-blur-[2px]',
             leaving ? 'pointer-events-none animate-[fade-out_0.22s_ease_both]' : 'animate-[fade-only_0.24s_ease_both]',
           )}
           onClick={onClose}
@@ -60,7 +60,7 @@ export function AddonPanel({ group, groupIndex, qtyOf, total, canAdd, onPick, on
       )}
       <div
         className={cx(
-          'absolute right-2 sm:right-2.5 bottom-[calc(100%+8px)] sm:bottom-[calc(100%+10px)] left-2 sm:left-2.5 z-30 overflow-x-hidden overflow-y-auto overscroll-contain rounded-[24px] sm:rounded-[28px] bg-[#22140f]/92 text-white shadow-[0_20px_50px_rgba(0,0,0,0.65)] backdrop-blur-2xl border border-white/12 transition-[height] duration-300 ease-soft',
+          'absolute right-2 sm:right-2.5 bottom-[calc(100%+8px)] sm:bottom-[calc(100%+10px)] left-2 sm:left-2.5 z-30 overflow-x-hidden overflow-y-auto overscroll-contain rounded-[24px] sm:rounded-[28px] bg-pd-panel text-pd-ink shadow-[var(--pd-panel-shadow)] backdrop-blur-2xl border border-pd-line transition-[height] duration-300 ease-soft',
           leaving ? 'pointer-events-none animate-[sink_0.22s_cubic-bezier(0.4,0,1,1)_both]' : 'animate-[rise_0.28s_var(--ease-soft)_both]',
         )}
         style={{ height: height && maxHeight ? Math.min(height, maxHeight) : height, maxHeight }}
@@ -68,17 +68,17 @@ export function AddonPanel({ group, groupIndex, qtyOf, total, canAdd, onPick, on
         aria-label={group.name}
       >
         <div ref={contentRef} key={group.id} className={cx('px-2 sm:px-3 pb-2.5 sm:pb-3', slide)}>
-          <div className="sticky top-0 z-10 -mx-2 sm:-mx-3 mb-2 flex items-center justify-between rounded-t-[24px] sm:rounded-t-[28px] bg-[#22140f]/95 px-3 sm:px-4 pt-3 sm:pt-3.5 pb-2 sm:pb-2.5 backdrop-blur-2xl border-b border-white/8 text-[14px] sm:text-[15px] font-bold">
+          <div className="sticky top-0 z-10 -mx-2 sm:-mx-3 mb-2 flex items-center justify-between rounded-t-[24px] sm:rounded-t-[28px] bg-pd-panel px-3 sm:px-4 pt-3 sm:pt-3.5 pb-2 sm:pb-2.5 backdrop-blur-2xl border-b border-pd-line text-[14px] sm:text-[15px] font-bold">
             <div className="flex items-baseline gap-1.5 sm:gap-2">
-              <span className="text-[15px] sm:text-[16px] text-white">{group.name}</span>
-              <span className="text-[11px] sm:text-[12px] font-normal text-white/60">
+              <span className="text-[15px] sm:text-[16px] text-pd-ink">{group.name}</span>
+              <span className="text-[11px] sm:text-[12px] font-normal text-pd-muted">
                 {group.counter ? `${total} из ${group.max} ${group.unit ?? ''}` : group.max === 1 ? 'выберите одно' : `до ${group.max} шт.`}
               </span>
             </div>
             {onClose && (
               <button
                 onClick={onClose}
-                className="grid size-6 sm:size-7 place-items-center rounded-full bg-white/10 hover:bg-white/20 text-white/70 hover:text-white text-[11px] sm:text-[12px] font-bold transition-colors"
+                className="grid size-6 sm:size-7 place-items-center rounded-full bg-pd-glass hover:bg-pd-glass-hover text-pd-muted hover:text-pd-ink text-[11px] sm:text-[12px] font-bold transition-colors"
                 aria-label="Закрыть"
               >
                 ✕
@@ -111,8 +111,8 @@ function ChoiceTile({ ingredient, selected, style, onPick }: ChoiceProps) {
       className={cx(
         'flex flex-col items-center justify-between rounded-[18px] sm:rounded-[22px] p-2 sm:p-2.5 text-center min-h-[136px] sm:min-h-[148px] border transition-[background-color,color,transform,scale,box-shadow] duration-200 ease-soft active:scale-95 animate-[tile-in_0.32s_var(--ease-soft)_both]',
         selected
-          ? 'bg-white text-zinc-950 border-white shadow-[0_10px_25px_rgba(0,0,0,0.32)] scale-[1.02]'
-          : 'bg-white/10 hover:bg-white/15 border-white/10 text-white backdrop-blur-xl',
+          ? 'bg-pd-tile-on text-pd-ink border-pd-tile-on-line shadow-[0_10px_25px_var(--pd-cup-shadow)] scale-[1.02]'
+          : 'bg-pd-tile hover:bg-pd-tile-hover border-pd-line text-pd-ink',
         ingredient.stopped && 'opacity-35 pointer-events-none',
       )}
       style={style}
@@ -123,16 +123,16 @@ function ChoiceTile({ ingredient, selected, style, onPick }: ChoiceProps) {
       <div className="relative my-0.5">
         <IngredientArt ref={artRef} color={ingredient.color} className="size-[38px] sm:size-[44px]" />
       </div>
-      <span className={cx('flex min-h-[26px] sm:min-h-[28px] items-center text-[11px] sm:text-[12px] leading-[1.15] sm:leading-[1.2] font-bold line-clamp-2 px-0.5', selected ? 'text-zinc-950' : 'text-white')}>
+      <span className={cx('flex min-h-[26px] sm:min-h-[28px] items-center text-[11px] sm:text-[12px] leading-[1.15] sm:leading-[1.2] font-bold line-clamp-2 px-0.5', 'text-pd-ink')}>
         {ingredient.name}
       </span>
-      <span className={cx('text-[10px] sm:text-[11px] font-medium', selected ? 'text-zinc-600' : 'text-white/70')}>
+      <span className={cx('text-[10px] sm:text-[11px] font-medium', 'text-pd-muted')}>
         {ingredient.stopped ? 'нет в наличии' : `+${formatPrice(ingredient.price)}`}
       </span>
       <span
         className={cx(
           'mt-1 grid size-5 sm:size-6 place-items-center rounded-full text-[11px] sm:text-[12px] font-bold transition-[background,border-color,transform,scale] duration-200',
-          selected ? 'bg-zinc-950 text-white shadow-sm animate-pop' : 'border border-white/25 text-white/40',
+          selected ? 'bg-accent text-white shadow-sm animate-pop' : 'border border-pd-line-strong text-pd-faint',
         )}
         aria-hidden="true"
       >

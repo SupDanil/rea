@@ -14,11 +14,11 @@ type Props = {
   onOpenRelated: (item: MenuItem) => void
 }
 
-const chipTitle = 'text-[12px] leading-[1.2] font-semibold text-center text-white'
+const chipTitle = 'text-[12px] leading-[1.2] font-semibold text-center text-pd-ink'
 const chip = (open: boolean, related = false) =>
   cx(
     'flex h-[106px] w-[98px] shrink-0 flex-col items-center rounded-[20px] px-1.5 text-center backdrop-blur-md border transition-[background-color,border-color,padding,transform,scale] duration-200 ease-soft active:scale-96',
-    open ? 'bg-white/22 border-white/30 shadow-lg' : 'bg-white/10 border-white/10 hover:bg-white/14',
+    open ? 'bg-pd-glass-strong border-pd-line-strong shadow-lg' : 'bg-pd-glass border-pd-line hover:bg-pd-glass-hover',
     related ? 'justify-between py-2.5' : 'py-2.5',
   )
 /** Chip contents swap with a short fade when a group goes from empty to picked and back. */
@@ -65,14 +65,14 @@ export function AddonChips({ item, related, groups, selection, openGroupId, onOp
                   <IngredientArt color={picks[0].ingredient.color} className="block size-[36px]" />
                 </span>
                 <span className={cx(chipTitle, 'line-clamp-2 max-w-[86px]')}>{summaryLabel}</span>
-                <span className="text-[11px] font-medium text-white/70 leading-none tabular-nums animate-fade-in">
+                <span className="text-[11px] font-medium text-pd-muted leading-none tabular-nums animate-fade-in">
                   +{formatPrice(totalPrice)}
                 </span>
               </>
             ) : (
               <>
                 <span
-                  className="grid size-[36px] place-items-center rounded-full bg-white/12 text-white border border-white/10 text-[20px] font-light leading-none shadow-sm transition-transform active:scale-95"
+                  className="grid size-[36px] place-items-center rounded-full bg-pd-glass text-pd-ink border border-pd-line text-[20px] font-light leading-none shadow-sm transition-transform active:scale-95"
                   aria-hidden="true"
                 >
                   +

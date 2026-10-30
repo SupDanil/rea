@@ -12,7 +12,7 @@ export function AddToCartButton({ price, soldOut, added, onAdd }: Props) {
       className={cx(
         'flex h-[46px] sm:h-[52px] flex-1 items-center justify-center gap-1.5 sm:gap-2.5 rounded-full px-3 sm:px-6 text-[16px] sm:text-[18px] font-bold text-white transition-[background-color,transform,scale,box-shadow] duration-200 ease-soft active:scale-[0.98] min-w-0',
         soldOut
-          ? 'cursor-not-allowed bg-white/10 text-white/35 shadow-none'
+          ? 'cursor-not-allowed bg-pd-glass text-pd-faint shadow-none'
           : added
           ? 'bg-[#3f7547] shadow-[0_4px_16px_rgba(63,117,71,0.35)]'
           : 'bg-[#5e4b7e] shadow-[0_6px_22px_rgba(94,75,126,0.45)] hover:bg-[#4d3b6b] border border-white/15',

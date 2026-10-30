@@ -75,14 +75,15 @@ function ProductView({ item }: { item: MenuItem }) {
       className={cx(
         // Phone: one column (header, details, cup, controls). Unfolded: cup on the left,
         // everything else in a right column; the rest of the screen is dimmed around it.
-        'tinted fixed inset-0 z-20 mx-auto grid max-w-[480px] grid-cols-[minmax(0,1fr)] grid-rows-[auto_auto_minmax(0,1fr)_auto] overflow-hidden text-white [view-transition-name:sheet]',
+        'tinted fixed inset-0 z-20 mx-auto grid max-w-[480px] grid-cols-[minmax(0,1fr)] grid-rows-[auto_auto_minmax(0,1fr)_auto] overflow-hidden text-pd-ink [view-transition-name:sheet]',
         'wide:max-w-[1040px] wide:grid-cols-[minmax(0,1fr)_minmax(340px,420px)] wide:shadow-[0_0_0_100vmax_rgba(0,0,0,0.55)]',
         sheetEnter && 'animate-[sheet-in_0.36s_var(--ease-soft)]',
       )}
       style={{
         '--tint': item.art.bg,
-        background: `radial-gradient(ellipse 80% 55% at 50% 42%, color-mix(in srgb, var(--tint, #c5c7d7) 35%, #564575) 0%, color-mix(in srgb, var(--tint, #c5c7d7) 12%, #261b36) 55%, transparent 80%),
-                     linear-gradient(180deg, #221832 0%, #181124 55%, #0f0a17 100%)`,
+        // Studio light around the cup, tinted by the drink; light/dark comes from the --pd-* tokens.
+        background: `radial-gradient(ellipse 80% 55% at 50% 42%, color-mix(in srgb, var(--tint, #c5c7d7) var(--pd-spot-mix), var(--pd-spot-base)) 0%, transparent 80%),
+                     linear-gradient(180deg, var(--pd-bg-from) 0%, var(--pd-bg-to) 100%)`,
       } as CSSProperties}
       role="dialog"
       aria-modal="true"
@@ -90,12 +91,12 @@ function ProductView({ item }: { item: MenuItem }) {
     >
       {/* Above the add-on backdrop: the macros stay readable while add-ons are picked. */}
       <div ref={topRef} className="relative z-[31] wide:col-start-2 wide:row-start-1">
-      <header className="grid grid-cols-[40px_1fr_40px] sm:grid-cols-[44px_1fr_44px] items-center px-3 sm:px-4 pt-[calc(10px+env(safe-area-inset-top))] pb-0.5">
-        <h1 key={item.id} className="col-start-2 text-center text-[19px] xs:text-[20px] sm:text-[22px] font-bold text-white tracking-tight truncate px-1 animate-fade-in">
+      <header className="grid grid-cols-[40px_1fr_40px] items-center px-3 pt-[calc(10px+env(safe-area-inset-top))] pb-0.5">
+        <h1 key={item.id} className="col-start-2 text-center text-[19px] xs:text-[20px] sm:text-[22px] font-bold text-pd-ink tracking-tight truncate px-1 animate-fade-in">
           {item.name}
         </h1>
         <button
-          className="col-start-3 size-9 sm:size-10 grid place-items-center rounded-full bg-white/10 hover:bg-white/15 text-white backdrop-blur-md border border-white/10 transition-[background-color,color,border-color,scale] active:scale-95"
+          className="col-start-3 justify-self-end size-10 grid place-items-center [&>svg]:block rounded-full bg-pd-glass hover:bg-pd-glass-hover text-pd-ink backdrop-blur-md border border-pd-line transition-[background-color,color,border-color,scale] active:scale-95"
           onClick={back}
           aria-label="Закрыть"
         >
@@ -125,7 +126,7 @@ function ProductView({ item }: { item: MenuItem }) {
               key={item.id}
               art={item.art}
               className={cx(
-                'h-full max-h-[260px] sm:max-h-[320px] wide:max-h-[min(64dvh,540px)] w-auto aspect-[200/220] select-none pointer-events-none drop-shadow-[0_16px_28px_rgba(0,0,0,0.35)]',
+                'h-full max-h-[260px] sm:max-h-[320px] wide:max-h-[min(64dvh,540px)] w-auto aspect-[200/220] select-none pointer-events-none drop-shadow-[0_16px_28px_var(--pd-cup-shadow)]',
                 // Hot ↔ iced swap without View Transitions (which morph the cup themselves);
                 // never on open, where the cup already morphs in from the card.
                 sheetEnter && item.id !== openedWith && 'animate-[swap-in_0.4s_var(--ease-soft)_both]',

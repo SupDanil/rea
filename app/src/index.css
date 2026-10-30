@@ -35,6 +35,31 @@
   --card-shadow: 0 1px 2px rgba(34, 27, 44, 0.04), 0 4px 14px rgba(34, 27, 44, 0.05);
   --lift-shadow: 0 2px 6px rgba(34, 27, 44, 0.06), 0 16px 40px rgba(34, 27, 44, 0.08);
   --ease-soft: cubic-bezier(0.2, 0.8, 0.2, 1);
+  /* Product screen: soft lavender studio in light mode */
+  --pd-bg-from: #f7f5fb;
+  --pd-bg-to: #ebe7f3;
+  --pd-spot-mix: 70%;
+  --pd-spot-base: #ffffff;
+  --pd-ink: #221b2c;
+  --pd-ink-2: #3c3248;
+  --pd-muted: #6e6380;
+  --pd-faint: #a79db6;
+  --pd-glass: rgba(255, 255, 255, 0.72);
+  --pd-glass-hover: rgba(255, 255, 255, 0.92);
+  --pd-glass-strong: #ffffff;
+  --pd-line: rgba(34, 27, 44, 0.08);
+  --pd-line-strong: rgba(34, 27, 44, 0.2);
+  --pd-panel: rgba(255, 255, 255, 0.96);
+  --pd-scrim: rgba(34, 27, 44, 0.22);
+  --pd-tile: rgba(34, 27, 44, 0.045);
+  --pd-tile-hover: rgba(34, 27, 44, 0.08);
+  --pd-tile-on: color-mix(in oklab, #5e4b7e 12%, #ffffff);
+  --pd-tile-on-line: #8e77b8;
+  --pd-step: rgba(34, 27, 44, 0.06);
+  --pd-step-on: rgba(94, 75, 126, 0.12);
+  --pd-track: rgba(34, 27, 44, 0.07);
+  --pd-cup-shadow: rgba(54, 36, 82, 0.22);
+  --pd-panel-shadow: 0 20px 50px rgba(34, 27, 44, 0.18);
 }
 
 /* Velvet night lavender dark palette */
@@ -64,6 +89,32 @@
   --tint-amount: 24%;
   --card-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
   --lift-shadow: 0 2px 6px rgba(0, 0, 0, 0.35), 0 16px 40px rgba(0, 0, 0, 0.45);
+  /* Product screen: velvet night studio */
+  --pd-bg-from: #221832;
+  --pd-bg-to: #0f0a17;
+  --pd-spot-mix: 35%;
+  --pd-spot-base: #564575;
+  --pd-ink: #ffffff;
+  --pd-ink-2: rgba(255, 255, 255, 0.9);
+  --pd-muted: rgba(255, 255, 255, 0.66);
+  --pd-faint: rgba(255, 255, 255, 0.38);
+  --pd-glass: rgba(255, 255, 255, 0.1);
+  --pd-glass-hover: rgba(255, 255, 255, 0.15);
+  --pd-glass-strong: rgba(255, 255, 255, 0.22);
+  --pd-line: rgba(255, 255, 255, 0.1);
+  --pd-line-strong: rgba(255, 255, 255, 0.28);
+  --pd-panel: rgba(30, 23, 42, 0.95);
+  --pd-scrim: rgba(0, 0, 0, 0.45);
+  --pd-tile: rgba(255, 255, 255, 0.08);
+  --pd-tile-hover: rgba(255, 255, 255, 0.13);
+  /* Picked add-on: lit violet glass instead of a white slab */
+  --pd-tile-on: color-mix(in oklab, #8e77b8 34%, #1e172a);
+  --pd-tile-on-line: #bfafe4;
+  --pd-step: rgba(255, 255, 255, 0.12);
+  --pd-step-on: rgba(255, 255, 255, 0.14);
+  --pd-track: rgba(255, 255, 255, 0.12);
+  --pd-cup-shadow: rgba(0, 0, 0, 0.35);
+  --pd-panel-shadow: 0 20px 50px rgba(0, 0, 0, 0.65);
 }
 
 /* xs: phones wider than a Fold cover screen. wide: unfolded foldables
@@ -101,6 +152,24 @@
   --color-error: #d0574c;
   --color-open: #3fa66b;
   --color-pending: #e6b450;
+  --color-pd-ink: var(--pd-ink);
+  --color-pd-ink-2: var(--pd-ink-2);
+  --color-pd-muted: var(--pd-muted);
+  --color-pd-faint: var(--pd-faint);
+  --color-pd-glass: var(--pd-glass);
+  --color-pd-glass-hover: var(--pd-glass-hover);
+  --color-pd-glass-strong: var(--pd-glass-strong);
+  --color-pd-line: var(--pd-line);
+  --color-pd-line-strong: var(--pd-line-strong);
+  --color-pd-panel: var(--pd-panel);
+  --color-pd-scrim: var(--pd-scrim);
+  --color-pd-tile: var(--pd-tile);
+  --color-pd-tile-hover: var(--pd-tile-hover);
+  --color-pd-tile-on: var(--pd-tile-on);
+  --color-pd-tile-on-line: var(--pd-tile-on-line);
+  --color-pd-step: var(--pd-step);
+  --color-pd-step-on: var(--pd-step-on);
+  --color-pd-track: var(--pd-track);
 
   --shadow-card: var(--card-shadow);
   --shadow-lift: var(--lift-shadow);

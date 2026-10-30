@@ -25,8 +25,8 @@ export function AddonTile({ ingredient, qty, canAdd, style, onAdd, onRemove }: P
       className={cx(
         'flex flex-col items-center justify-between rounded-[18px] sm:rounded-[22px] p-2 sm:p-2.5 text-center min-h-[136px] sm:min-h-[148px] border transition-[background-color,color,transform,scale,box-shadow] duration-200 ease-soft animate-[tile-in_0.32s_var(--ease-soft)_both]',
         on
-          ? 'bg-white text-zinc-950 border-white shadow-[0_10px_25px_rgba(0,0,0,0.32)] scale-[1.02]'
-          : 'bg-white/10 hover:bg-white/15 border-white/10 text-white backdrop-blur-xl',
+          ? 'bg-pd-tile-on text-pd-ink border-pd-tile-on-line shadow-[0_10px_25px_var(--pd-cup-shadow)] scale-[1.02]'
+          : 'bg-pd-tile hover:bg-pd-tile-hover border-pd-line text-pd-ink',
         ingredient.stopped && 'opacity-35 pointer-events-none',
       )}
       style={style}
@@ -42,20 +42,20 @@ export function AddonTile({ ingredient, qty, canAdd, style, onAdd, onRemove }: P
           {on && (
             <span
               key={qty}
-              className="absolute -top-1 -right-2 grid h-4.5 sm:h-5 min-w-4.5 sm:min-w-5 place-items-center rounded-full bg-[#334cdb] px-1 text-[10px] sm:text-[11px] font-extrabold text-white shadow-sm animate-pop"
+              className="absolute -top-1 -right-2 grid h-4.5 sm:h-5 min-w-4.5 sm:min-w-5 place-items-center rounded-full bg-accent px-1 text-[10px] sm:text-[11px] font-extrabold text-white shadow-sm animate-pop"
             >
               ×{qty}
             </span>
           )}
         </div>
-        <span className={cx('flex min-h-[26px] sm:min-h-[28px] items-center text-[11px] sm:text-[12px] leading-[1.15] sm:leading-[1.2] font-bold line-clamp-2 px-0.5', on ? 'text-zinc-950' : 'text-white')}>
+        <span className={cx('flex min-h-[26px] sm:min-h-[28px] items-center text-[11px] sm:text-[12px] leading-[1.15] sm:leading-[1.2] font-bold line-clamp-2 px-0.5', 'text-pd-ink')}>
           {ingredient.name}
         </span>
-        <span className={cx('text-[10px] sm:text-[11px] font-medium', on ? 'text-zinc-600' : 'text-white/70')}>
+        <span className={cx('text-[10px] sm:text-[11px] font-medium', 'text-pd-muted')}>
           {ingredient.stopped ? 'нет в наличии' : `+${formatPrice(ingredient.price)}`}
         </span>
       </button>
-      <div className={cx('mt-1 sm:mt-1.5 flex items-center gap-1 sm:gap-1.5 rounded-full p-0.5 border', on ? 'bg-zinc-100 border-zinc-200 text-zinc-950' : 'bg-white/12 border-white/10 text-white')}>
+      <div className={cx('mt-1 sm:mt-1.5 flex items-center gap-1 sm:gap-1.5 rounded-full p-0.5 border', on ? 'bg-pd-step-on border-pd-line text-pd-ink' : 'bg-pd-step border-pd-line text-pd-ink')}>
         <button className={stepBtn} onClick={() => onRemove(ingredient)} disabled={!on} aria-label={`${ingredient.name}: убрать порцию`}>
           −
         </button>

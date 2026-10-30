@@ -34,7 +34,7 @@ function Cell({ label, value, unit }: { label: string; value: number; unit: stri
           key={delta.id}
           className={cx(
             'pointer-events-none absolute -top-3.5 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full px-1.5 text-[10px] font-bold leading-[16px] tabular-nums animate-[delta-float_1.1s_var(--ease-soft)_both]',
-            delta.amount > 0 ? 'bg-[#c5c7d7] text-[#362452]' : 'bg-white/15 text-white',
+            delta.amount > 0 ? 'bg-[#c5c7d7] text-[#362452]' : 'bg-pd-glass text-pd-ink',
           )}
           aria-hidden="true"
         >
@@ -42,11 +42,11 @@ function Cell({ label, value, unit }: { label: string; value: number; unit: stri
           {formatAmount(Math.abs(delta.amount))}
         </span>
       )}
-      <span className="text-[14px] xs:text-[15px] sm:text-[16px] font-bold tracking-tight text-white tabular-nums whitespace-nowrap">
+      <span className="text-[14px] xs:text-[15px] sm:text-[16px] font-bold tracking-tight text-pd-ink tabular-nums whitespace-nowrap">
         <RollingNumber text={formatAmount(value)} />
         &nbsp;{unit}
       </span>
-      <span className="text-[11px] sm:text-[12px] font-normal text-white/60">{label}</span>
+      <span className="text-[11px] sm:text-[12px] font-normal text-pd-muted">{label}</span>
     </div>
   )
 }
