@@ -7,3 +7,7 @@ dist
 .idea
 # Local Claude Code preview config
 .claude/
+
+# Visual regression & media
+screenshots/
+*.mp4

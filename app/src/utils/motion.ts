@@ -1,26 +1,8 @@
-import { flushSync } from 'react-dom'
 
 export const prefersReducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches
 
 export const SPRING = 'cubic-bezier(0.34, 1.56, 0.64, 1)'
 export const SOFT = 'cubic-bezier(0.2, 0.8, 0.2, 1)'
-
-/**
- * Runs a DOM-changing update as a View Transition when the browser can,
- * so shared elements (named via `view-transition-name`) morph between screens.
- * Falls back to a plain update elsewhere and when motion is reduced.
- */
-export function withViewTransition(update: () => void, after?: () => void) {
-  if (!document.startViewTransition || prefersReducedMotion()) {
-    update()
-    after?.()
-    return
-  }
-  const transition = document.startViewTransition(() => flushSync(update))
-  void transition.finished.finally(() => after?.())
-}
-
-export const supportsViewTransitions = () => typeof document !== 'undefined' && !!document.startViewTransition
 
 /**
  * Throws a copy of `source` along an arc to the centre of `target`, shrinking

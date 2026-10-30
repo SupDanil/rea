@@ -4,8 +4,8 @@ import { ItemArt } from '../../components/ItemArt'
 import { addonLabel, countAddons } from '../../data/menu'
 import { panel } from '../../components/ui'
 import type { ResolvedLine } from '../../state/cart'
-import { useSharedArt } from '../../hooks/useSharedArt'
 import { cx } from '../../utils/cx'
+import { ART_ATTR } from '../../utils/morph'
 import { formatPrice } from '../../utils/format'
 
 const sizeText = { S: 'S', M: 'M', L: 'L', ONE: '' } as const
@@ -21,7 +21,6 @@ type Props = {
 }
 
 export function CartLineItem({ line, disabled, onOpen, onQty, onRemove }: Props) {
-  const sharedArt = useSharedArt(line.item.id, (path) => path === '/cart')
   const rowRef = useRef<HTMLLIElement>(null)
   const meta = [line.variant.size !== 'ONE' && `${sizeText[line.variant.size]} · ${line.variant.volume}`, ...countAddons(line.ingredients).map((a) => `+ ${addonLabel(a)}`)]
     .filter(Boolean)
@@ -34,7 +33,7 @@ export function CartLineItem({ line, disabled, onOpen, onQty, onRemove }: Props)
         onClick={onOpen}
         aria-label={`Открыть ${line.item.name}`}
       >
-        <ItemArt art={line.item.art} className="size-[86%]" style={sharedArt} />
+        <ItemArt art={line.item.art} className="size-[86%]" {...{ [ART_ATTR]: line.item.id }} />
       </button>
       <div className="flex min-w-0 flex-col pt-0.5 pr-1">
         <div className="text-[15px] font-bold tracking-[-0.01em]">{line.item.name}</div>

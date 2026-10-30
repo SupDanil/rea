@@ -1,17 +1,16 @@
 import { useLayoutEffect, useRef, useState, type CSSProperties, type RefObject } from 'react'
-import { flushSync } from 'react-dom'
 import { Navigate, useParams } from 'react-router'
 import { CloseIcon } from '../../components/icons'
 import { ItemArt } from '../../components/ItemArt'
-import { sheetEnter } from '../../components/ui'
 import { itemById, type Ingredient, type IngredientGroup, type MenuItem } from '../../data/menu'
 import { useAppNavigate } from '../../hooks/useAppNavigate'
 import { useEscape } from '../../hooks/useEscape'
 import { useExitTransition } from '../../hooks/useExitTransition'
-import { PRODUCT_ART } from '../../hooks/useSharedArt'
 import { useApp } from '../../state/AppContext'
 import { cx } from '../../utils/cx'
-import { bounce } from '../../utils/motion'
+import { bounce, pop } from '../../utils/motion'
+import { ART_ATTR, findThumb, flyArt, MORPH, settledRect, TO_CART } from '../../utils/morph'
+import { useIsLeaving } from '../../app/leaving'
 import { AddonChips } from './AddonChips'
 import { AddonPanel } from './AddonPanel'
 import { AddToCartButton } from './AddToCartButton'
@@ -31,7 +30,7 @@ export function ProductPage() {
 }
 
 function ProductView({ item }: { item: MenuItem }) {
-  const { cart, setFlightId } = useApp()
+  const { cart } = useApp()
   const { back, replace } = useAppNavigate()
   const config = useProductConfig(item)
   const { variant, openGroupId, setOpenGroupId } = config
@@ -39,6 +38,10 @@ function ProductView({ item }: { item: MenuItem }) {
   const [added, setAdded] = useState(false)
   const [openedWith] = useState(item.id)
   const cupRef = useRef<HTMLDivElement>(null)
+  const sheetRef = useRef<HTMLDivElement>(null)
+  const artRef = useRef<SVGSVGElement>(null)
+  const toCart = useRef(false)
+  const leaving = useIsLeaving()
   const topRef = useRef<HTMLDivElement>(null)
   const bottomRef = useRef<HTMLDivElement>(null)
   const panelMax = usePanelRoom(topRef, bottomRef)
@@ -54,30 +57,49 @@ function ProductView({ item }: { item: MenuItem }) {
     }
   }
 
+  // Opening: the thumbnail you tapped (menu card, hero, cart line) flies into the cup's place.
+  useLayoutEffect(() => {
+    const art = artRef.current
+    const sheet = sheetRef.current
+    const thumb = findThumb(openedWith, sheet)
+    if (!art || !sheet || !thumb) return
+    art.style.visibility = 'hidden'
+    void flyArt(thumb, settledRect(art, sheet), MORPH).then(() => (art.style.visibility = ''))
+    // Only on first open; swapping hot ↔ iced animates the cup in place.
+  }, [openedWith])
+
+  // Closing (button, Escape or the system back gesture): the cup flies back to its
+  // thumbnail — or, after "Add", down into the cart counter.
+  useLayoutEffect(() => {
+    const art = artRef.current
+    if (!leaving || !art) return
+    if (toCart.current) {
+      const badge = document.querySelector('[data-cart-badge]')
+      if (badge) void flyArt(art, badge, { ...TO_CART, landFade: true }).then(() => pop(badge))
+      return
+    }
+    const thumb = findThumb(item.id, sheetRef.current) ?? findThumb(openedWith, sheetRef.current)
+    if (thumb) void flyArt(art, thumb, MORPH)
+  }, [leaving, item.id, openedWith])
+
   const add = () => {
     cart.add(item.id, variant.id, config.chosen.map((i) => i.id))
     setAdded(true)
     window.setTimeout(() => {
-      // Name the cart badge as the art's destination before the transition snapshots.
-      flushSync(() => setFlightId(item.id))
-      // Switches the cup's view transition to its flight timing (see index.css).
-      document.documentElement.dataset.flight = ''
+      toCart.current = true
       back()
-      window.setTimeout(() => {
-        setFlightId(null)
-        delete document.documentElement.dataset.flight
-      }, 900)
     }, CONFIRM_MS)
   }
 
   return (
     <div
+      ref={sheetRef}
       className={cx(
         // One column on every screen. Unfolded/tablet: the same card, wider, centred
         // over the dimmed menu.
-        'tinted fixed inset-0 z-20 mx-auto grid max-w-[480px] grid-cols-[minmax(0,1fr)] grid-rows-[auto_auto_minmax(0,1fr)_auto] overflow-x-hidden overflow-y-auto overscroll-contain text-pd-ink [view-transition-name:sheet]',
+        'tinted fixed inset-0 z-20 mx-auto grid max-w-[480px] grid-cols-[minmax(0,1fr)] grid-rows-[auto_auto_minmax(0,1fr)_auto] overflow-x-hidden overflow-y-auto overscroll-contain text-pd-ink',
         'wide:max-w-[560px] wide:shadow-[0_0_0_100vmax_rgba(0,0,0,0.55)]',
-        sheetEnter && 'animate-[sheet-in_0.36s_var(--ease-soft)]',
+        'animate-[sheet-up_0.38s_var(--ease-soft)_both]',
       )}
       style={{
         '--tint': item.art.bg,
@@ -133,11 +155,11 @@ function ProductView({ item }: { item: MenuItem }) {
               art={item.art}
               className={cx(
                 'h-full max-h-[260px] sm:max-h-[320px] wide:max-h-[min(50dvh,420px)] w-auto aspect-[200/220] select-none pointer-events-none',
-                // Hot ↔ iced swap without View Transitions (which morph the cup themselves);
-                // never on open, where the cup already morphs in from the card.
-                sheetEnter && item.id !== openedWith && 'animate-[swap-in_0.4s_var(--ease-soft)_both]',
+                // Hot ↔ iced swap: the new cup settles in place (on open it flies in instead).
+                item.id !== openedWith && 'animate-[swap-in_0.4s_var(--ease-soft)_both]',
               )}
-              style={{ viewTransitionName: PRODUCT_ART }}
+              ref={artRef}
+              {...{ [ART_ATTR]: item.id }}
             />
           </div>
         </div>

@@ -1,4 +1,5 @@
-import { Outlet, useLocation } from 'react-router'
+import { useLocation } from 'react-router'
+import { AnimatedOutlet } from './AnimatedOutlet'
 import { Toast } from '../components/Toast'
 import { MenuDock } from '../pages/menu/MenuDock'
 import { MenuPage } from '../pages/menu/MenuPage'
@@ -18,7 +19,7 @@ export function RootLayout() {
     <>
       <MenuPage />
       {onMenu && <MenuDock />}
-      <Outlet />
+      <AnimatedOutlet />
       <Toast />
     </>
   )

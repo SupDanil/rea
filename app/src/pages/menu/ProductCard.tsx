@@ -3,9 +3,9 @@ import { flushSync } from 'react-dom'
 import { PlusIcon } from '../../components/icons'
 import { ItemArt } from '../../components/ItemArt'
 import { isSoldOut, minPrice, type MenuItem } from '../../data/menu'
-import { useSharedArt } from '../../hooks/useSharedArt'
 import { useApp } from '../../state/AppContext'
 import { cx } from '../../utils/cx'
+import { ART_ATTR } from '../../utils/morph'
 import { formatPrice } from '../../utils/format'
 import { bounce, flyTo } from '../../utils/motion'
 
@@ -25,7 +25,6 @@ function getCartTarget(): Element | DOMRect {
 export function ProductCard({ item, onOpen }: { item: MenuItem; onOpen: () => void }) {
   const { cart } = useApp()
   const soldOut = isSoldOut(item)
-  const sharedArt = useSharedArt(item.id, (path) => path === '/' || path === '/menu')
   const artRef = useRef<SVGSVGElement>(null)
   const [justAdded, setJustAdded] = useState(false)
 
@@ -87,7 +86,7 @@ export function ProductCard({ item, onOpen }: { item: MenuItem; onOpen: () => vo
           ref={artRef}
           art={item.art}
           className="h-[84%] w-auto aspect-[200/220] transition-transform duration-300 ease-soft group-hover:-translate-y-[3px] group-hover:scale-103"
-          style={sharedArt}
+          {...{ [ART_ATTR]: item.id }}
         />
         {item.badge && (
           <span className="absolute top-2 left-2 rounded-full bg-accent px-2 py-1 text-[10px] font-extrabold tracking-[0.04em] text-accent-ink uppercase">

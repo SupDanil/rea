@@ -18,9 +18,6 @@ export type AppState = {
   myOrders: Order[]
   theme: Theme
   toggleTheme: () => void
-  /** Item whose art is flying into the cart on the next screen transition */
-  flightId: string | null
-  setFlightId: (id: string | null) => void
   toast: Toast | null
   showToast: (toast: Toast) => void
   hideToast: () => void

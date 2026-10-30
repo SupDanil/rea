@@ -20,14 +20,11 @@ export const iconBtn = (side: 'left' | 'right') =>
     side === 'left' ? 'col-start-1 bg-surface shadow-card' : 'col-start-3 bg-glass-strong',
   )
 
-// Screens enter through a View Transition where supported (see index.css);
-// elsewhere they fall back to a plain CSS entrance.
-const vtSupported = typeof document !== 'undefined' && 'startViewTransition' in document
-export const sheetEnter = vtSupported ? '' : 'animate-sheet-in'
 // Unfolded: a wider centred sheet with the menu dimmed around it.
 export const sheet = cx(
-  'fixed inset-0 z-20 mx-auto flex max-w-[480px] flex-col overflow-y-auto overscroll-contain bg-bg [view-transition-name:sheet] wide:max-w-[640px] wide:shadow-[0_0_0_100vmax_rgba(0,0,0,0.45)]',
-  sheetEnter,
+  'fixed inset-0 z-20 mx-auto flex max-w-[480px] flex-col overflow-y-auto overscroll-contain bg-bg wide:max-w-[640px] wide:shadow-[0_0_0_100vmax_rgba(0,0,0,0.45)]',
+  // Leaving is animated by AnimatedOutlet ([data-leaving] in index.css).
+  'animate-[sheet-up_0.38s_var(--ease-soft)_both]',
 )
 export const sheetHead =
   'grid min-h-14 grid-cols-[44px_1fr_auto] items-center gap-2 px-3 pt-[calc(8px+env(safe-area-inset-top))] pb-1'

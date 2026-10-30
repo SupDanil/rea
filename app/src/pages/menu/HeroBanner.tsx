@@ -2,6 +2,7 @@ import type { CSSProperties } from 'react'
 import { ItemArt } from '../../components/ItemArt'
 import { minPrice, type MenuItem } from '../../data/menu'
 import { formatPrice } from '../../utils/format'
+import { ART_ATTR } from '../../utils/morph'
 
 /** Big recommendation card for the category currently in view. */
 export function HeroBanner({ item, onOpen }: { item: MenuItem; onOpen: () => void }) {
@@ -12,7 +13,11 @@ export function HeroBanner({ item, onOpen }: { item: MenuItem; onOpen: () => voi
       onClick={onOpen}
     >
       <div className="grid min-h-[210px] sm:min-h-[236px] wide:min-h-[320px] grid-cols-2 items-center animate-[fade-in_0.45s_var(--ease-soft)]" key={item.id}>
-        <ItemArt art={item.art} className="block h-auto w-full animate-[float_5s_ease-in-out_infinite] wide:h-[300px] wide:w-auto wide:justify-self-center" />
+        <ItemArt
+          art={item.art}
+          className="block h-auto w-full animate-[float_5s_ease-in-out_infinite] wide:h-[300px] wide:w-auto wide:justify-self-center"
+          {...{ [ART_ATTR]: item.id }}
+        />
         <div className="-order-1 py-3.5 sm:py-[22px] pl-3.5 sm:pl-5 pr-1">
           <div className="inline-block rounded-full bg-glass-strong px-2 py-0.5 sm:px-[9px] sm:py-1 text-[10px] sm:text-[11px] font-bold tracking-[0.04em] text-accent-soft uppercase">
             {item.badge ?? 'Рекомендуем'}
