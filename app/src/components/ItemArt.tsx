@@ -1,10 +1,10 @@
-import { useId } from 'react'
+import { useId, type SVGProps } from 'react'
 import type { Art } from '../data/menu'
 
-type Props = { art: Art; className?: string }
+type Props = { art: Art } & Omit<SVGProps<SVGSVGElement>, 'viewBox'>
 
 /** Hand-drawn product illustrations, so the app ships no third-party photos. */
-export function ItemArt({ art, className }: Props) {
+export function ItemArt({ art, ...svgProps }: Props) {
   const { kind, fill, top = '#fff6ea' } = art
   // Unique per instance: several illustrations share the page.
   const uid = useId().replace(/:/g, '')
@@ -12,7 +12,7 @@ export function ItemArt({ art, className }: Props) {
   const url = (name: string) => `url(#${id(name)})`
 
   return (
-    <svg className={className} viewBox="0 0 200 220" role="img" aria-hidden="true">
+    <svg viewBox="0 0 200 220" role="img" aria-hidden="true" {...svgProps}>
       <defs>
         {/* Cylindrical shading laid over any body */}
         <linearGradient id={id('round')} x1="0" x2="1">
@@ -227,10 +227,10 @@ export function ItemArt({ art, className }: Props) {
 }
 
 /** Small round "bowl" used for ingredient tiles. */
-export function IngredientArt({ color, className }: { color: string; className?: string }) {
+export function IngredientArt({ color, ...svgProps }: { color: string } & Omit<SVGProps<SVGSVGElement>, 'viewBox' | 'color'>) {
   const uid = useId().replace(/:/g, '')
   return (
-    <svg className={className} viewBox="0 0 48 48" aria-hidden="true">
+    <svg viewBox="0 0 48 48" aria-hidden="true" {...svgProps}>
       <defs>
         <radialGradient id={`bowl-${uid}`} cx="0.4" cy="0.35" r="0.7">
           <stop offset="0" stopColor="#fff" stopOpacity="0.45" />

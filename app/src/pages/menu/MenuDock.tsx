@@ -1,20 +1,21 @@
-import { formatPrice } from '../data/menu'
-import { statusOf, useNow, type Order } from '../store'
-import { cx } from '../ui'
-
-type Props = {
-  count: number
-  total: number
-  activeOrder?: Order
-  onOpenCart: () => void
-  onOpenOrder: (order: Order) => void
-}
+import { useAppNavigate } from '../../hooks/useAppNavigate'
+import { useNow } from '../../hooks/useNow'
+import { useApp } from '../../state/AppContext'
+import { countOf, subtotalOf } from '../../state/cart'
+import { isActive, statusOf } from '../../state/orders'
+import { cx } from '../../utils/cx'
+import { formatPrice } from '../../utils/format'
 
 const short = { paying: 'оплата', accepted: 'принят', making: 'готовим', ready: 'готов!', cancelled: 'отменён' } as const
 
 /** Floating bar over the menu: the live order (if any) and the cart preview. */
-export function MenuDock({ count, total, activeOrder, onOpenCart, onOpenOrder }: Props) {
+export function MenuDock() {
+  const { cart, orders } = useApp()
+  const { go } = useAppNavigate()
   const now = useNow(2000)
+  const count = countOf(cart.lines)
+  const total = subtotalOf(cart.lines)
+  const activeOrder = orders.orders.find((o) => isActive(o, now))
   if (!count && !activeOrder) return null
   const status = activeOrder && statusOf(activeOrder, now)
 
@@ -23,7 +24,7 @@ export function MenuDock({ count, total, activeOrder, onOpenCart, onOpenOrder }:
       {activeOrder && status && (
         <button
           className="flex h-15 items-center gap-2.5 rounded-full bg-dock px-[18px] text-[14px] whitespace-nowrap text-white shadow-lift backdrop-blur-[12px] only:ml-auto"
-          onClick={() => onOpenOrder(activeOrder)}
+          onClick={() => go(`/order/${activeOrder.id}`)}
           aria-label={`Заказ № ${activeOrder.number}: ${short[status]}`}
         >
           <span className={cx('size-2.5 rounded-full animate-pulse-dot', status === 'ready' ? 'bg-open' : 'bg-pending')} aria-hidden="true" />
@@ -35,7 +36,8 @@ export function MenuDock({ count, total, activeOrder, onOpenCart, onOpenOrder }:
       {count > 0 && (
         <button
           className="flex h-15 flex-1 items-center gap-3 rounded-full bg-linear-to-b from-accent-2 to-accent px-2 text-accent-ink shadow-lift"
-          onClick={onOpenCart}
+          onClick={() => go('/cart')}
+          data-cart-target="dock"
         >
           <span className="grid size-11 place-items-center rounded-full bg-white/18 font-extrabold">{count}</span>
           <span className="flex-1 text-left text-[16px] font-bold">Корзина</span>

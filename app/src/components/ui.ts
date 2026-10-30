@@ -2,7 +2,7 @@
 // Font sizes use text-[Npx] on purpose: Tailwind's named sizes also set
 // line-height, and the design relies on the browser's normal line-height.
 
-export const cx = (...classes: (string | false | null | undefined)[]) => classes.filter(Boolean).join(' ')
+import { cx } from '../utils/cx'
 
 export const roundBtn =
   'relative grid size-11 flex-none place-items-center rounded-full bg-surface shadow-card transition-[background-color] duration-300 ease-[ease]'

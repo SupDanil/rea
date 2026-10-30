@@ -1,0 +1,153 @@
+import { useRef, useState } from 'react'
+import { EmptyState } from '../../components/EmptyState'
+import { Sheet, SheetBody, SheetDock } from '../../components/Sheet'
+import { Summary, SummaryRow, SummaryTotal } from '../../components/Summary'
+import { addBtn, addPrice, textBtn } from '../../components/ui'
+import { isDrink, menuItems, type MenuItem } from '../../data/menu'
+import { useAppNavigate } from '../../hooks/useAppNavigate'
+import { useApp } from '../../state/AppContext'
+import { countOf, resolveLines, type ResolvedLine } from '../../state/cart'
+import { giftValue } from '../../state/loyalty'
+import type { PaymentMethod, Pickup } from '../../state/orders'
+import { cx } from '../../utils/cx'
+import { formatPrice } from '../../utils/format'
+import { readSavedName } from '../../utils/storage'
+import { CartLineItem } from './CartLineItem'
+import { cartPricing, type CartLoyalty } from './cartPricing'
+import { LoyaltyOffer } from './LoyaltyOffer'
+import { NameField } from './NameField'
+import { PaymentPicker } from './PaymentPicker'
+import { PickupPicker } from './PickupPicker'
+import { PromoField } from './PromoField'
+import { UpsellRow } from './UpsellRow'
+import { useCheckout } from './useCheckout'
+
+export function CartPage() {
+  const { cart, profile, loyalty, showToast } = useApp()
+  const { go, back } = useAppNavigate()
+  const [name, setName] = useState(() => profile?.name || readSavedName())
+  const [nameError, setNameError] = useState(false)
+  const [pickup, setPickup] = useState<Pickup>({ kind: 'asap' })
+  const [payment, setPayment] = useState<PaymentMethod>('card')
+  const [promo, setPromo] = useState<string | null>(null)
+  const [useGift, setUseGift] = useState(true)
+  const nameRef = useRef<HTMLInputElement>(null)
+
+  const lines = resolveLines(cart.lines)
+  const cartLoyalty: CartLoyalty = profile
+    ? { levelName: loyalty.level.name, levelPercent: loyalty.level.percent, giftValue: giftValue(cart.lines), giftsAvailable: loyalty.giftsAvailable }
+    : null
+  const price = cartPricing(cart.lines, cartLoyalty, promo, useGift)
+  const inCart = new Set(cart.lines.map((l) => l.itemId))
+  const upsell = menuItems.filter((i) => !isDrink(i) && !inCart.has(i.id)).slice(0, 6)
+
+  const remove = (line: ResolvedLine) => {
+    // Restore from the stored line (without the resolved menu data) at its old place.
+    const index = cart.lines.findIndex((l) => l.key === line.key)
+    const stored = cart.lines[index]
+    cart.setQty(line.key, 0)
+    showToast({ text: `${line.item.name} удалён`, action: { label: 'Вернуть', run: () => cart.restore(stored, index) } })
+  }
+  const clear = () => {
+    const snapshot = cart.lines
+    cart.clear()
+    showToast({ text: 'Корзина очищена', action: { label: 'Вернуть', run: () => snapshot.forEach((l, i) => cart.restore(l, i)) } })
+  }
+  const addUpsell = (item: MenuItem) => {
+    cart.add(item.id, item.variants[0].id, [])
+    showToast({ text: `${item.name} добавлен` })
+  }
+
+  const { paying, pay } = useCheckout({
+    pricing: price,
+    pickup,
+    payment,
+    onMissingName: () => {
+      setNameError(true)
+      nameRef.current?.focus()
+      nameRef.current?.scrollIntoView({ block: 'center', behavior: 'smooth' })
+    },
+  })
+
+  const clearButton = lines.length > 0 && (
+    <button className={textBtn()} onClick={clear} disabled={paying}>
+      Очистить
+    </button>
+  )
+
+  return (
+    <Sheet label="Корзина" title="Корзина" onBack={back} backLabel="Назад в меню" locked={paying} action={clearButton}>
+      {lines.length === 0 ? (
+        <EmptyState art={<EmptyCartArt />} title="Пока пусто" text="Загляните в меню — там тыквенный раф и свежие круассаны" actionLabel="В меню" onAction={back} />
+      ) : (
+        <SheetBody>
+          <ul className="flex flex-col gap-2">
+            {lines.map((line) => (
+              <CartLineItem
+                key={line.key}
+                line={line}
+                disabled={paying}
+                onOpen={() => go(`/product/${line.item.id}`)}
+                onQty={(qty) => cart.setQty(line.key, qty)}
+                onRemove={() => remove(line)}
+              />
+            ))}
+          </ul>
+          <UpsellRow items={upsell} disabled={paying} onAdd={addUpsell} />
+          <LoyaltyOffer loyalty={cartLoyalty} canGift={price.canGift} useGift={useGift} onToggleGift={() => setUseGift((v) => !v)} onLogin={() => go('/login')} />
+          <NameField
+            value={name}
+            error={nameError}
+            inputRef={nameRef}
+            onChange={(value) => {
+              setName(value)
+              if (value.trim()) setNameError(false)
+            }}
+          />
+          <PickupPicker value={pickup} onChange={setPickup} />
+          <PromoField applied={promo} onApply={setPromo} />
+          <PaymentPicker value={payment} onChange={setPayment} />
+          <Summary>
+            <SummaryRow label={`Товары · ${countOf(cart.lines)}`} amount={price.subtotal} />
+            {price.rewardDiscount > 0 && <SummaryRow label="Напиток в подарок" amount={price.rewardDiscount} discount />}
+            {price.levelDiscount > 0 && cartLoyalty && (
+              <SummaryRow label={`Уровень «${cartLoyalty.levelName}» · ${cartLoyalty.levelPercent}%`} amount={price.levelDiscount} discount />
+            )}
+            {price.promoDiscount > 0 && <SummaryRow label={`Промокод ${promo}`} amount={price.promoDiscount} discount />}
+            <SummaryTotal label="Итого" amount={price.total} />
+          </Summary>
+        </SheetBody>
+      )}
+
+      {lines.length > 0 && (
+        <SheetDock>
+          <button className={cx(addBtn, 'w-full shadow-lift')} onClick={() => void pay(name)} disabled={paying} aria-busy={paying}>
+            {paying ? (
+              <span className="flex w-full items-center justify-center gap-2.5">
+                <span className="size-5 rounded-full border-[2.5px] border-white/35 border-t-white animate-[spin_0.8s_linear_infinite]" aria-hidden="true" />
+                {payment === 'card' ? 'Оплачиваем…' : 'Отправляем…'}
+              </span>
+            ) : (
+              <>
+                <span>{payment === 'card' ? 'Оплатить' : 'Заказать'}</span>
+                <span className={addPrice} key={price.total}>
+                  {formatPrice(price.total)}
+                </span>
+              </>
+            )}
+          </button>
+        </SheetDock>
+      )}
+    </Sheet>
+  )
+}
+
+function EmptyCartArt() {
+  return (
+    <svg viewBox="0 0 120 120" width="120" height="120" aria-hidden="true">
+      <circle cx="60" cy="60" r="56" fill="var(--surface)" />
+      <path d="M38 46h44l-4 44H42z" fill="none" stroke="var(--faint)" strokeWidth="4" strokeLinejoin="round" />
+      <path d="M50 46a10 10 0 0 1 20 0" fill="none" stroke="var(--faint)" strokeWidth="4" />
+    </svg>
+  )
+}

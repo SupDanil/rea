@@ -436,4 +436,6 @@ export const topCategories = categories.filter((c) => !c.parentId)
 export const subcategoriesOf = (id: string) => categories.filter((c) => c.parentId === id)
 export const itemsOf = (subId: string) => menuItems.filter((i) => i.categoryId === subId)
 
-export const formatPrice = (rub: number) => `${rub.toLocaleString('ru-RU')} ₽`
+export const minPrice = (item: MenuItem) => Math.min(...item.variants.map((v) => v.price))
+export const isSoldOut = (item: MenuItem) => item.variants.every((v) => v.stopped)
+export const isDrink = (item: MenuItem) => item.variants[0].size !== 'ONE'

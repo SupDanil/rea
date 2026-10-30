@@ -1,4 +1,5 @@
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
+import { readString, writeString } from '../utils/storage'
 
 export type Theme = 'light' | 'dark'
 
@@ -7,12 +8,8 @@ const themeColor = { light: '#f4f0ea', dark: '#15120f' } as const
 const systemQuery = () => window.matchMedia('(prefers-color-scheme: dark)')
 
 const readStored = (): Theme | null => {
-  try {
-    const v = localStorage.getItem(STORAGE_KEY)
-    return v === 'light' || v === 'dark' ? v : null
-  } catch {
-    return null
-  }
+  const v = readString(STORAGE_KEY)
+  return v === 'light' || v === 'dark' ? v : null
 }
 
 const apply = (theme: Theme) => {
@@ -35,15 +32,13 @@ export function useTheme() {
     return () => mq.removeEventListener('change', onChange)
   }, [])
 
-  const toggle = () => {
-    const next: Theme = theme === 'dark' ? 'light' : 'dark'
-    try {
-      localStorage.setItem(STORAGE_KEY, next)
-    } catch {
-      // Private mode: the choice just won't survive a reload.
-    }
-    setTheme(next)
-  }
+  const toggle = useCallback(() => {
+    setTheme((current) => {
+      const next: Theme = current === 'dark' ? 'light' : 'dark'
+      writeString(STORAGE_KEY, next)
+      return next
+    })
+  }, [])
 
   return { theme, toggle }
 }

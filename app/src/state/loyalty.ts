@@ -1,4 +1,8 @@
-import { usePersistent, resolveLines, type CartLine, type Order } from './store'
+import { useCallback } from 'react'
+import { isDrink } from '../data/menu'
+import { usePersistent } from '../hooks/usePersistent'
+import { resolveLines, type CartLine } from './cart'
+import type { Order } from './orders'
 
 export type Profile = {
   phone: string
@@ -53,29 +57,19 @@ export function loyaltyOf(orders: Order[], profile: Profile | null): Loyalty {
 
 /** The gift covers the priciest drink in the cart, up to the limit. */
 export function giftValue(lines: CartLine[]) {
-  const drinks = resolveLines(lines).filter((l) => l.item.variants[0].size !== 'ONE')
+  const drinks = resolveLines(lines).filter((l) => isDrink(l.item))
   if (!drinks.length) return 0
   return Math.min(GIFT_DRINK_LIMIT, Math.max(...drinks.map((l) => l.unitPrice)))
 }
 
 export function useProfile() {
   const [profile, setProfile] = usePersistent<Profile | null>('zerno-profile', null)
-  const signIn = (phone: string, name: string) =>
-    setProfile((prev) => (prev?.phone === phone ? prev : { phone, name, email: '', notifications: true, joinedAt: Date.now() }))
-  const update = (patch: Partial<Profile>) => setProfile((prev) => (prev ? { ...prev, ...patch } : prev))
-  const signOut = () => setProfile(null)
+  const signIn = useCallback(
+    (phone: string, name: string) =>
+      setProfile((prev) => (prev?.phone === phone ? prev : { phone, name, email: '', notifications: true, joinedAt: Date.now() })),
+    [setProfile],
+  )
+  const update = useCallback((patch: Partial<Profile>) => setProfile((prev) => (prev ? { ...prev, ...patch } : prev)), [setProfile])
+  const signOut = useCallback(() => setProfile(null), [setProfile])
   return { profile, signIn, update, signOut }
 }
-
-/** "+7 999 123-45-67" from any digits the user typed. */
-export function formatPhone(digits: string) {
-  const d = digits.replace(/\D/g, '').replace(/^[78]/, '').slice(0, 10)
-  const parts = [d.slice(0, 3), d.slice(3, 6), d.slice(6, 8), d.slice(8, 10)]
-  let out = '+7'
-  if (parts[0]) out += ` ${parts[0]}`
-  if (parts[1]) out += ` ${parts[1]}`
-  if (parts[2]) out += `-${parts[2]}`
-  if (parts[3]) out += `-${parts[3]}`
-  return out
-}
-export const phoneDigits = (value: string) => value.replace(/\D/g, '').replace(/^[78]/, '').slice(0, 10)
