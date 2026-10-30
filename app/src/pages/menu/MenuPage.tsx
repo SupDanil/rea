@@ -38,7 +38,7 @@ export function MenuPage() {
             )}
           >
             <h2 className="mx-1 mb-2.5 sm:mb-3 text-[20px] sm:text-[22px]">{sub.name}</h2>
-            <div className="grid grid-cols-2 gap-2 sm:gap-2.5">
+            <div className="grid grid-cols-2 gap-2 sm:gap-2.5 wide:grid-cols-3 wide:gap-3.5 lg:grid-cols-4">
               {itemsOf(sub.id).map((item) => (
                 <ProductCard key={item.id} item={item} onOpen={() => open(item.id)} />
               ))}

@@ -11,8 +11,8 @@ export function HeroBanner({ item, onOpen }: { item: MenuItem; onOpen: () => voi
       style={{ '--tint': item.art.bg } as CSSProperties}
       onClick={onOpen}
     >
-      <div className="grid min-h-[210px] sm:min-h-[236px] grid-cols-2 items-center animate-[fade-in_0.45s_var(--ease-soft)]" key={item.id}>
-        <ItemArt art={item.art} className="block h-auto w-full animate-[float_5s_ease-in-out_infinite]" />
+      <div className="grid min-h-[210px] sm:min-h-[236px] wide:min-h-[320px] grid-cols-2 items-center animate-[fade-in_0.45s_var(--ease-soft)]" key={item.id}>
+        <ItemArt art={item.art} className="block h-auto w-full animate-[float_5s_ease-in-out_infinite] wide:h-[300px] wide:w-auto wide:justify-self-center" />
         <div className="-order-1 py-3.5 sm:py-[22px] pl-3.5 sm:pl-5 pr-1">
           <div className="inline-block rounded-full bg-glass-strong px-2 py-0.5 sm:px-[9px] sm:py-1 text-[10px] sm:text-[11px] font-bold tracking-[0.04em] text-accent-soft uppercase">
             {item.badge ?? 'Рекомендуем'}

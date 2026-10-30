@@ -24,7 +24,11 @@ export const iconBtn = (side: 'left' | 'right') =>
 // elsewhere they fall back to a plain CSS entrance.
 const vtSupported = typeof document !== 'undefined' && 'startViewTransition' in document
 export const sheetEnter = vtSupported ? '' : 'animate-sheet-in'
-export const sheet = cx('fixed inset-0 z-20 mx-auto flex max-w-[480px] flex-col bg-bg [view-transition-name:sheet]', sheetEnter)
+// Unfolded: a wider centred sheet with the menu dimmed around it.
+export const sheet = cx(
+  'fixed inset-0 z-20 mx-auto flex max-w-[480px] flex-col bg-bg [view-transition-name:sheet] wide:max-w-[640px] wide:shadow-[0_0_0_100vmax_rgba(0,0,0,0.45)]',
+  sheetEnter,
+)
 export const sheetHead =
   'grid min-h-14 grid-cols-[44px_1fr_auto] items-center gap-2 px-3 pt-[calc(8px+env(safe-area-inset-top))] pb-1'
 export const sheetTitle = 'text-[24px]'

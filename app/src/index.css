@@ -66,6 +66,13 @@
   --lift-shadow: 0 2px 6px rgba(0, 0, 0, 0.35), 0 16px 40px rgba(0, 0, 0, 0.45);
 }
 
+/* xs: phones wider than a Fold cover screen. wide: unfolded foldables
+   (Galaxy Fold inner display, foldable iPhone) and tablets. */
+@theme {
+  --breakpoint-xs: 23.75rem;
+  --breakpoint-wide: 37.5rem;
+}
+
 /* `inline` keeps the var() references, so utilities re-theme live. */
 @theme inline {
   --font-sans: 'Manrope', system-ui, -apple-system, 'Segoe UI', sans-serif;
@@ -252,6 +259,9 @@
   }
   #root {
     max-width: 480px;
+    @media (width >= 37.5rem) {
+      max-width: 1100px;
+    }
     margin: 0 auto;
     min-height: 100dvh;
   }
