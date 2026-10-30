@@ -66,6 +66,8 @@ const clickText = async (sel, text, prefix = false) => {
 
 await send('Page.enable')
 await send('Runtime.enable')
+await send('Page.navigate', { url: `${ORIGIN}/#/menu` })
+await sleep(2000)
 
 const now = Date.now()
 const data = {
@@ -86,9 +88,9 @@ for (const theme of ['light', 'dark']) {
   await go('/menu')
   await js('scrollTo(0, 0)')
   await shot(`${theme}-01-menu-top`)
-  await js(`scrollTo(0, document.getElementById('section-milk-coffee').offsetTop - 96 + 1)`)
+  await js(`scrollTo(0, (document.getElementById('section-milk-coffee')?.offsetTop ?? 100) - 96 + 1)`)
   await shot(`${theme}-02-menu-coffee`)
-  await js(`scrollTo(0, document.getElementById('section-bakery').offsetTop - 96 + 1)`)
+  await js(`scrollTo(0, (document.getElementById('section-bakery')?.offsetTop ?? 500) - 96 + 1)`)
   await shot(`${theme}-03-menu-food`)
 
   await go('/product/latte')
