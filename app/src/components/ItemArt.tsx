@@ -55,14 +55,16 @@ export function ItemArt({ art, ...svgProps }: Props) {
           <path d="M52 80 Q100 88 148 80" stroke="#000" strokeOpacity="0.06" strokeWidth="3" fill="none" />
           <path d="M50 50 L150 50 L139 196 Q100 206 61 196 Z" fill={url('round')} />
           <ellipse cx="100" cy="50" rx="50" ry="10" fill={top} />
+          {/* Lavender foam ground under rabbit (#c5c7d7) */}
+          <ellipse cx="100" cy="50" rx="42" ry="8.4" fill="#c5c7d7" opacity="0.85" />
           <ellipse cx="100" cy="50" rx="50" ry="10" fill="none" stroke="#fff" strokeOpacity="0.7" strokeWidth="1.5" />
           {/* Signature Rabbit foam art */}
           <g>
-            <ellipse cx="100" cy="51" rx="14" ry="6.2" fill="#ffffff" opacity="0.95" />
-            <ellipse cx="94.5" cy="45.5" rx="3.2" ry="5" transform="rotate(-12 94.5 45.5)" fill="#ffffff" opacity="0.95" />
-            <ellipse cx="105.5" cy="45.5" rx="3.2" ry="5" transform="rotate(12 105.5 45.5)" fill="#ffffff" opacity="0.95" />
-            <circle cx="96.5" cy="51.2" r="1.15" fill={fill} opacity="0.85" />
-            <circle cx="103.5" cy="51.2" r="1.15" fill={fill} opacity="0.85" />
+            <ellipse cx="100" cy="51" rx="14" ry="6.2" fill="#ffffff" opacity="0.98" />
+            <ellipse cx="94.5" cy="45.5" rx="3.2" ry="5" transform="rotate(-12 94.5 45.5)" fill="#ffffff" opacity="0.98" />
+            <ellipse cx="105.5" cy="45.5" rx="3.2" ry="5" transform="rotate(12 105.5 45.5)" fill="#ffffff" opacity="0.98" />
+            <circle cx="96.5" cy="51.2" r="1.15" fill="#362452" opacity="0.9" />
+            <circle cx="103.5" cy="51.2" r="1.15" fill="#362452" opacity="0.9" />
           </g>
         </g>
       )}
@@ -78,14 +80,16 @@ export function ItemArt({ art, ...svgProps }: Props) {
           <path d="M40 92 L160 92 L150 176 Q100 196 50 176 Z" fill={url('round')} />
           <ellipse cx="100" cy="92" rx="60" ry="12" fill="#ece5db" />
           <ellipse cx="100" cy="93" rx="53" ry="9.5" fill={top} />
+          {/* Lavender foam ground under rabbit */}
+          <ellipse cx="100" cy="93" rx="45" ry="8" fill="#c5c7d7" opacity="0.85" />
           <ellipse cx="100" cy="93" rx="53" ry="9.5" fill="none" stroke={fill} strokeOpacity="0.5" strokeWidth="3" />
           {/* Signature Rabbit foam art */}
           <g>
-            <ellipse cx="100" cy="94" rx="15" ry="6.5" fill="#ffffff" opacity="0.95" />
-            <ellipse cx="94" cy="88" rx="3.5" ry="5.5" transform="rotate(-12 94 88)" fill="#ffffff" opacity="0.95" />
-            <ellipse cx="106" cy="88" rx="3.5" ry="5.5" transform="rotate(12 106 88)" fill="#ffffff" opacity="0.95" />
-            <circle cx="96.5" cy="94.2" r="1.2" fill={fill} opacity="0.85" />
-            <circle cx="103.5" cy="94.2" r="1.2" fill={fill} opacity="0.85" />
+            <ellipse cx="100" cy="94" rx="15" ry="6.5" fill="#ffffff" opacity="0.98" />
+            <ellipse cx="94" cy="88" rx="3.5" ry="5.5" transform="rotate(-12 94 88)" fill="#ffffff" opacity="0.98" />
+            <ellipse cx="106" cy="88" rx="3.5" ry="5.5" transform="rotate(12 106 88)" fill="#ffffff" opacity="0.98" />
+            <circle cx="96.5" cy="94.2" r="1.2" fill="#362452" opacity="0.9" />
+            <circle cx="103.5" cy="94.2" r="1.2" fill="#362452" opacity="0.9" />
           </g>
         </g>
       )}

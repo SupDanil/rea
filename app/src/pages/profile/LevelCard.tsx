@@ -4,10 +4,10 @@ import { plural } from '../../utils/format'
 
 // Each level gets its own card colour: roast-brown, green, copper, espresso.
 const levelBg: Record<number, string> = {
-  1: '[background:radial-gradient(120%_120%_at_100%_0%,rgba(255,255,255,0.22),transparent_55%),linear-gradient(135deg,#52616c,#26333c)]',
-  2: '[background:radial-gradient(120%_120%_at_100%_0%,rgba(255,255,255,0.22),transparent_55%),linear-gradient(135deg,#4f7388,#3b5b6d)]',
-  3: '[background:radial-gradient(120%_120%_at_100%_0%,rgba(255,255,255,0.22),transparent_55%),linear-gradient(135deg,#4562b5,#2c3ea0)]',
-  4: '[background:radial-gradient(120%_120%_at_100%_0%,rgba(255,255,255,0.25),transparent_55%),linear-gradient(135deg,#26333c,#11171c)]',
+  1: '[background:radial-gradient(120%_120%_at_100%_0%,rgba(255,255,255,0.22),transparent_55%),linear-gradient(135deg,#5e4b7e,#3d2c55)]',
+  2: '[background:radial-gradient(120%_120%_at_100%_0%,rgba(255,255,255,0.22),transparent_55%),linear-gradient(135deg,#735d9a,#4a3869)]',
+  3: '[background:radial-gradient(120%_120%_at_100%_0%,rgba(255,255,255,0.22),transparent_55%),linear-gradient(135deg,#8e77b8,#5e4b7e)]',
+  4: '[background:radial-gradient(120%_120%_at_100%_0%,rgba(255,255,255,0.25),transparent_55%),linear-gradient(135deg,#362452,#140f1c)]',
 }
 
 export function LevelCard({ loyalty }: { loyalty: Loyalty }) {

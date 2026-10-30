@@ -46,9 +46,9 @@ export const btn = (kind: BtnKind, size: 'md' | 'sm' | 'lg' = 'md') =>
     kind === 'danger' && 'bg-danger text-white',
   )
 
-/** Signature shit кофе rabbit deep slate pill action button. */
+/** Signature shit кофе rabbit deep violet-lavender action button. */
 export const addBtn =
-  'flex h-15 flex-1 items-center justify-between rounded-full bg-[#243644] hover:bg-[#1c2c38] px-[22px] text-[17px] font-bold text-white shadow-[0_8px_24px_rgba(36,54,68,0.35)] border border-white/10 transition-[transform,background-color] duration-150 active:scale-98 disabled:justify-center disabled:bg-none disabled:bg-[#5f5853] disabled:shadow-none'
+  'flex h-15 flex-1 items-center justify-between rounded-full bg-[#3d2c55] hover:bg-[#322347] px-[22px] text-[17px] font-bold text-white shadow-[0_8px_24px_rgba(61,44,85,0.4)] border border-white/10 transition-[transform,background-color] duration-150 active:scale-98 disabled:justify-center disabled:bg-none disabled:bg-[#5f5853] disabled:shadow-none'
 export const addPrice = 'text-[19px] font-extrabold animate-pop'
 
 /** `xl` is the big centered login input; `code` spreads the SMS digits. */

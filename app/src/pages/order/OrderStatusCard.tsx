@@ -3,9 +3,9 @@ import { makingProgress, type Order, type OrderStatus } from '../../state/orders
 import { cx } from '../../utils/cx'
 import { statusSubtitle, statusTitles } from './orderCopy'
 
-// Clean snow-slate card while in progress, fresh green once ready, plain when cancelled.
+// Clean lavender-glow card while in progress, fresh green once ready, plain when cancelled.
 const inProgressBg =
-  '[background:radial-gradient(120%_85%_at_50%_0%,rgba(216,231,239,0.55),transparent_65%),#ffffff] border border-[#d8e2e8]'
+  '[background:radial-gradient(120%_85%_at_50%_0%,rgba(197,199,215,0.65),transparent_65%),#ffffff] border border-[#d6d4e8]'
 const statusBg: Record<OrderStatus, string> = {
   paying: inProgressBg,
   accepted: inProgressBg,

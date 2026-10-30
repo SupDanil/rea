@@ -13,8 +13,8 @@ export function MenuHeader() {
   return (
     <header className="flex items-center justify-between gap-1.5 sm:gap-2 px-2.5 sm:px-4 pt-[calc(12px+env(safe-area-inset-top))] pb-2.5">
       <button className="flex min-w-0 items-center gap-2 sm:gap-2.5 text-left" aria-label="shit кофе: Невский, 12, открыто до 22:00">
-        <div className="grid size-9 sm:size-10 place-items-center rounded-[12px] sm:rounded-[13px] bg-ink text-surface shadow-card overflow-hidden">
-          <RabbitIcon size={24} className="size-6 sm:size-7 text-surface" />
+        <div className="grid size-9 sm:size-10 place-items-center rounded-[12px] sm:rounded-[13px] bg-[#3d2c55] text-[#c5c7d7] shadow-card overflow-hidden">
+          <RabbitIcon size={24} className="size-6 sm:size-7 text-[#c5c7d7]" />
         </div>
         <div>
           <div className="flex items-center gap-[5px] text-[14px] sm:text-[15px] font-bold tracking-[-0.01em]">

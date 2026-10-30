@@ -67,8 +67,8 @@ function ProductView({ item }: { item: MenuItem }) {
       )}
       style={{
         '--tint': item.art.bg,
-        background: `radial-gradient(ellipse 80% 55% at 50% 42%, color-mix(in srgb, var(--tint, #d8e7ef) 26%, #334756) 0%, color-mix(in srgb, var(--tint, #d8e7ef) 10%, #1a252e) 52%, transparent 80%),
-                     linear-gradient(180deg, #1f2a33 0%, #162027 55%, #0e1419 100%)`,
+        background: `radial-gradient(ellipse 80% 55% at 50% 42%, color-mix(in srgb, var(--tint, #c5c7d7) 35%, #564575) 0%, color-mix(in srgb, var(--tint, #c5c7d7) 12%, #261b36) 55%, transparent 80%),
+                     linear-gradient(180deg, #221832 0%, #181124 55%, #0f0a17 100%)`,
       } as CSSProperties}
       role="dialog"
       aria-modal="true"
