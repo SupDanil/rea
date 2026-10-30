@@ -1,5 +1,5 @@
 import { IngredientArt, ItemArt } from '../../components/ItemArt'
-import type { IngredientGroup, MenuItem } from '../../data/menu'
+import { addonLabel, countAddons, type IngredientGroup, type MenuItem } from '../../data/menu'
 import { cx } from '../../utils/cx'
 import { formatPrice } from '../../utils/format'
 import type { Selection } from './useProductConfig'
@@ -37,15 +37,18 @@ export function AddonChips({ item, related, groups, selection, openGroupId, onOp
         </>
       )}
       {groups.map((g) => {
-        const picks = (selection[g.id] ?? []).map((id) => g.ingredients.find((i) => i.id === id)!)
+        const picks = countAddons((selection[g.id] ?? []).map((id) => g.ingredients.find((i) => i.id === id)!))
         const isOpen = openGroupId === g.id
         return (
           <button key={g.id} className={chip(isOpen)} aria-expanded={isOpen} onClick={() => onOpenGroup(isOpen ? null : g.id)}>
             {picks.length ? (
               <>
-                <IngredientArt color={picks[0].color} className="block size-9" />
-                <span className={chipTitle}>{picks.map((p) => p.name).join(', ')}</span>
-                <span className="text-[11px] text-muted">+{formatPrice(picks.reduce((s, p) => s + p.price, 0))}</span>
+                {/* Keyed by the picks so the chip pops whenever its contents change. */}
+                <span key={picks.map(addonLabel).join()} className="flex flex-col items-center gap-[5px] animate-pop">
+                  <IngredientArt color={picks[0].ingredient.color} className="block size-9" />
+                  <span className={chipTitle}>{picks.map(addonLabel).join(', ')}</span>
+                </span>
+                <span className="text-[11px] text-muted">+{formatPrice(picks.reduce((s, p) => s + p.ingredient.price * p.qty, 0))}</span>
               </>
             ) : (
               <>

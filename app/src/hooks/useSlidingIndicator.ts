@@ -5,7 +5,7 @@ import { useLayoutEffect, useRef, type RefObject } from 'react'
  * background in and out — two half-lit chips mid-switch read as flicker.
  * Positioned straight through the DOM so a scroll-driven switch costs no extra render.
  */
-export function useSlidingIndicator(rowRef: RefObject<HTMLDivElement | null>, activeKey: string) {
+export function useSlidingIndicator(rowRef: RefObject<HTMLDivElement | null>, activeKey: string, selector = '[aria-selected="true"]') {
   const indicatorRef = useRef<HTMLSpanElement>(null)
   const placed = useRef(false)
 
@@ -17,7 +17,7 @@ export function useSlidingIndicator(rowRef: RefObject<HTMLDivElement | null>, ac
       return
     }
     const place = (animate: boolean) => {
-      const tab = row.querySelector<HTMLElement>('[aria-selected="true"]')
+      const tab = row.querySelector<HTMLElement>(selector)
       if (!tab) return
       indicator.style.transition = animate ? '' : 'none'
       indicator.style.width = `${tab.offsetWidth}px`
@@ -32,7 +32,7 @@ export function useSlidingIndicator(rowRef: RefObject<HTMLDivElement | null>, ac
     window.addEventListener('resize', onResize)
     void document.fonts?.ready.then(() => place(false))
     return () => window.removeEventListener('resize', onResize)
-  }, [rowRef, activeKey])
+  }, [rowRef, activeKey, selector])
 
   return indicatorRef
 }

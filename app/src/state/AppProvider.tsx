@@ -11,6 +11,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const { profile, signIn, update: updateProfile, signOut } = useProfile()
   const { theme, toggle: toggleTheme } = useTheme()
   const [toast, setToast] = useState<Toast | null>(null)
+  const [flightId, setFlightId] = useState<string | null>(null)
 
   useEffect(() => {
     if (!toast) return
@@ -32,6 +33,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
     myOrders,
     theme,
     toggleTheme,
+    flightId,
+    setFlightId,
     toast,
     showToast: setToast,
     hideToast,

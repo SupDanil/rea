@@ -26,11 +26,11 @@ export const supportsViewTransitions = () => typeof document !== 'undefined' && 
  * Throws a copy of `source` along an arc to the centre of `target`, shrinking
  * as it goes — the add-on dropping into the cup. Resolves when it lands.
  */
-export function flyTo(source: Element, target: Element, opts: { duration?: number; endScale?: number } = {}) {
+export function flyTo(source: Element, target: Element | DOMRect, opts: { duration?: number; endScale?: number } = {}) {
   if (prefersReducedMotion()) return Promise.resolve()
   const { duration = 560, endScale = 0.35 } = opts
   const from = source.getBoundingClientRect()
-  const to = target.getBoundingClientRect()
+  const to = target instanceof Element ? target.getBoundingClientRect() : target
   const clone = source.cloneNode(true) as HTMLElement
   Object.assign(clone.style, {
     position: 'fixed',

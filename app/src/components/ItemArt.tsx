@@ -1,4 +1,4 @@
-import { useId, type SVGProps } from 'react'
+import { useId, type Ref, type SVGProps } from 'react'
 import type { Art } from '../data/menu'
 
 type Props = { art: Art } & Omit<SVGProps<SVGSVGElement>, 'viewBox'>
@@ -227,7 +227,7 @@ export function ItemArt({ art, ...svgProps }: Props) {
 }
 
 /** Small round "bowl" used for ingredient tiles. */
-export function IngredientArt({ color, ...svgProps }: { color: string } & Omit<SVGProps<SVGSVGElement>, 'viewBox' | 'color'>) {
+export function IngredientArt({ color, ...svgProps }: { color: string; ref?: Ref<SVGSVGElement> } & Omit<SVGProps<SVGSVGElement>, 'viewBox' | 'color'>) {
   const uid = useId().replace(/:/g, '')
   return (
     <svg viewBox="0 0 48 48" aria-hidden="true" {...svgProps}>

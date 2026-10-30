@@ -1,5 +1,6 @@
 import { useAppNavigate } from '../../hooks/useAppNavigate'
 import { useNow } from '../../hooks/useNow'
+import { useCartCatcher } from '../../hooks/useSharedArt'
 import { useApp } from '../../state/AppContext'
 import { countOf, subtotalOf } from '../../state/cart'
 import { isActive, statusOf } from '../../state/orders'
@@ -12,6 +13,7 @@ const short = { paying: 'оплата', accepted: 'принят', making: 'го�
 export function MenuDock() {
   const { cart, orders } = useApp()
   const { go } = useAppNavigate()
+  const catcher = useCartCatcher()
   const now = useNow(2000)
   const count = countOf(cart.lines)
   const total = subtotalOf(cart.lines)
@@ -39,7 +41,9 @@ export function MenuDock() {
           onClick={() => go('/cart')}
           data-cart-target="dock"
         >
-          <span className="grid size-11 place-items-center rounded-full bg-white/18 font-extrabold">{count}</span>
+          <span key={count} className="grid size-11 place-items-center rounded-full bg-white/18 font-extrabold animate-[pop_0.45s_var(--ease-soft)_0.25s_both]" style={catcher}>
+            {count}
+          </span>
           <span className="flex-1 text-left text-[16px] font-bold">Корзина</span>
           <span className="pr-3.5 text-[17px] font-extrabold animate-pop" key={total}>
             {formatPrice(total)}

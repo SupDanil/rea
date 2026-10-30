@@ -31,13 +31,22 @@ export type Ingredient = {
   nutrition: Nutrition
   color: string
   stopped?: boolean
+  /** Cap for this one add-on in counter groups (defaults to the group's max) */
+  maxQty?: number
 }
 
+/**
+ * Mirrors Drinkit's IngredientGroup: `counter` is `changedQuantityWithCounter`
+ * (spoons/pumps with +/−) and `max` is `totalQuantityMax` for the whole group.
+ */
 export type IngredientGroup = {
   id: string
   name: string
-  /** 1 → single choice, >1 → pick up to N */
+  /** Choice groups: 1 → single choice, >1 → up to N different. Counter groups: total portions. */
   max: number
+  counter?: boolean
+  /** What one portion is called in a counter group, e.g. "порц." or "ложка" */
+  unit?: string
   ingredients: Ingredient[]
 }
 
@@ -63,7 +72,9 @@ export const ingredientGroups: IngredientGroup[] = [
   {
     id: 'syrups',
     name: 'Сиропы',
-    max: 2,
+    max: 20,
+    counter: true,
+    unit: 'порц.',
     ingredients: [
       { id: 'vanilla', name: 'Ваниль', price: 50, nutrition: n(40, 0, 10, 0), color: '#f3dfb0' },
       { id: 'caramel', name: 'Солёная карамель', price: 50, nutrition: n(45, 0.5, 11, 0), color: '#c98a3c' },
@@ -99,11 +110,25 @@ export const ingredientGroups: IngredientGroup[] = [
   {
     id: 'extra',
     name: 'Покрепче',
-    max: 2,
+    max: 5,
+    counter: true,
+    unit: 'шт.',
     ingredients: [
-      { id: 'shot', name: 'Доп. шот эспрессо', price: 60, nutrition: n(2, 0, 0, 0.1), color: '#4a2a1a' },
-      { id: 'decaf', name: 'Без кофеина', price: 0, nutrition: n(0, 0, 0, 0), color: '#8d6a55' },
-      { id: 'cream', name: 'Взбитые сливки', price: 60, nutrition: n(70, 7, 2, 0.5), color: '#fffaf2' },
+      { id: 'shot', name: 'Доп. шот эспрессо', price: 60, nutrition: n(2, 0, 0, 0.1), color: '#4a2a1a', maxQty: 3 },
+      { id: 'decaf', name: 'Без кофеина', price: 0, nutrition: n(0, 0, 0, 0), color: '#8d6a55', maxQty: 1 },
+      { id: 'cream', name: 'Взбитые сливки', price: 60, nutrition: n(70, 7, 2, 0.5), color: '#fffaf2', maxQty: 2 },
+    ],
+  },
+  {
+    id: 'protein',
+    name: 'Протеин',
+    max: 5,
+    counter: true,
+    unit: 'ложки',
+    ingredients: [
+      { id: 'whey', name: 'Сывороточный протеин', price: 90, nutrition: n(115, 1.5, 3, 23), color: '#f2e9dc' },
+      { id: 'collagen', name: 'Коллаген', price: 70, nutrition: n(36, 0, 0, 9), color: '#f7f1ea' },
+      { id: 'plant-protein', name: 'Гороховый протеин', price: 80, nutrition: n(110, 2, 2, 21), color: '#d9cf9a' },
     ],
   },
 ]
@@ -137,7 +162,7 @@ const milkSizes = (m: number, l: number, base: Nutrition): Variant[] => [
 
 const one = (price: number, nutrition: Nutrition): Variant[] => [{ id: 'one', size: 'ONE', price, nutrition }]
 
-const milkGroups = ['milk', 'syrups', 'toppings', 'extra']
+const milkGroups = ['milk', 'syrups', 'toppings', 'extra', 'protein']
 
 export const menuItems: MenuItem[] = [
   {
@@ -305,7 +330,7 @@ export const menuItems: MenuItem[] = [
     categoryId: 'tea',
     art: { kind: 'cup', fill: '#9cbf6a', top: '#eef4dc', bg: '#dfe9c9' },
     variants: milkSizes(270, 320, n(150, 7, 14, 7)),
-    groupIds: ['milk', 'syrups', 'toppings'],
+    groupIds: ['milk', 'syrups', 'toppings', 'protein'],
   },
   {
     id: 'sea-buckthorn',
@@ -337,7 +362,7 @@ export const menuItems: MenuItem[] = [
     categoryId: 'cocoa',
     art: { kind: 'mug', fill: '#7a4a32', top: '#d9b79b', bg: '#e3cbb8' },
     variants: milkSizes(220, 270, n(210, 8, 28, 7)),
-    groupIds: ['milk', 'syrups', 'toppings'],
+    groupIds: ['milk', 'syrups', 'toppings', 'protein'],
   },
   {
     id: 'hot-chocolate',
@@ -439,3 +464,17 @@ export const itemsOf = (subId: string) => menuItems.filter((i) => i.categoryId =
 export const minPrice = (item: MenuItem) => Math.min(...item.variants.map((v) => v.price))
 export const isSoldOut = (item: MenuItem) => item.variants.every((v) => v.stopped)
 export const isDrink = (item: MenuItem) => item.variants[0].size !== 'ONE'
+
+/** Collapses repeated add-ons (counter groups store one id per portion) into { ingredient, qty }. */
+export function countAddons(ingredients: Ingredient[]) {
+  const counted: { ingredient: Ingredient; qty: number }[] = []
+  for (const ingredient of ingredients) {
+    const found = counted.find((c) => c.ingredient.id === ingredient.id)
+    if (found) found.qty++
+    else counted.push({ ingredient, qty: 1 })
+  }
+  return counted
+}
+
+export const addonLabel = ({ ingredient, qty }: { ingredient: Ingredient; qty: number }) =>
+  qty > 1 ? `${ingredient.name} ×${qty}` : ingredient.name

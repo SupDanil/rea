@@ -121,7 +121,54 @@
 @keyframes spin { to { transform: rotate(360deg); } }
 @keyframes pulse-dot { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.5; transform: scale(0.8); } }
 @keyframes art-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes addon-in-right { from { opacity: 0; transform: translateX(32px); } to { opacity: 1; transform: none; } }
+@keyframes addon-in-left { from { opacity: 0; transform: translateX(-32px); } to { opacity: 1; transform: none; } }
+@keyframes tile-in { from { opacity: 0; transform: translateY(10px) scale(0.94); } to { opacity: 1; transform: none; } }
+@keyframes draw { from { stroke-dashoffset: 24; } to { stroke-dashoffset: 0; } }
 @keyframes spin-in { from { opacity: 0; transform: rotate(-90deg) scale(0.6); } to { opacity: 1; transform: none; } }
+
+/* ---------- Screen transitions (View Transitions API) ---------- */
+/* Sheets slide up over the menu and drop away on the way back; the product
+   art (named per screen by useSharedArt) morphs between card, product and cart. */
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 0.3s;
+}
+::view-transition-new(sheet):only-child {
+  animation: sheet-up 0.46s var(--ease-soft) both;
+}
+::view-transition-old(sheet):only-child {
+  animation: sheet-down 0.34s cubic-bezier(0.4, 0, 1, 1) both;
+}
+::view-transition-group(sheet) {
+  animation-duration: 0.4s;
+  animation-timing-function: var(--ease-soft);
+}
+::view-transition-group(product-art) {
+  animation-duration: 0.52s;
+  animation-timing-function: cubic-bezier(0.3, 1.18, 0.4, 1);
+  z-index: 50;
+}
+::view-transition-old(product-art),
+::view-transition-new(product-art) {
+  /* Keep the cup's proportions while it resizes instead of stretching the snapshot. */
+  height: 100%;
+  object-fit: contain;
+}
+/* The cup stays the thing you see in flight; whatever it lands as (a card
+   thumbnail, the cart badge) only shows up as it arrives. */
+::view-transition-old(product-art) {
+  animation: art-out 0.52s linear both;
+}
+::view-transition-new(product-art) {
+  animation: art-arrive 0.52s linear both;
+}
+
+@keyframes art-out { 0%, 65% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes art-arrive { 0%, 55% { opacity: 0; } 100% { opacity: 1; } }
+@keyframes sheet-up { from { transform: translateY(72px); opacity: 0; } to { transform: none; opacity: 1; } }
+@keyframes sheet-down { to { transform: translateY(110px); opacity: 0; } }
 
 /* ---------- Custom utilities ---------- */
 
@@ -192,6 +239,11 @@
       animation: none !important;
       transition: none !important;
       scroll-behavior: auto !important;
+    }
+    ::view-transition-group(*),
+    ::view-transition-old(*),
+    ::view-transition-new(*) {
+      animation: none !important;
     }
   }
 }

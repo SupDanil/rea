@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { groupById, itemById, type Ingredient, type MenuItem, type Nutrition } from '../../data/menu'
+import { groupById, itemById, type Ingredient, type IngredientGroup, type MenuItem, type Nutrition } from '../../data/menu'
 
 /** Chosen add-on ids per ingredient group */
 export type Selection = Record<string, string[]>
@@ -51,20 +51,39 @@ export function useProductConfig(item: MenuItem) {
   const nutrition = chosen.reduce((acc, i) => addNutrition(acc, i.nutrition), variant.nutrition)
   const soldOut = item.variants.every((v) => v.stopped)
 
-  /** Returns whether the ingredient ended up selected. */
-  const toggle = (groupId: string, max: number, ingredientId: string) => {
-    const current = selection[groupId] ?? []
-    const removing = current.includes(ingredientId)
+  const qtyOf = (group: IngredientGroup, ingredientId: string) => (selection[group.id] ?? []).filter((id) => id === ingredientId).length
+  const totalOf = (group: IngredientGroup) => (selection[group.id] ?? []).length
+  /** Counter groups: room for one more portion of this add-on? */
+  const canAdd = (group: IngredientGroup, ingredient: Ingredient) =>
+    !ingredient.stopped && totalOf(group) < group.max && qtyOf(group, ingredient.id) < (ingredient.maxQty ?? group.max)
+
+  /** Choice groups: tap selects, tap again clears. Returns whether it ended up selected. */
+  const toggle = (group: IngredientGroup, ingredientId: string) => {
+    const wasOn = (selection[group.id] ?? []).includes(ingredientId)
     setSelection((prev) => {
-      const now = prev[groupId] ?? []
-      if (now.includes(ingredientId)) return { ...prev, [groupId]: now.filter((id) => id !== ingredientId) }
-      if (max === 1) return { ...prev, [groupId]: [ingredientId] }
+      const now = prev[group.id] ?? []
+      if (now.includes(ingredientId)) return { ...prev, [group.id]: now.filter((id) => id !== ingredientId) }
+      if (group.max === 1) return { ...prev, [group.id]: [ingredientId] }
       // Over the limit: drop the oldest pick so the tap always does something.
       const next = [...now, ingredientId]
-      return { ...prev, [groupId]: next.length > max ? next.slice(next.length - max) : next }
+      return { ...prev, [group.id]: next.length > group.max ? next.slice(next.length - group.max) : next }
     })
-    return !removing
+    return !wasOn
   }
+
+  /** Counter groups: one more spoon/pump. Returns false at the limit. */
+  const addOne = (group: IngredientGroup, ingredient: Ingredient) => {
+    if (!canAdd(group, ingredient)) return false
+    setSelection((prev) => ({ ...prev, [group.id]: [...(prev[group.id] ?? []), ingredient.id] }))
+    return true
+  }
+
+  const removeOne = (group: IngredientGroup, ingredientId: string) =>
+    setSelection((prev) => {
+      const now = prev[group.id] ?? []
+      const at = now.lastIndexOf(ingredientId)
+      return at < 0 ? prev : { ...prev, [group.id]: [...now.slice(0, at), ...now.slice(at + 1)] }
+    })
 
   return {
     variant,
@@ -72,6 +91,11 @@ export function useProductConfig(item: MenuItem) {
     setVariantIdx,
     selection,
     toggle,
+    addOne,
+    removeOne,
+    canAdd,
+    qtyOf,
+    totalOf,
     openGroupId,
     setOpenGroupId,
     groups,

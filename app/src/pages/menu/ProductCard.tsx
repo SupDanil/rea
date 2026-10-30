@@ -2,11 +2,13 @@ import type { CSSProperties } from 'react'
 import { PlusIcon } from '../../components/icons'
 import { ItemArt } from '../../components/ItemArt'
 import { isSoldOut, minPrice, type MenuItem } from '../../data/menu'
+import { useSharedArt } from '../../hooks/useSharedArt'
 import { cx } from '../../utils/cx'
 import { formatPrice } from '../../utils/format'
 
 export function ProductCard({ item, onOpen }: { item: MenuItem; onOpen: () => void }) {
   const soldOut = isSoldOut(item)
+  const sharedArt = useSharedArt(item.id, (path) => path === '/' || path === '/menu')
   return (
     <button
       className={cx(
@@ -23,7 +25,7 @@ export function ProductCard({ item, onOpen }: { item: MenuItem; onOpen: () => vo
         <ItemArt
           art={item.art}
           className="size-[84%] transition-transform duration-300 ease-soft group-hover:-translate-y-[3px] group-hover:scale-103"
-          data-art-id={item.id}
+          style={sharedArt}
         />
         {item.badge && (
           <span className="absolute top-2 left-2 rounded-full bg-accent px-2 py-1 text-[10px] font-extrabold tracking-[0.04em] text-accent-ink uppercase">

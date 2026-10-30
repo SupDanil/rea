@@ -1,4 +1,5 @@
 import { ItemArt } from '../../components/ItemArt'
+import { addonLabel, countAddons } from '../../data/menu'
 import { block, blockTitle, panel } from '../../components/ui'
 import { Summary, SummaryRow, SummaryTotal } from '../../components/Summary'
 import { resolveLines } from '../../state/cart'
@@ -21,7 +22,7 @@ export function OrderLines({ order, status }: { order: Order; status: OrderStatu
               {l.item.name}
               {l.variant.size !== 'ONE' && <span className="font-medium text-muted"> {l.variant.size}</span>}
               {l.ingredients.length > 0 && (
-                <span className="mt-0.5 block text-[12px] font-medium text-muted">{l.ingredients.map((i) => `+ ${i.name}`).join(', ')}</span>
+                <span className="mt-0.5 block text-[12px] font-medium text-muted">{countAddons(l.ingredients).map((a) => `+ ${addonLabel(a)}`).join(', ')}</span>
               )}
             </span>
             <span className="text-muted">×{l.qty}</span>
