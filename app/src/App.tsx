@@ -10,6 +10,7 @@ import { formatPrice, itemById, type MenuItem } from './data/menu'
 import { giftValue, loyaltyOf, useProfile } from './loyalty'
 import { countOf, isActive, readyTimeFor, subtotalOf, useCart, useNow, useOrders, type CartLine } from './store'
 import { useTheme } from './theme'
+import { btn, sheet } from './ui'
 
 // Hash routes mirror the original's deep links: #/menu, #/product/<id>, #/cart, #/order/<id>, #/profile, #/login.
 type Route =
@@ -229,11 +230,14 @@ export default function App() {
           <NotFound onClose={back} />
         ))}
       {toast && (
-        <div className="toast" role="status">
-          <span className="toast-text">{toast.text}</span>
+        <div
+          className="fixed bottom-[calc(84px+env(safe-area-inset-bottom))] left-1/2 z-30 flex max-w-[calc(100%-32px)] items-center gap-3.5 overflow-hidden rounded-full bg-inverse px-[18px] py-3 text-[14px] font-semibold whitespace-nowrap text-inverse-ink shadow-lift [transform:translateX(-50%)] animate-toast-in"
+          role="status"
+        >
+          <span className="overflow-hidden text-ellipsis">{toast.text}</span>
           {toast.action && (
             <button
-              className="toast-action"
+              className="flex-none font-extrabold text-[#8fd1bb] dark:text-accent"
               onClick={() => {
                 toast.action?.run()
                 setToast(null)
@@ -250,11 +254,11 @@ export default function App() {
 
 function NotFound({ onClose }: { onClose: () => void }) {
   return (
-    <div className="sheet" role="dialog" aria-modal="true" aria-label="Заказ не найден">
-      <div className="empty">
-        <h2>Заказ не найден</h2>
-        <p>Возможно, он был сделан на другом устройстве</p>
-        <button className="primary-btn" onClick={onClose}>
+    <div className={sheet} role="dialog" aria-modal="true" aria-label="Заказ не найден">
+      <div className="flex flex-1 flex-col items-center justify-center gap-2 p-8 text-center">
+        <h2 className="mt-2 text-[22px]">Заказ не найден</h2>
+        <p className="mb-3 max-w-[260px] text-[14px] leading-[1.4] text-muted">Возможно, он был сделан на другом устройстве</p>
+        <button className={btn('primary')} onClick={onClose}>
           В меню
         </button>
       </div>

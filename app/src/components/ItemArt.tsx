@@ -227,10 +227,10 @@ export function ItemArt({ art, className }: Props) {
 }
 
 /** Small round "bowl" used for ingredient tiles. */
-export function IngredientArt({ color }: { color: string }) {
+export function IngredientArt({ color, className }: { color: string; className?: string }) {
   const uid = useId().replace(/:/g, '')
   return (
-    <svg viewBox="0 0 48 48" aria-hidden="true">
+    <svg className={className} viewBox="0 0 48 48" aria-hidden="true">
       <defs>
         <radialGradient id={`bowl-${uid}`} cx="0.4" cy="0.35" r="0.7">
           <stop offset="0" stopColor="#fff" stopOpacity="0.45" />

@@ -10,6 +10,33 @@ import {
   type PaymentMethod,
   type Pickup,
 } from '../store'
+import {
+  addBtn,
+  addPrice,
+  block,
+  blockTitle,
+  btn,
+  cx,
+  field,
+  hint,
+  iconBtn,
+  option,
+  optionSub,
+  optionTitle,
+  panel,
+  radio,
+  sheet,
+  sheetBody,
+  sheetDock,
+  sheetHead,
+  sheetTitle,
+  summary,
+  summaryDiscount,
+  summaryRow,
+  summaryTotal,
+  textBtn,
+  toggle,
+} from '../ui'
 import { ItemArt } from './ItemArt'
 
 export type Checkout = {
@@ -42,6 +69,8 @@ type Props = {
 }
 
 const NAME_KEY = 'zerno-name'
+const stepBtn = 'grid size-[34px] place-items-center rounded-full text-[18px] font-semibold disabled:opacity-35'
+const giftEmoji = 'flex-none text-[26px] leading-none'
 const pickupOptions: Pickup[] = [{ kind: 'asap' }, { kind: 'in', minutes: 15 }, { kind: 'in', minutes: 30 }, { kind: 'in', minutes: 45 }]
 const sizeText = { S: 'S', M: 'M', L: 'L', ONE: '' } as const
 
@@ -120,53 +149,56 @@ export function CartScreen({ lines, onQty, onRemove, onAddUpsell, onOpenItem, on
   }
 
   return (
-    <div className="sheet" role="dialog" aria-modal="true" aria-label="Корзина">
-      <header className="sheet-head">
-        <button className="icon-btn icon-btn-left" onClick={onClose} aria-label="Назад в меню" disabled={paying}>
+    <div className={sheet} role="dialog" aria-modal="true" aria-label="Корзина">
+      <header className={sheetHead}>
+        <button className={iconBtn('left')} onClick={onClose} aria-label="Назад в меню" disabled={paying}>
           <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
             <path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         </button>
-        <h1>Корзина</h1>
+        <h1 className={sheetTitle}>Корзина</h1>
         {resolved.length > 0 && (
-          <button className="text-btn" onClick={onClear} disabled={paying}>
+          <button className={textBtn()} onClick={onClear} disabled={paying}>
             Очистить
           </button>
         )}
       </header>
 
       {resolved.length === 0 ? (
-        <div className="empty">
+        <div className="flex flex-1 flex-col items-center justify-center gap-2 p-8 text-center">
           <svg viewBox="0 0 120 120" width="120" height="120" aria-hidden="true">
             <circle cx="60" cy="60" r="56" fill="var(--surface)" />
             <path d="M38 46h44l-4 44H42z" fill="none" stroke="var(--faint)" strokeWidth="4" strokeLinejoin="round" />
             <path d="M50 46a10 10 0 0 1 20 0" fill="none" stroke="var(--faint)" strokeWidth="4" />
           </svg>
-          <h2>Пока пусто</h2>
-          <p>Загляните в меню — там тыквенный раф и свежие круассаны</p>
-          <button className="primary-btn" onClick={onClose}>
+          <h2 className="mt-2 text-[22px]">Пока пусто</h2>
+          <p className="mb-3 max-w-[260px] text-[14px] leading-[1.4] text-muted">Загляните в меню — там тыквенный раф и свежие круассаны</p>
+          <button className={btn('primary')} onClick={onClose}>
             В меню
           </button>
         </div>
       ) : (
-        <div className="sheet-body">
-          <ul className="lines">
+        <div className={sheetBody}>
+          <ul className="flex flex-col gap-2">
             {resolved.map((line, index) => (
-              <li key={line.key} className="line">
-                <button className="line-art" style={{ '--tint': line.item.art.bg } as CSSProperties} onClick={() => onOpenItem(line.item)} aria-label={`Открыть ${line.item.name}`}>
-                  <ItemArt art={line.item.art} />
+              <li key={line.key} className={cx('grid grid-cols-[76px_1fr] gap-3 rounded-[22px] p-2 animate-fade-in', panel)}>
+                <button
+                  className="art-glow grid size-[76px] place-items-center rounded-2xl"
+                  style={{ '--tint': line.item.art.bg } as CSSProperties} onClick={() => onOpenItem(line.item)} aria-label={`Открыть ${line.item.name}`}>
+                  <ItemArt art={line.item.art} className="size-[86%]" />
                 </button>
-                <div className="line-info">
-                  <div className="line-name">{line.item.name}</div>
-                  <div className="line-meta">
+                <div className="flex min-w-0 flex-col pt-0.5 pr-1">
+                  <div className="text-[15px] font-bold tracking-[-0.01em]">{line.item.name}</div>
+                  <div className="mt-[3px] text-[12px] leading-[1.35] text-muted">
                     {[line.variant.size !== 'ONE' && `${sizeText[line.variant.size]} · ${line.variant.volume}`, ...line.ingredients.map((i) => `+ ${i.name}`)]
                       .filter(Boolean)
                       .join(', ')}
                   </div>
-                  <div className="line-foot">
-                    <span className="line-price">{formatPrice(line.unitPrice * line.qty)}</span>
-                    <div className="stepper" role="group" aria-label={`Количество: ${line.qty}`}>
+                  <div className="mt-auto flex items-center justify-between pt-2">
+                    <span className="text-[15px] font-bold">{formatPrice(line.unitPrice * line.qty)}</span>
+                    <div className="flex items-center rounded-full bg-surface-2" role="group" aria-label={`Количество: ${line.qty}`}>
                       <button
+                        className={stepBtn}
                         onClick={() => (line.qty === 1 ? onRemove(line, index) : onQty(line.key, line.qty - 1))}
                         aria-label={line.qty === 1 ? 'Удалить' : 'Меньше'}
                         disabled={paying}
@@ -179,8 +211,8 @@ export function CartScreen({ lines, onQty, onRemove, onAddUpsell, onOpenItem, on
                           '−'
                         )}
                       </button>
-                      <span>{line.qty}</span>
-                      <button onClick={() => onQty(line.key, line.qty + 1)} aria-label="Больше" disabled={paying || line.qty >= 20}>
+                      <span className="min-w-5 text-center text-[14px] font-bold">{line.qty}</span>
+                      <button className={stepBtn} onClick={() => onQty(line.key, line.qty + 1)} aria-label="Больше" disabled={paying || line.qty >= 20}>
                         +
                       </button>
                     </div>
@@ -191,16 +223,19 @@ export function CartScreen({ lines, onQty, onRemove, onAddUpsell, onOpenItem, on
           </ul>
 
           {upsell.length > 0 && (
-            <section className="block">
-              <h2 className="block-title">Добавить к заказу</h2>
-              <div className="upsell">
+            <section className={block}>
+              <h2 className={blockTitle}>Добавить к заказу</h2>
+              <div className="no-scrollbar -mx-3 flex gap-2 overflow-x-auto px-3 pb-1">
                 {upsell.map((item) => (
-                  <button key={item.id} className="upsell-card" onClick={() => onAddUpsell(item)} disabled={paying}>
-                    <span className="upsell-art" style={{ '--tint': item.art.bg } as CSSProperties}>
-                      <ItemArt art={item.art} />
+                  <button
+                    key={item.id}
+                    className={cx('flex flex-[0_0_116px] flex-col gap-1 rounded-[20px] px-1.5 pt-1.5 pb-2.5 text-left', panel)}
+                    onClick={() => onAddUpsell(item)} disabled={paying}>
+                    <span className="tinted grid aspect-square place-items-center rounded-[15px] bg-(--tinted)" style={{ '--tint': item.art.bg } as CSSProperties}>
+                      <ItemArt art={item.art} className="size-[82%]" />
                     </span>
-                    <span className="upsell-name">{item.name}</span>
-                    <span className="upsell-price">+ {formatPrice(item.variants[0].price)}</span>
+                    <span className="mx-1 mt-1 min-h-[29px] text-[12px] leading-[1.2] font-semibold">{item.name}</span>
+                    <span className="mx-1 text-[12px] font-bold text-accent-soft">+ {formatPrice(item.variants[0].price)}</span>
                   </button>
                 ))}
               </div>
@@ -209,40 +244,43 @@ export function CartScreen({ lines, onQty, onRemove, onAddUpsell, onOpenItem, on
 
           {loyalty ? (
             canGift && (
-              <section className="block">
-                <button className="option gift-option" role="switch" aria-checked={useGift} onClick={() => setUseGift((v) => !v)}>
-                  <span className="gift-emoji" aria-hidden="true">🎁</span>
-                  <span>
-                    <span className="option-title">Напиток в подарок</span>
-                    <span className="option-sub">
+              <section className={block}>
+                <button className={cx(option, 'w-full')} role="switch" aria-checked={useGift} onClick={() => setUseGift((v) => !v)}>
+                  <span className={giftEmoji} aria-hidden="true">🎁</span>
+                  <span className="flex-1">
+                    <span className={optionTitle}>Напиток в подарок</span>
+                    <span className={optionSub}>
                       −{formatPrice(loyalty.giftValue)} · осталось подарков: {loyalty.giftsAvailable}
                     </span>
                   </span>
-                  <span className="switch" aria-hidden="true" />
+                  <span className={toggle} aria-hidden="true" />
                 </button>
               </section>
             )
           ) : (
-            <section className="block">
-              <button className="login-banner" onClick={onLogin}>
-                <span className="gift-emoji" aria-hidden="true">🎁</span>
-                <span>
-                  <span className="option-title">Войдите — напиток в подарок</span>
-                  <span className="option-sub">И скидка уровня со штампами за каждый заказ</span>
+            <section className={block}>
+              <button
+                className="flex w-full items-center gap-3 rounded-[18px] bg-[color-mix(in_oklab,var(--accent)_14%,var(--surface))] px-4 py-3.5 text-left shadow-card"
+                onClick={onLogin}
+              >
+                <span className={giftEmoji} aria-hidden="true">🎁</span>
+                <span className="flex-1">
+                  <span className={optionTitle}>Войдите — напиток в подарок</span>
+                  <span className={optionSub}>И скидка уровня со штампами за каждый заказ</span>
                 </span>
-                <span className="chev" aria-hidden="true">›</span>
+                <span aria-hidden="true">›</span>
               </button>
             </section>
           )}
 
-          <section className="block">
-            <label className="block-title" htmlFor="guest-name">
+          <section className={block}>
+            <label className={blockTitle} htmlFor="guest-name">
               Как вас назвать?
             </label>
             <input
               id="guest-name"
               ref={nameRef}
-              className={`field${nameError ? ' has-error' : ''}`}
+              className={field(nameError)}
               value={name}
               maxLength={20}
               autoComplete="given-name"
@@ -254,14 +292,16 @@ export function CartScreen({ lines, onQty, onRemove, onAddUpsell, onOpenItem, on
                 if (e.target.value.trim()) setNameError(false)
               }}
             />
-            <p id="guest-name-hint" className={`hint${nameError ? ' is-error' : ''}`}>
+            <p id="guest-name-hint" className={hint(nameError ? 'error' : 'plain')}>
               {nameError ? 'Напишите имя — так бариста позовёт вас' : 'Назовём, когда заказ будет готов'}
             </p>
           </section>
 
-          <section className="block">
-            <h2 className="block-title">Когда забрать</h2>
-            <div className="segmented" role="radiogroup" aria-label="Когда забрать">
+          <section className={block}>
+            <h2 className={blockTitle}>Когда забрать</h2>
+            <div
+              className="grid grid-cols-4 gap-1 rounded-[18px] bg-surface p-1 shadow-card *:h-[42px] *:rounded-[14px] *:text-[14px] *:font-semibold *:text-ink-2 *:transition-[background,color] *:duration-200 *:ease-[ease] *:aria-checked:bg-inverse *:aria-checked:text-inverse-ink"
+              role="radiogroup" aria-label="Когда забрать">
               {pickupOptions.map((p) => {
                 const checked = p.kind === pickup.kind && (p.kind === 'asap' || (pickup.kind === 'in' && pickup.minutes === p.minutes))
                 return (
@@ -271,14 +311,14 @@ export function CartScreen({ lines, onQty, onRemove, onAddUpsell, onOpenItem, on
                 )
               })}
             </div>
-            <p className="hint">Покровка, 12 · {pickup.kind === 'asap' ? 'приготовим за 5–7 минут' : `приготовим к нужному времени`}</p>
+            <p className={hint()}>Покровка, 12 · {pickup.kind === 'asap' ? 'приготовим за 5–7 минут' : `приготовим к нужному времени`}</p>
           </section>
 
-          <section className="block">
-            <h2 className="block-title">Промокод</h2>
-            <div className="promo">
+          <section className={block}>
+            <h2 className={blockTitle}>Промокод</h2>
+            <div className="flex gap-2">
               <input
-                className={`field${promoError ? ' has-error' : ''}`}
+                className={field(!!promoError)}
                 value={promoInput}
                 placeholder="Например, ЗЕРНО10"
                 autoCapitalize="characters"
@@ -289,60 +329,60 @@ export function CartScreen({ lines, onQty, onRemove, onAddUpsell, onOpenItem, on
                 }}
                 onKeyDown={(e) => e.key === 'Enter' && applyPromo()}
               />
-              <button className="secondary-btn" onClick={applyPromo} disabled={!promoInput.trim()}>
+              <button className={cx(btn('secondary'), 'h-[50px] flex-none')} onClick={applyPromo} disabled={!promoInput.trim()}>
                 Применить
               </button>
             </div>
-            {promo && <p className="hint is-ok">{promo}: {promoCodes[promo].label}</p>}
-            {promoError && <p className="hint is-error">{promoError}</p>}
+            {promo && <p className={hint('ok')}>{promo}: {promoCodes[promo].label}</p>}
+            {promoError && <p className={hint('error')}>{promoError}</p>}
           </section>
 
-          <section className="block">
-            <h2 className="block-title">Оплата</h2>
-            <div className="options" role="radiogroup" aria-label="Способ оплаты">
+          <section className={block}>
+            <h2 className={blockTitle}>Оплата</h2>
+            <div className="flex flex-col gap-2" role="radiogroup" aria-label="Способ оплаты">
               {(
                 [
                   ['card', 'Картой онлайн', 'Демо: деньги не списываются'],
                   ['cash', 'При получении', 'Картой или наличными на кассе'],
                 ] as const
               ).map(([id, title, sub]) => (
-                <button key={id} role="radio" aria-checked={payment === id} className="option" onClick={() => setPayment(id)}>
-                  <span className="radio" aria-hidden="true" />
+                <button key={id} role="radio" aria-checked={payment === id} className={option} onClick={() => setPayment(id)}>
+                  <span className={radio} aria-hidden="true" />
                   <span>
-                    <span className="option-title">{title}</span>
-                    <span className="option-sub">{sub}</span>
+                    <span className={optionTitle}>{title}</span>
+                    <span className={optionSub}>{sub}</span>
                   </span>
                 </button>
               ))}
             </div>
           </section>
 
-          <dl className="summary">
-            <div>
+          <dl className={summary}>
+            <div className={summaryRow}>
               <dt>Товары · {countOf(lines)}</dt>
               <dd>{formatPrice(subtotal)}</dd>
             </div>
             {rewardDiscount > 0 && (
-              <div className="is-discount">
+              <div className={summaryRow}>
                 <dt>Напиток в подарок</dt>
-                <dd>−{formatPrice(rewardDiscount)}</dd>
+                <dd className={summaryDiscount}>−{formatPrice(rewardDiscount)}</dd>
               </div>
             )}
             {levelDiscount > 0 && loyalty && (
-              <div className="is-discount">
+              <div className={summaryRow}>
                 <dt>
                   Уровень «{loyalty.levelName}» · {loyalty.levelPercent}%
                 </dt>
-                <dd>−{formatPrice(levelDiscount)}</dd>
+                <dd className={summaryDiscount}>−{formatPrice(levelDiscount)}</dd>
               </div>
             )}
             {promoDiscount > 0 && (
-              <div className="is-discount">
+              <div className={summaryRow}>
                 <dt>Промокод {promo}</dt>
-                <dd>−{formatPrice(promoDiscount)}</dd>
+                <dd className={summaryDiscount}>−{formatPrice(promoDiscount)}</dd>
               </div>
             )}
-            <div className="summary-total">
+            <div className={summaryTotal}>
               <dt>Итого</dt>
               <dd>{formatPrice(total)}</dd>
             </div>
@@ -351,17 +391,17 @@ export function CartScreen({ lines, onQty, onRemove, onAddUpsell, onOpenItem, on
       )}
 
       {resolved.length > 0 && (
-        <footer className="sheet-dock">
-          <button className="add-btn" onClick={pay} disabled={paying} aria-busy={paying}>
+        <footer className={sheetDock}>
+          <button className={cx(addBtn, 'w-full shadow-lift')} onClick={pay} disabled={paying} aria-busy={paying}>
             {paying ? (
-              <span className="spinner-wrap">
-                <span className="spinner" aria-hidden="true" />
+              <span className="flex w-full items-center justify-center gap-2.5">
+                <span className="size-5 rounded-full border-[2.5px] border-white/35 border-t-white animate-[spin_0.8s_linear_infinite]" aria-hidden="true" />
                 {payment === 'card' ? 'Оплачиваем…' : 'Отправляем…'}
               </span>
             ) : (
               <>
                 <span>{payment === 'card' ? 'Оплатить' : 'Заказать'}</span>
-                <span className="add-price" key={total}>
+                <span className={addPrice} key={total}>
                   {formatPrice(total)}
                 </span>
               </>

@@ -1,5 +1,6 @@
 import { formatPrice } from '../data/menu'
 import { statusOf, useNow, type Order } from '../store'
+import { cx } from '../ui'
 
 type Props = {
   count: number
@@ -18,20 +19,27 @@ export function MenuDock({ count, total, activeOrder, onOpenCart, onOpenOrder }:
   const status = activeOrder && statusOf(activeOrder, now)
 
   return (
-    <div className="menu-dock">
+    <div className="pointer-events-none fixed right-0 bottom-0 left-0 z-10 mx-auto flex max-w-[480px] gap-2 px-2.5 pb-[calc(10px+env(safe-area-inset-bottom))] *:pointer-events-auto *:animate-rise">
       {activeOrder && status && (
-        <button className={`order-pill is-${status}`} onClick={() => onOpenOrder(activeOrder)} aria-label={`Заказ № ${activeOrder.number}: ${short[status]}`}>
-          <span className="order-pill-dot" aria-hidden="true" />
-          <span className="order-pill-text">
+        <button
+          className="flex h-15 items-center gap-2.5 rounded-full bg-dock px-[18px] text-[14px] whitespace-nowrap text-white shadow-lift backdrop-blur-[12px] only:ml-auto"
+          onClick={() => onOpenOrder(activeOrder)}
+          aria-label={`Заказ № ${activeOrder.number}: ${short[status]}`}
+        >
+          <span className={cx('size-2.5 rounded-full animate-pulse-dot', status === 'ready' ? 'bg-open' : 'bg-pending')} aria-hidden="true" />
+          <span>
             <b>№ {activeOrder.number}</b> {short[status]}
           </span>
         </button>
       )}
       {count > 0 && (
-        <button className="cart-bar" onClick={onOpenCart}>
-          <span className="cart-bar-count">{count}</span>
-          <span className="cart-bar-label">Корзина</span>
-          <span className="cart-bar-total" key={total}>
+        <button
+          className="flex h-15 flex-1 items-center gap-3 rounded-full bg-linear-to-b from-accent-2 to-accent px-2 text-accent-ink shadow-lift"
+          onClick={onOpenCart}
+        >
+          <span className="grid size-11 place-items-center rounded-full bg-white/18 font-extrabold">{count}</span>
+          <span className="flex-1 text-left text-[16px] font-bold">Корзина</span>
+          <span className="pr-3.5 text-[17px] font-extrabold animate-pop" key={total}>
             {formatPrice(total)}
           </span>
         </button>

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { formatPhone, phoneDigits } from '../loyalty'
+import { btn, cx, field, hint, iconBtn, sheet, sheetBody, sheetHead, textBtn } from '../ui'
 
 type Props = {
   initialName: string
@@ -12,6 +13,9 @@ const DEMO_CODE = '1234'
 const RESEND_AFTER = 30
 
 type Step = 'phone' | 'code' | 'name'
+
+const stepBox = 'flex flex-1 flex-col gap-3.5 px-2 pt-[12vh] pb-6 text-center animate-[fade-in_0.3s_var(--ease-soft)]'
+const lead = '-mt-1 mb-2 text-[15px] leading-[1.4] text-ink-2'
 
 export function LoginScreen({ initialName, onDone, onClose }: Props) {
   const [step, setStep] = useState<Step>('phone')
@@ -58,10 +62,10 @@ export function LoginScreen({ initialName, onDone, onClose }: Props) {
   }
 
   return (
-    <div className="sheet login" role="dialog" aria-modal="true" aria-label="Вход">
-      <header className="sheet-head">
+    <div className={sheet} role="dialog" aria-modal="true" aria-label="Вход">
+      <header className={sheetHead}>
         <button
-          className="icon-btn icon-btn-left"
+          className={iconBtn('left')}
           onClick={() => (step === 'phone' ? onClose() : setStep(step === 'name' ? 'code' : 'phone'))}
           aria-label={step === 'phone' ? 'Закрыть' : 'Назад'}
         >
@@ -71,48 +75,48 @@ export function LoginScreen({ initialName, onDone, onClose }: Props) {
         </button>
       </header>
 
-      <div className="sheet-body login-body">
+      <div className={cx(sheetBody, 'flex')}>
         {step === 'phone' && (
           <form
-            className="login-step"
+            className={stepBox}
             onSubmit={(e) => {
               e.preventDefault()
               if (digits.length === 10 && !sending) void sendCode()
             }}
           >
-            <div className="login-gift" aria-hidden="true">🎁</div>
-            <h1>Вход по номеру</h1>
-            <p className="login-lead">Напиток в подарок за регистрацию, скидка уровня и штампы за каждый заказ.</p>
+            <div className="text-[48px] leading-none" aria-hidden="true">🎁</div>
+            <h1 className="text-[28px]">Вход по номеру</h1>
+            <p className={lead}>Напиток в подарок за регистрацию, скидка уровня и штампы за каждый заказ.</p>
             <label className="sr-only" htmlFor="phone">
               Телефон
             </label>
             <input
               id="phone"
               ref={inputRef}
-              className="field field-xl"
+              className={field(false, 'xl')}
               inputMode="tel"
               autoComplete="tel"
               value={formatPhone(digits)}
               onChange={(e) => setDigits(phoneDigits(e.target.value))}
             />
-            <button className="primary-btn wide" type="submit" disabled={digits.length !== 10 || sending} aria-busy={sending}>
+            <button className={btn('primary', 'lg')} type="submit" disabled={digits.length !== 10 || sending} aria-busy={sending}>
               {sending ? 'Отправляем…' : 'Получить код'}
             </button>
-            <p className="hint center">Продолжая, вы соглашаетесь с условиями программы лояльности</p>
+            <p className={cx(hint(), 'text-center')}>Продолжая, вы соглашаетесь с условиями программы лояльности</p>
           </form>
         )}
 
         {step === 'code' && (
-          <div className="login-step">
-            <h1>Код из SMS</h1>
-            <p className="login-lead">Отправили на {formatPhone(digits)}</p>
+          <div className={stepBox}>
+            <h1 className="text-[28px]">Код из SMS</h1>
+            <p className={lead}>Отправили на {formatPhone(digits)}</p>
             <label className="sr-only" htmlFor="sms-code">
               Код из SMS
             </label>
             <input
               id="sms-code"
               ref={inputRef}
-              className={`field field-xl field-code${codeError ? ' has-error' : ''}`}
+              className={field(codeError, 'code')}
               inputMode="numeric"
               autoComplete="one-time-code"
               maxLength={4}
@@ -121,10 +125,10 @@ export function LoginScreen({ initialName, onDone, onClose }: Props) {
               aria-describedby="code-hint"
               onChange={(e) => checkCode(e.target.value.replace(/\D/g, '').slice(0, 4))}
             />
-            <p id="code-hint" className={`hint center${codeError ? ' is-error' : ''}`}>
+            <p id="code-hint" className={cx(hint(codeError ? 'error' : 'plain'), 'text-center')}>
               {codeError ? 'Неверный код — проверьте ещё раз' : `Демо-режим: SMS не отправляется, код ${DEMO_CODE}`}
             </p>
-            <button className="text-btn center-btn" disabled={resendIn > 0} onClick={() => void sendCode()}>
+            <button className={cx(textBtn(), 'self-center')} disabled={resendIn > 0} onClick={() => void sendCode()}>
               {resendIn > 0 ? `Отправить снова через ${resendIn} с` : 'Отправить код ещё раз'}
             </button>
           </div>
@@ -132,27 +136,27 @@ export function LoginScreen({ initialName, onDone, onClose }: Props) {
 
         {step === 'name' && (
           <form
-            className="login-step"
+            className={stepBox}
             onSubmit={(e) => {
               e.preventDefault()
               if (name.trim()) onDone(formatPhone(digits), name.trim())
             }}
           >
-            <h1>Как вас зовут?</h1>
-            <p className="login-lead">Бариста назовёт это имя, когда заказ будет готов</p>
+            <h1 className="text-[28px]">Как вас зовут?</h1>
+            <p className={lead}>Бариста назовёт это имя, когда заказ будет готов</p>
             <label className="sr-only" htmlFor="profile-name">
               Имя
             </label>
             <input
               id="profile-name"
               ref={inputRef}
-              className="field field-xl"
+              className={field(false, 'xl')}
               autoComplete="given-name"
               maxLength={20}
               value={name}
               onChange={(e) => setName(e.target.value)}
             />
-            <button className="primary-btn wide" type="submit" disabled={!name.trim()}>
+            <button className={btn('primary', 'lg')} type="submit" disabled={!name.trim()}>
               Готово
             </button>
           </form>

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState, type CSSProperties } from 'react'
 import { formatPrice, groupById, itemById, type Ingredient, type MenuItem, type Nutrition } from '../data/menu'
+import { addBtn, addPrice, cx, iconBtn } from '../ui'
 import { IngredientArt, ItemArt } from './ItemArt'
 
 export type AddRequest = { itemId: string; variantId: string; ingredientIds: string[]; price: number }
@@ -21,6 +22,14 @@ const addNutrition = (a: Nutrition, b: Nutrition): Nutrition => ({
   carbs: a.carbs + b.carbs,
   protein: a.protein + b.protein,
 })
+
+const chipTitle = 'text-[12px] leading-[1.2] font-semibold'
+const chip = (open: boolean, related = false) =>
+  cx(
+    'flex min-h-[106px] flex-[0_0_98px] flex-col items-center gap-[5px] rounded-[20px] px-1.5 py-2.5 text-center backdrop-blur-[8px] [transition:background_0.2s,scale_0.18s_var(--ease-soft)] active:scale-96',
+    related ? 'justify-between' : 'justify-center',
+    open ? 'bg-surface shadow-card' : 'bg-glass',
+  )
 
 const fmt = (v: number) => Math.max(0, v).toLocaleString('ru-RU', { maximumFractionDigits: 1 })
 
@@ -87,30 +96,50 @@ export function ProductScreen({ item, onClose, onAdd, onOpenItem }: Props) {
   }
 
   return (
-    <div className="product" style={{ '--tint': item.art.bg } as CSSProperties} role="dialog" aria-modal="true" aria-label={item.name}>
-      <header className="product-head">
-        <h1>{item.name}</h1>
-        <button className="icon-btn" onClick={onClose} aria-label="Закрыть">
+    <div
+      className="tinted fixed inset-0 z-20 mx-auto flex max-w-[480px] flex-col overflow-hidden bg-[linear-gradient(180deg,var(--tinted)_0%,var(--tinted)_55%,var(--bg)_100%)] animate-[sheet-in_0.36s_var(--ease-soft)]"
+      style={{ '--tint': item.art.bg } as CSSProperties}
+      role="dialog"
+      aria-modal="true"
+      aria-label={item.name}
+    >
+      <header className="grid grid-cols-[44px_1fr_44px] items-center px-3 pt-[calc(10px+env(safe-area-inset-top))] pb-0.5">
+        <h1 className="col-start-2 text-center text-[24px]">{item.name}</h1>
+        <button className={iconBtn('right')} onClick={onClose} aria-label="Закрыть">
           <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
             <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
           </svg>
         </button>
       </header>
 
-      <dl className="nutrition" aria-live="polite">
-        <div><dt>энергия</dt><dd>{fmt(Math.round(nutrition.kcal))} ккал</dd></div>
-        <div><dt>жиры</dt><dd>{fmt(nutrition.fat)} г</dd></div>
-        <div><dt>углеводы</dt><dd>{fmt(nutrition.carbs)} г</dd></div>
-        <div><dt>белки</dt><dd>{fmt(nutrition.protein)} г</dd></div>
+      <dl className="mx-4 mt-3 grid grid-cols-4 divide-x divide-line rounded-[18px] bg-glass px-1 py-2.5 text-center" aria-live="polite">
+        {(
+          [
+            ['энергия', `${fmt(Math.round(nutrition.kcal))} ккал`],
+            ['жиры', `${fmt(nutrition.fat)} г`],
+            ['углеводы', `${fmt(nutrition.carbs)} г`],
+            ['белки', `${fmt(nutrition.protein)} г`],
+          ] as const
+        ).map(([label, value]) => (
+          <div key={label} className="flex flex-col-reverse">
+            <dt className="mt-px text-[11px] text-muted">{label}</dt>
+            <dd className="text-[15px] font-bold tracking-[-0.01em]">{value}</dd>
+          </div>
+        ))}
       </dl>
 
       {/* The details float over the stage so opening them never shifts the product art. */}
-      <div className="inside-wrap">
-        <button className="inside-toggle" aria-expanded={showInside} aria-controls="inside" onClick={() => setShowInside((v) => !v)}>
+      <div className="relative z-4 mt-2.5 flex justify-center">
+        <button
+          className="self-center rounded-full bg-glass px-3.5 py-[7px] text-[13px] font-semibold"
+          aria-expanded={showInside} aria-controls="inside" onClick={() => setShowInside((v) => !v)}>
           что внутри <span aria-hidden="true">{showInside ? '▴' : '▾'}</span>
         </button>
         {showInside && (
-          <div className="inside" id="inside">
+          <div
+            className="absolute top-[calc(100%+8px)] right-4 left-4 space-y-1.5 rounded-[18px] bg-surface px-4 py-3.5 text-[13px] leading-[1.5] shadow-lift animate-fade-in"
+            id="inside"
+          >
             <p>{item.description}</p>
             <p><b>Состав:</b> {item.composition}</p>
             {item.allergens && <p><b>Аллергены:</b> {item.allergens}</p>}
@@ -119,39 +148,56 @@ export function ProductScreen({ item, onClose, onAdd, onOpenItem }: Props) {
       </div>
 
       <div
-        className="product-stage"
+        className="relative grid min-h-0 flex-1 place-items-center py-2 before:absolute before:aspect-square before:w-[78%] before:rounded-full before:bg-[radial-gradient(circle,var(--glow)_0%,transparent_68%)] before:content-['']"
         onClick={() => {
           setOpenGroupId(null)
           setShowInside(false)
         }}
       >
-        <div className="product-float" style={{ transform: `scale(${variant.size === 'L' ? 1.08 : variant.size === 'S' ? 0.88 : 1})` }}>
-          <ItemArt key={item.id} art={item.art} className="product-art" />
+        <div
+          className="relative grid h-full max-h-[360px] place-items-center transition-transform duration-[450ms] ease-soft"
+          style={{ transform: `scale(${variant.size === 'L' ? 1.08 : variant.size === 'S' ? 0.88 : 1})` }}>
+          <ItemArt
+            key={item.id}
+            art={item.art}
+            className="h-full w-auto max-w-[80vw] animate-[art-in_0.35s_var(--ease-soft),float_6s_ease-in-out_0.35s_infinite]"
+          />
         </div>
       </div>
 
-      <div className="product-bottom">
+      <div className="relative">
         {openGroup && (
-          <div className="ingredients" role="group" aria-label={openGroup.name}>
-            <div className="ingredients-head">
+          <div
+            className="absolute right-2 bottom-[calc(100%+8px)] left-2 max-h-[52dvh] overflow-y-auto rounded-[26px] bg-panel px-3 pt-3.5 pb-3 text-white shadow-lift backdrop-blur-[18px] backdrop-saturate-130 animate-[rise_0.24s_var(--ease-soft)]"
+            role="group" aria-label={openGroup.name}>
+            <div className="flex items-baseline justify-between px-1 pb-3 text-[15px] font-bold">
               <span>{openGroup.name}</span>
-              <span className="muted">{openGroup.max === 1 ? 'выберите одно' : `до ${openGroup.max} шт.`}</span>
+              <span className="text-[13px] font-medium text-muted opacity-65">{openGroup.max === 1 ? 'выберите одно' : `до ${openGroup.max} шт.`}</span>
             </div>
-            <div className="ingredients-grid">
+            <div className="grid grid-cols-3 gap-2">
               {openGroup.ingredients.map((ing) => {
                 const selected = (selection[openGroup.id] ?? []).includes(ing.id)
                 return (
                   <button
                     key={ing.id}
-                    className={`ingredient${selected ? ' is-selected' : ''}`}
+                    className={cx(
+                      'flex flex-col items-center gap-1 rounded-[20px] px-1.5 pt-3 pb-2.5 text-center [transition:background_0.18s,color_0.18s,scale_0.18s_var(--ease-soft)] not-disabled:active:scale-95 disabled:opacity-35',
+                      selected ? 'bg-white text-[#1d1916]' : 'bg-white/9 text-white',
+                    )}
                     disabled={ing.stopped}
                     aria-pressed={selected}
                     onClick={() => toggle(openGroup.id, openGroup.max, ing.id)}
                   >
-                    <IngredientArt color={ing.color} />
-                    <span className="ingredient-name">{ing.name}</span>
-                    <span className="ingredient-price">{ing.stopped ? 'нет в наличии' : `+${formatPrice(ing.price)}`}</span>
-                    <span className="ingredient-mark" aria-hidden="true">{selected ? '✓' : '+'}</span>
+                    <IngredientArt color={ing.color} className="size-[46px]" />
+                    <span className="flex min-h-[29px] items-center text-[12px] leading-[1.2] font-semibold">{ing.name}</span>
+                    <span className="text-[11px] opacity-65">{ing.stopped ? 'нет в наличии' : `+${formatPrice(ing.price)}`}</span>
+                    <span
+                      className={cx(
+                        'mt-0.5 grid size-6 place-items-center rounded-full text-[15px] leading-none',
+                        selected ? 'bg-accent text-white animate-pop' : 'bg-white/14',
+                      )}
+                      aria-hidden="true"
+                    >{selected ? '✓' : '+'}</span>
                   </button>
                 )
               })}
@@ -160,31 +206,31 @@ export function ProductScreen({ item, onClose, onAdd, onOpenItem }: Props) {
         )}
 
         {(related || groups.length > 0) && (
-          <div className="chips">
+          <div className="no-scrollbar flex items-stretch gap-2 overflow-x-auto px-3 pb-3">
             {related && (
               <>
-                <button className="chip chip-related" onClick={() => onOpenItem(related)}>
-                  <span className="chip-title">{item.related!.label}</span>
-                  <ItemArt art={related.art} className="chip-art" />
+                <button className={chip(false, true)} onClick={() => onOpenItem(related)}>
+                  <span className={chipTitle}>{item.related!.label}</span>
+                  <ItemArt art={related.art} className="h-[60px] w-14" />
                 </button>
-                {groups.length > 0 && <span className="chips-divider" aria-hidden="true" />}
+                {groups.length > 0 && <span className="my-5 flex-[0_0_1px] bg-line" aria-hidden="true" />}
               </>
             )}
             {groups.map((g) => {
               const picks = (selection[g.id] ?? []).map((id) => g.ingredients.find((i) => i.id === id)!)
               const isOpen = openGroupId === g.id
               return (
-                <button key={g.id} className={`chip${isOpen ? ' is-open' : ''}`} aria-expanded={isOpen} onClick={() => setOpenGroupId(isOpen ? null : g.id)}>
+                <button key={g.id} className={chip(isOpen)} aria-expanded={isOpen} onClick={() => setOpenGroupId(isOpen ? null : g.id)}>
                   {picks.length ? (
                     <>
-                      <span className="chip-ing"><IngredientArt color={picks[0].color} /></span>
-                      <span className="chip-title">{picks.map((p) => p.name).join(', ')}</span>
-                      <span className="chip-sub">+{formatPrice(picks.reduce((s, p) => s + p.price, 0))}</span>
+                      <IngredientArt color={picks[0].color} className="block size-9" />
+                      <span className={chipTitle}>{picks.map((p) => p.name).join(', ')}</span>
+                      <span className="text-[11px] text-muted">+{formatPrice(picks.reduce((s, p) => s + p.price, 0))}</span>
                     </>
                   ) : (
                     <>
-                      <span className="chip-plus" aria-hidden="true">+</span>
-                      <span className="chip-title">{g.name}</span>
+                      <span className="grid size-[34px] place-items-center rounded-full bg-surface text-[22px] leading-none shadow-card" aria-hidden="true">+</span>
+                      <span className={chipTitle}>{g.name}</span>
                     </>
                   )}
                 </button>
@@ -193,26 +239,26 @@ export function ProductScreen({ item, onClose, onAdd, onOpenItem }: Props) {
           </div>
         )}
 
-        <footer className="product-foot">
+        <footer className="mx-2 mb-[calc(10px+env(safe-area-inset-bottom))] flex items-center gap-2 rounded-full bg-dock p-[7px] shadow-lift backdrop-blur-[12px]">
           {variant.size !== 'ONE' && (
-            <div className="sizes" role="radiogroup" aria-label="Размер">
+            <div className="flex rounded-full bg-white/10 p-1" role="radiogroup" aria-label="Размер">
               {item.variants.map((v, idx) => (
                 <button
                   key={v.id}
                   role="radio"
                   aria-checked={idx === variantIdx}
                   disabled={v.stopped}
-                  className="size"
+                  className="flex h-[52px] min-w-12 flex-col items-center justify-center rounded-full px-2.5 text-white/85 [transition:background_0.25s,color_0.25s,min-width_0.25s_var(--ease-soft)] disabled:opacity-30 aria-checked:min-w-[66px] aria-checked:bg-white aria-checked:text-[#1d1916]"
                   onClick={() => setVariantIdx(idx)}
                 >
-                  <span className="size-letter">{sizeLabel[v.size]}</span>
-                  {idx === variantIdx && v.volume && <span className="size-volume">{v.volume}</span>}
+                  <span className="text-[18px] leading-none font-extrabold">{sizeLabel[v.size]}</span>
+                  {idx === variantIdx && v.volume && <span className="mt-[3px] text-[10px] font-semibold opacity-70">{v.volume}</span>}
                 </button>
               ))}
             </div>
           )}
           <button
-            className="add-btn"
+            className={addBtn}
             disabled={soldOut}
             onClick={() => onAdd({ itemId: item.id, variantId: variant.id, ingredientIds: chosen.map((i) => i.id), price })}
           >
@@ -221,7 +267,7 @@ export function ProductScreen({ item, onClose, onAdd, onOpenItem }: Props) {
             ) : (
               <>
                 <span>Добавить</span>
-                <span className="add-price" key={price}>{formatPrice(price)}</span>
+                <span className={addPrice} key={price}>{formatPrice(price)}</span>
               </>
             )}
           </button>
