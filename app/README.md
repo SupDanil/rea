@@ -30,11 +30,13 @@ npm run preview  # проверить собранную PWA
 
 ## Где что
 
-- `src/data/menu.ts` — данные и типы (категория → позиция → размеры → группы добавок).
-- `src/components/MenuScreen.tsx`, `ProductScreen.tsx` — экраны.
-- `src/components/ItemArt.tsx` — SVG-иллюстрации товаров и добавок.
-- `src/store.ts` — корзина, заказы, статусы, сохранение; `src/theme.ts` — тема.
-- `src/loyalty.ts` — профиль, уровни, штампы, подарки; `LoginScreen.tsx`, `ProfileScreen.tsx` — вход и профиль.
-- `src/components/CartScreen.tsx`, `OrderScreen.tsx`, `MenuDock.tsx` — корзина, заказ, нижняя плашка.
+- `src/app/` — роутер (`createHashRouter`) и корневой layout: меню всегда снизу, остальные экраны — вложенные маршруты поверх.
+- `src/pages/<страница>/` — страница и компоненты, которые нужны только ей (`menu`, `product`, `cart`, `order`, `profile`, `login`).
+- `src/components/` — общий UI: `Sheet`, `Summary`, `ConfirmBox`, `EmptyState`, `Toast`, иконки, `ItemArt`, наборы классов в `ui.ts`.
+- `src/state/` — корзина, заказы, профиль и лояльность, тема; всё раздаётся через `AppProvider` / `useApp()`.
+- `src/hooks/` — общие хуки: навигация с View Transitions, сохранение в localStorage, «докрутка» чисел, бегунок табов.
+- `src/utils/` — форматирование, `cx`, работа с localStorage, анимации (`flyTo`, `bounce`).
+- `src/data/menu.ts` — меню и добавки (группы с выбором и со счётчиком порций).
 
+Анимации переходов используют View Transitions API (Chrome, Safari 18+); в остальных браузерах экраны просто проявляются.
 Оплаты и бэкенда нет: заказ «создаётся» локально, деньги не списываются.
