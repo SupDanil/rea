@@ -46,7 +46,7 @@ export function MenuHeader() {
             </span>
           )}
         </button>
-        <button className={roundBtn} onClick={() => go('/cart')} aria-label={`Корзина, товаров: ${cartCount}`} data-cart-target="header">
+        <button className={roundBtn} onClick={() => go('/cart')} aria-label={`Корзина, товаров: ${cartCount}`}>
           <BagIcon />
           {cartCount > 0 && (
             <span

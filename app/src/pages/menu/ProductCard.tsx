@@ -1,4 +1,5 @@
 import { useRef, useState, type CSSProperties } from 'react'
+import { flushSync } from 'react-dom'
 import { PlusIcon } from '../../components/icons'
 import { ItemArt } from '../../components/ItemArt'
 import { isSoldOut, minPrice, type MenuItem } from '../../data/menu'
@@ -6,10 +7,20 @@ import { useSharedArt } from '../../hooks/useSharedArt'
 import { useApp } from '../../state/AppContext'
 import { cx } from '../../utils/cx'
 import { formatPrice } from '../../utils/format'
-import { flyTo } from '../../utils/motion'
+import { bounce, flyTo } from '../../utils/motion'
 
-/** Where a quick-added item lands: the dock's counter if it is up, else the header bag. */
-const cartTarget = () => document.querySelector('[data-cart-badge]') ?? document.querySelector('[data-cart-target="header"]')
+/** Where a quick-added item lands: always the bottom cart dock's badge. */
+function getCartTarget(): Element | DOMRect {
+  const badge = document.querySelector('[data-cart-badge]')
+  if (badge) return badge
+  const dock = document.querySelector('[data-cart-target="dock"]')
+  if (dock) return dock
+  // Fallback to the bottom position where the dock appears, never the top header
+  const maxW = Math.min(typeof window !== 'undefined' ? window.innerWidth : 480, 480)
+  const left = ((typeof window !== 'undefined' ? window.innerWidth : 480) - maxW) / 2 + 16
+  const top = (typeof window !== 'undefined' ? window.innerHeight : 800) - 68
+  return new DOMRect(left, top, 44, 44)
+}
 
 export function ProductCard({ item, onOpen }: { item: MenuItem; onOpen: () => void }) {
   const { cart } = useApp()
@@ -24,11 +35,33 @@ export function ProductCard({ item, onOpen }: { item: MenuItem; onOpen: () => vo
     if (!variant) return
     setJustAdded(true)
     window.setTimeout(() => setJustAdded(false), 1100)
-    // The item joins the cart as it lands, so the counter bumps on impact.
-    const land = () => cart.add(item.id, variant.id, [])
-    const target = cartTarget()
-    if (artRef.current && target) void flyTo(artRef.current, target, { duration: 620, endScale: 0.2 }).then(land)
-    else land()
+
+    const isFirstItem = cart.lines.length === 0
+    if (isFirstItem) {
+      // First item: mount the bottom dock immediately so it rises up to meet the incoming cup,
+      // and the cup flies down into the newly revealed bottom dock.
+      flushSync(() => {
+        cart.add(item.id, variant.id, [])
+      })
+      const target = getCartTarget()
+      if (artRef.current && target) {
+        void flyTo(artRef.current, target, { duration: 520, endScale: 0.2 }).then(() => {
+          if (target instanceof Element) bounce(target, 1.25)
+        })
+      }
+    } else {
+      // Subsequent items: dock is already up at the bottom, fly down to the badge and bump count on impact.
+      const target = getCartTarget()
+      const land = () => {
+        cart.add(item.id, variant.id, [])
+        if (target instanceof Element) bounce(target, 1.2)
+      }
+      if (artRef.current && target) {
+        void flyTo(artRef.current, target, { duration: 520, endScale: 0.2 }).then(land)
+      } else {
+        land()
+      }
+    }
   }
 
   return (
