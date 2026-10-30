@@ -1,5 +1,7 @@
 import { useMemo, useState } from 'react'
-import { groupById, itemById, type Ingredient, type IngredientGroup, type MenuItem, type Nutrition } from '../../data/menu'
+import type { Catalog } from '../../domain'
+import { useCatalog } from '../../queries/useCatalog'
+import type { Ingredient, IngredientGroup, MenuItem, Nutrition } from '../../data/menu'
 
 /** Chosen add-on ids per ingredient group */
 export type Selection = Record<string, string[]>
@@ -14,7 +16,9 @@ const addNutrition = (a: Nutrition, b: Nutrition): Nutrition => ({
 const firstAvailable = (item: MenuItem) => Math.max(0, item.variants.findIndex((v) => !v.stopped))
 
 /** Size, add-ons and the open add-on group for one product, plus the totals they add up to. */
-export function useProductConfig(item: MenuItem) {
+export function useProductConfig(item: MenuItem, providedCatalog?: Catalog) {
+  const queryCatalog = useCatalog()
+  const catalog = providedCatalog ?? queryCatalog
   const [variantIdx, setVariantIdx] = useState(() => firstAvailable(item))
   const [selection, setSelection] = useState<Selection>({})
   const [openGroupId, setOpenGroupId] = useState<string | null>(null)
@@ -29,7 +33,7 @@ export function useProductConfig(item: MenuItem) {
     setSelection((prev) => {
       const kept: Selection = {}
       for (const groupId of item.groupIds) {
-        const group = groupById.get(groupId)
+        const group = catalog.groupById.get(groupId)
         const ids = (prev[groupId] ?? []).filter((id) => group?.ingredients.some((i) => i.id === id && !i.stopped))
         if (ids.length) kept[groupId] = ids
       }
@@ -40,8 +44,8 @@ export function useProductConfig(item: MenuItem) {
   }
 
   const variant = item.variants[variantIdx] ?? item.variants[0]
-  const groups = useMemo(() => item.groupIds.map((id) => groupById.get(id)!).filter(Boolean), [item])
-  const related = item.related && itemById.get(item.related.itemId)
+  const groups = useMemo(() => item.groupIds.map((id) => catalog.groupById.get(id)!).filter(Boolean), [catalog, item])
+  const related = item.related && catalog.itemById.get(item.related.itemId)
 
   const chosen: Ingredient[] = useMemo(
     () => groups.flatMap((g) => (selection[g.id] ?? []).map((id) => g.ingredients.find((i) => i.id === id)!)),

@@ -1,70 +1,27 @@
 // Shape mirrors the category → item → variant → ingredient-group model
 // described in docs/drinkit-analysis.md. All content here is our own.
 
-export type Nutrition = { kcal: number; fat: number; carbs: number; protein: number }
+import {
+  createCatalog,
+  type Category,
+  type IngredientGroup,
+  type MenuItem,
+  type Nutrition,
+  type Variant,
+} from '../domain'
 
-export type ArtKind = 'cup' | 'mug' | 'iced' | 'tea' | 'croissant' | 'sandwich' | 'cake' | 'cookie' | 'toy'
+export type {
+  Art,
+  ArtKind,
+  Category,
+  Ingredient,
+  IngredientGroup,
+  MenuItem,
+  Nutrition,
+  Variant,
+} from '../domain'
 
-export type Art = {
-  kind: ArtKind
-  /** Main liquid / food color */
-  fill: string
-  /** Foam, cream or secondary layer */
-  top?: string
-  /** Card / screen background tint */
-  bg: string
-}
-
-export type Variant = {
-  id: string
-  size: 'S' | 'M' | 'L' | 'ONE'
-  volume?: string
-  price: number
-  nutrition: Nutrition
-  stopped?: boolean
-}
-
-export type Ingredient = {
-  id: string
-  name: string
-  price: number
-  nutrition: Nutrition
-  color: string
-  stopped?: boolean
-  /** Cap for this one add-on in counter groups (defaults to the group's max) */
-  maxQty?: number
-}
-
-/**
- * Mirrors Drinkit's IngredientGroup: `counter` is `changedQuantityWithCounter`
- * (spoons/pumps with +/−) and `max` is `totalQuantityMax` for the whole group.
- */
-export type IngredientGroup = {
-  id: string
-  name: string
-  /** Choice groups: 1 → single choice, >1 → up to N different. Counter groups: total portions. */
-  max: number
-  counter?: boolean
-  /** What one portion is called in a counter group, e.g. "порц." or "ложка" */
-  unit?: string
-  ingredients: Ingredient[]
-}
-
-export type MenuItem = {
-  id: string
-  name: string
-  description: string
-  composition: string
-  allergens?: string
-  categoryId: string
-  art: Art
-  variants: Variant[]
-  groupIds: string[]
-  related?: { itemId: string; label: string }
-  badge?: string
-}
-
-export type Category = { id: string; name: string; parentId?: string; heroItemId?: string }
+export { addonLabel, countAddons, isDrink, isSoldOut, minPrice } from '../domain'
 
 const n = (kcal: number, fat: number, carbs: number, protein: number): Nutrition => ({ kcal, fat, carbs, protein })
 
@@ -479,27 +436,14 @@ export const menuItems: MenuItem[] = [
   },
 ]
 
-export const itemById = new Map(menuItems.map((i) => [i.id, i]))
-export const groupById = new Map(ingredientGroups.map((g) => [g.id, g]))
+export const staticCatalog = createCatalog({
+  items: menuItems,
+  categories,
+  ingredientGroups,
+})
 
-export const topCategories = categories.filter((c) => !c.parentId)
-export const subcategoriesOf = (id: string) => categories.filter((c) => c.parentId === id)
-export const itemsOf = (subId: string) => menuItems.filter((i) => i.categoryId === subId)
-
-export const minPrice = (item: MenuItem) => Math.min(...item.variants.map((v) => v.price))
-export const isSoldOut = (item: MenuItem) => item.variants.every((v) => v.stopped)
-export const isDrink = (item: MenuItem) => item.variants[0].size !== 'ONE'
-
-/** Collapses repeated add-ons (counter groups store one id per portion) into { ingredient, qty }. */
-export function countAddons(ingredients: Ingredient[]) {
-  const counted: { ingredient: Ingredient; qty: number }[] = []
-  for (const ingredient of ingredients) {
-    const found = counted.find((c) => c.ingredient.id === ingredient.id)
-    if (found) found.qty++
-    else counted.push({ ingredient, qty: 1 })
-  }
-  return counted
-}
-
-export const addonLabel = ({ ingredient, qty }: { ingredient: Ingredient; qty: number }) =>
-  qty > 1 ? `${ingredient.name} ×${qty}` : ingredient.name
+export const itemById = staticCatalog.itemById
+export const groupById = staticCatalog.groupById
+export const topCategories = staticCatalog.topCategories
+export const subcategoriesOf = staticCatalog.subcategoriesOf
+export const itemsOf = staticCatalog.itemsOf

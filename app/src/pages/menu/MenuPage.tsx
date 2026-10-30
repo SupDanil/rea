@@ -1,4 +1,4 @@
-import { itemById, itemsOf } from '../../data/menu'
+import { useCatalog } from '../../queries/useCatalog'
 import { useAppNavigate } from '../../hooks/useAppNavigate'
 import { cx } from '../../utils/cx'
 import { CategoryNav } from './CategoryNav'
@@ -10,8 +10,9 @@ import { sectionId, useMenuScrollSpy } from './useMenuScrollSpy'
 /** The base layer: every other screen opens on top of it. */
 export function MenuPage() {
   const { go } = useAppNavigate()
-  const spy = useMenuScrollSpy()
-  const hero = itemById.get(spy.activeTop.heroItemId ?? '')
+  const catalog = useCatalog()
+  const spy = useMenuScrollSpy(catalog)
+  const hero = catalog.itemById.get(spy.activeTop?.heroItemId ?? '')
   const open = (id: string) => go(`/product/${id}`)
 
   return (
@@ -39,7 +40,7 @@ export function MenuPage() {
           >
             <h2 className="mx-1 mb-2.5 sm:mb-3 text-[20px] sm:text-[22px]">{sub.name}</h2>
             <div className="grid grid-cols-2 gap-2 sm:gap-2.5 wide:grid-cols-3 wide:gap-3.5 lg:grid-cols-4">
-              {itemsOf(sub.id).map((item) => (
+              {catalog.itemsOf(sub.id).map((item) => (
                 <ProductCard key={item.id} item={item} onOpen={() => open(item.id)} />
               ))}
             </div>

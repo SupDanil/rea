@@ -2,7 +2,8 @@ import { useLayoutEffect, useRef, useState, type CSSProperties, type RefObject }
 import { Navigate, useParams } from 'react-router'
 import { CloseIcon } from '../../components/icons'
 import { ItemArt } from '../../components/ItemArt'
-import { itemById, type Ingredient, type IngredientGroup, type MenuItem } from '../../data/menu'
+import type { Ingredient, IngredientGroup, MenuItem } from '../../data/menu'
+import { useCatalog } from '../../queries/useCatalog'
 import { useAppNavigate } from '../../hooks/useAppNavigate'
 import { useEscape } from '../../hooks/useEscape'
 import { useExitTransition } from '../../hooks/useExitTransition'
@@ -24,7 +25,8 @@ const CONFIRM_MS = 420
 
 export function ProductPage() {
   const { id = '' } = useParams()
-  const item = itemById.get(id)
+  const catalog = useCatalog()
+  const item = catalog.itemById.get(id)
   if (!item) return <Navigate to="/" replace />
   return <ProductView item={item} />
 }

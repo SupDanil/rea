@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query'
 import { useMemo } from 'react'
 import { api } from '../api'
-import { categories, ingredientGroups, menuItems } from '../data/menu'
+import { categories, ingredientGroups, menuItems, staticCatalog } from '../data/menu'
 import { createCatalog, type Catalog, type CatalogData } from '../domain'
 import { queryKeys } from './keys'
 
@@ -11,7 +11,7 @@ export const fallbackCatalogData: CatalogData = {
   ingredientGroups,
 }
 
-export const staticCatalog = createCatalog(fallbackCatalogData)
+export { staticCatalog }
 
 /** Hook providing indexed catalog with synchronous fallback to static menu data. */
 export function useCatalog(): Catalog {

@@ -1,5 +1,6 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
-import { subcategoriesOf, topCategories } from '../../data/menu'
+import type { Catalog } from '../../domain'
+import { useCatalog } from '../../queries/useCatalog'
 import { animateWindowScroll } from '../../utils/scrollTo'
 
 /** Must match the sections' `scroll-mt-(--tabs-h)` (--tabs-h in index.css). */
@@ -11,12 +12,17 @@ export const sectionId = (subId: string) => `section-${subId}`
  * Tracks which subcategory is under the sticky category bar and scrolls to
  * one on demand. Also keeps the list still when the bar changes height.
  */
-export function useMenuScrollSpy() {
-  const sections = useMemo(() => topCategories.flatMap((top) => subcategoriesOf(top.id).map((sub) => ({ top, sub }))), [])
-  const [activeSub, setActiveSub] = useState(sections[0].sub.id)
-  const activeTop = sections.find((s) => s.sub.id === activeSub)?.top ?? topCategories[0]
+export function useMenuScrollSpy(providedCatalog?: Catalog) {
+  const queryCatalog = useCatalog()
+  const catalog = providedCatalog ?? queryCatalog
+  const sections = useMemo(
+    () => catalog.topCategories.flatMap((top) => catalog.subcategoriesOf(top.id).map((sub) => ({ top, sub }))),
+    [catalog],
+  )
+  const [activeSub, setActiveSub] = useState(() => sections[0]?.sub.id ?? '')
+  const activeTop = sections.find((s) => s.sub.id === activeSub)?.top ?? catalog.topCategories[0]
   // A lone subcategory would only repeat the section heading below it.
-  const activeSubs = subcategoriesOf(activeTop.id)
+  const activeSubs = activeTop ? catalog.subcategoriesOf(activeTop.id) : []
   const showSubtabs = activeSubs.length > 1
 
   const navRef = useRef<HTMLElement>(null)
