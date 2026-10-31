@@ -16,6 +16,12 @@ function getCartTarget(): Element | DOMRect {
   const dock = document.querySelector('[data-cart-target="dock"]')
   if (dock) return dock
   // Fallback to the bottom position where the dock appears, never the top header
+  const isDesktop = typeof window !== 'undefined' && window.innerWidth >= 600
+  if (isDesktop) {
+    const left = (typeof window !== 'undefined' ? window.innerWidth : 1000) - 240
+    const top = (typeof window !== 'undefined' ? window.innerHeight : 800) - 68
+    return new DOMRect(left, top, 44, 44)
+  }
   const maxW = Math.min(typeof window !== 'undefined' ? window.innerWidth : 480, 480)
   const left = ((typeof window !== 'undefined' ? window.innerWidth : 480) - maxW) / 2 + 16
   const top = (typeof window !== 'undefined' ? window.innerHeight : 800) - 68
