@@ -47,6 +47,15 @@ describe('domain/orders', () => {
     expect(statusOf({ ...baseOrder, cancelledAt: 2000 }, baseOrder.readyAt)).toBe('cancelled')
   })
 
+  it('respects real backend status when provided by KDS', () => {
+    // Even if local clock is before readyAt, server status takes priority
+    expect(statusOf({ ...baseOrder, status: 'accepted' }, baseOrder.createdAt)).toBe('accepted')
+    expect(statusOf({ ...baseOrder, status: 'making' }, baseOrder.createdAt)).toBe('making')
+    expect(statusOf({ ...baseOrder, status: 'ready' }, baseOrder.createdAt)).toBe('ready')
+    expect(statusOf({ ...baseOrder, status: 'completed' }, baseOrder.createdAt)).toBe('ready')
+    expect(statusOf({ ...baseOrder, status: 'cancelled' }, baseOrder.createdAt)).toBe('cancelled')
+  })
+
   it('reports makingProgress as 0..1 clamp', () => {
     const start = baseOrder.createdAt + MAKE_AFTER
     expect(makingProgress(baseOrder, start)).toBe(0)
