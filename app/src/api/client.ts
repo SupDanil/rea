@@ -9,6 +9,7 @@ export interface ApiClient {
   updateProfile(patch: Partial<UserProfile>): Promise<UserProfile>
   signOut(): Promise<void>
   getOrders(): Promise<Order[]>
+  getOrder(id: string): Promise<Order | null>
   createOrder(dto: CreateOrderDto): Promise<Order>
   updateOrder(id: string, patch: UpdateOrderDto): Promise<Order>
   checkPromo(code: string): Promise<CheckPromoDto>

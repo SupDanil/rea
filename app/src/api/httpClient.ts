@@ -106,6 +106,14 @@ export class HttpApiClient implements ApiClient {
     }
   }
 
+  async getOrder(id: string): Promise<Order | null> {
+    try {
+      return await this.request<Order>(`/orders/${id}`)
+    } catch {
+      return mockApiClient.getOrder(id)
+    }
+  }
+
   async createOrder(dto: CreateOrderDto): Promise<Order> {
     try {
       return await this.request<Order>('/orders', {

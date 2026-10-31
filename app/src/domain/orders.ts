@@ -17,6 +17,7 @@ export type Order = {
   payment: PaymentMethod
   cancelledAt?: number
   rating?: 'good' | 'bad'
+  status?: OrderStatus | 'completed'
   /** Set when placed while signed in: counts towards level and stamps */
   phone?: string
   levelDiscount?: number
@@ -41,7 +42,13 @@ export const makingStartsAt = (order: Order): number =>
   order.pickup.kind === 'asap' ? order.createdAt + MAKE_AFTER : order.readyAt - SCHEDULED_MAKE_LEAD
 
 export function statusOf(order: Order, now: number): OrderStatus {
-  if (order.cancelledAt) return 'cancelled'
+  if (order.cancelledAt || order.status === 'cancelled') return 'cancelled'
+  if (order.status) {
+    if (order.status === 'ready' || (order.status as string) === 'completed') return 'ready'
+    if (order.status === 'making') return 'making'
+    if (order.status === 'accepted') return 'accepted'
+    if (order.status === 'paying') return 'paying'
+  }
   if (now >= order.readyAt) return 'ready'
   if (now - order.createdAt < ACCEPT_AFTER) return 'paying'
   return now >= makingStartsAt(order) ? 'making' : 'accepted'
@@ -49,6 +56,8 @@ export function statusOf(order: Order, now: number): OrderStatus {
 
 /** 0..1 progress through the making stage, used for the sub-step captions. */
 export function makingProgress(order: Order, now: number): number {
+  if (order.status === 'ready' || (order.status as string) === 'completed') return 1
+  if (order.status === 'accepted') return 0
   const from = makingStartsAt(order)
   if (order.readyAt <= from) return 1
   return Math.min(1, Math.max(0, (now - from) / (order.readyAt - from)))

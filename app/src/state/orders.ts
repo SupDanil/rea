@@ -57,10 +57,18 @@ export function useOrders() {
 
   const update = useCallback(
     async (id: string, patch: Partial<Order>) => {
-      try {
-        await api.updateOrder(id, patch as any)
-      } catch {}
-      setOrders((prev) => prev.map((o) => (o.id === id ? { ...o, ...patch } : o)))
+      if (patch.rating !== undefined || patch.cancelledAt !== undefined) {
+        try {
+          await api.updateOrder(id, patch as any)
+        } catch {}
+      }
+      setOrders((prev) => {
+        const exists = prev.some((o) => o.id === id)
+        if (!exists && (patch as any).number) {
+          return [{ id, ...(patch as any) }, ...prev]
+        }
+        return prev.map((o) => (o.id === id ? { ...o, ...patch } : o))
+      })
     },
     [],
   )

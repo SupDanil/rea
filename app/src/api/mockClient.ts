@@ -82,6 +82,11 @@ export class MockApiClient implements ApiClient {
     return readStorage<Order[]>(ORDERS_KEY, [])
   }
 
+  async getOrder(id: string): Promise<Order | null> {
+    const orders = await this.getOrders()
+    return orders.find((o) => o.id === id) || null
+  }
+
   async createOrder(dto: CreateOrderDto): Promise<Order> {
     const orders = await this.getOrders()
     const now = Date.now()

@@ -1,5 +1,6 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useParams } from 'react-router'
+import { api } from '../../api'
 import { ConfirmBox } from '../../components/ConfirmBox'
 import { EmptyState } from '../../components/EmptyState'
 import { Sheet, SheetBody } from '../../components/Sheet'
@@ -17,9 +18,30 @@ export function OrderPage() {
   const { id } = useParams()
   const { orders } = useApp()
   const { back } = useAppNavigate()
+  const [loading, setLoading] = useState(false)
   const order = orders.orders.find((o) => o.id === id)
 
+  useEffect(() => {
+    if (!order && id) {
+      setLoading(true)
+      api.getOrder(id)
+        .then((remote) => {
+          if (remote) {
+            orders.update(id, remote)
+          }
+        })
+        .finally(() => setLoading(false))
+    }
+  }, [id, order, orders])
+
   if (!order) {
+    if (loading) {
+      return (
+        <Sheet label="Заказ" onBack={back} backLabel="В меню">
+          <div className="p-8 text-center text-muted">Загрузка данных заказа...</div>
+        </Sheet>
+      )
+    }
     return (
       <Sheet label="Заказ не найден" onBack={back} backLabel="В меню">
         <EmptyState title="Заказ не найден" text="Возможно, он был сделан на другом устройстве" actionLabel="В меню" onAction={back} />
@@ -35,6 +57,46 @@ function OrderView({ order }: { order: Order }) {
   const now = useNow(1000)
   const status = statusOf(order, now)
   const [confirming, setConfirming] = useState(false)
+
+  // Real-time synchronization with Barista KDS updates
+  useEffect(() => {
+    if (!order.id) return
+    let active = true
+
+    // 1. Polling fallback every 1.5s
+    const pollInterval = setInterval(async () => {
+      try {
+        const remote = await api.getOrder(order.id)
+        if (active && remote && remote.status !== order.status) {
+          orders.update(order.id, remote)
+        }
+      } catch {}
+    }, 1500)
+
+    // 2. Server-Sent Events (SSE) stream for instant push
+    let es: EventSource | null = null
+    const apiUrl = typeof import.meta !== 'undefined' ? (import.meta.env?.VITE_API_URL as string | undefined) : undefined
+    if (apiUrl && typeof EventSource !== 'undefined') {
+      try {
+        es = new EventSource(`${apiUrl}/orders/${order.id}/events`)
+        es.onmessage = (event) => {
+          if (!active) return
+          try {
+            const data = JSON.parse(event.data)
+            if (data && data.status && data.status !== order.status) {
+              orders.update(order.id, data)
+            }
+          } catch {}
+        }
+      } catch {}
+    }
+
+    return () => {
+      active = false
+      clearInterval(pollInterval)
+      if (es) es.close()
+    }
+  }, [order.id, order.status, orders])
 
   return (
     <Sheet label={`Заказ № ${order.number}`} title="Заказ" onBack={back} backLabel="В меню">
