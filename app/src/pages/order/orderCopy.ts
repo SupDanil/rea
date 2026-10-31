@@ -19,9 +19,6 @@ export function statusSubtitle(order: Order, status: OrderStatus, now: number) {
     case 'accepted':
       return order.pickup.kind === 'asap' ? 'Скоро начнём готовить' : `Приготовим к ${clockTime(order.readyAt)}`
     case 'making': {
-      if (order.status === 'making') {
-        return 'Бариста готовит ваш напиток прямо сейчас'
-      }
       const p = makingProgress(order, now)
       const left = Math.max(1, Math.ceil((order.readyAt - now) / 60_000))
       return `${makingSteps[Math.min(makingSteps.length - 1, Math.floor(p * makingSteps.length))]} · ${p > 0.8 ? 'пара минут' : `~${left} мин`}`
