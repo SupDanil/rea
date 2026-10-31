@@ -28,7 +28,7 @@ export function useCheckout({ pricing, pickup, payment, onMissingName }: Options
     setPaying(true)
     await new Promise((r) => window.setTimeout(r, PAYMENT_DELAY))
     const placedAt = Date.now()
-    const order = orders.create({
+    const order = await orders.create({
       createdAt: placedAt,
       readyAt: readyTimeFor(pickup, placedAt),
       lines: cart.lines,

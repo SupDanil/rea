@@ -10,6 +10,14 @@ export class HttpApiClient implements ApiClient {
     this.baseUrl = baseUrl
   }
 
+  private getAuthPhone(): string | null {
+    try {
+      return localStorage.getItem('shit_coffee_phone')
+    } catch {
+      return null
+    }
+  }
+
   private async request<T>(path: string, options?: RequestInit): Promise<T> {
     const res = await fetch(`${this.baseUrl}${path}`, {
       headers: { 'Content-Type': 'application/json', ...(options?.headers ?? {}) },
@@ -30,10 +38,12 @@ export class HttpApiClient implements ApiClient {
   }
 
   async getProfile(): Promise<UserProfile | null> {
+    const phone = this.getAuthPhone()
+    if (!phone) return null
     try {
-      return await this.request<UserProfile | null>('/profile')
+      return await this.request<UserProfile | null>(`/profile?phone=${encodeURIComponent(phone)}`)
     } catch {
-      return mockApiClient.getProfile()
+      return null
     }
   }
 
@@ -50,20 +60,25 @@ export class HttpApiClient implements ApiClient {
 
   async verifySmsCode(phone: string, code: string, name?: string): Promise<VerifySmsDto> {
     try {
-      return await this.request<VerifySmsDto>('/auth/verify-code', {
+      const res = await this.request<VerifySmsDto>('/auth/verify-code', {
         method: 'POST',
         body: JSON.stringify({ phone, code, name }),
       })
+      try {
+        localStorage.setItem('shit_coffee_phone', phone)
+      } catch {}
+      return res
     } catch {
       return mockApiClient.verifySmsCode(phone, code, name)
     }
   }
 
   async updateProfile(patch: Partial<UserProfile>): Promise<UserProfile> {
+    const phone = this.getAuthPhone() || (patch as any).phone
     try {
       return await this.request<UserProfile>('/profile', {
         method: 'PATCH',
-        body: JSON.stringify(patch),
+        body: JSON.stringify({ ...patch, phone }),
       })
     } catch {
       return mockApiClient.updateProfile(patch)
@@ -72,6 +87,9 @@ export class HttpApiClient implements ApiClient {
 
   async signOut(): Promise<void> {
     try {
+      localStorage.removeItem('shit_coffee_phone')
+    } catch {}
+    try {
       await this.request<void>('/auth/sign-out', { method: 'POST' })
     } catch {
       await mockApiClient.signOut()
@@ -79,8 +97,10 @@ export class HttpApiClient implements ApiClient {
   }
 
   async getOrders(): Promise<Order[]> {
+    const phone = this.getAuthPhone()
+    const path = phone ? `/orders?phone=${encodeURIComponent(phone)}` : '/orders'
     try {
-      return await this.request<Order[]>('/orders')
+      return await this.request<Order[]>(path)
     } catch {
       return mockApiClient.getOrders()
     }
