@@ -1,5 +1,5 @@
 import { IngredientArt, ItemArt } from '../../components/ItemArt'
-import { addonLabel, countAddons, type IngredientGroup, type MenuItem } from '../../data/menu'
+import { addonLabel, countAddons, type IngredientGroup, type MenuItem } from '../../domain'
 import { cx } from '../../utils/cx'
 import { formatPrice } from '../../utils/format'
 import type { Selection } from './useProductConfig'

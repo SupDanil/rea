@@ -1,6 +1,6 @@
 import type { CSSProperties } from 'react'
 import { ItemArt } from '../../components/ItemArt'
-import { minPrice, type MenuItem } from '../../data/menu'
+import { minPrice, type MenuItem } from '../../domain'
 import { formatPrice } from '../../utils/format'
 import { ART_ATTR } from '../../utils/morph'
 

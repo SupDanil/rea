@@ -1,7 +1,8 @@
 import { ItemArt } from '../../components/ItemArt'
-import { addonLabel, countAddons } from '../../data/menu'
+import { addonLabel, countAddons } from '../../domain'
 import { block, blockTitle, panel } from '../../components/ui'
 import { Summary, SummaryRow, SummaryTotal } from '../../components/Summary'
+import { useCatalog } from '../../queries/useCatalog'
 import { resolveLines } from '../../state/cart'
 import type { Order, OrderStatus } from '../../state/orders'
 import { cx } from '../../utils/cx'
@@ -9,11 +10,12 @@ import { formatPrice } from '../../utils/format'
 import { discountRows, totalLabel } from './orderCopy'
 
 export function OrderLines({ order, status }: { order: Order; status: OrderStatus }) {
+  const catalog = useCatalog()
   return (
     <section className={block}>
       <h2 className={blockTitle}>Состав</h2>
       <ul className={cx('divide-y divide-line rounded-[20px] px-3 py-1.5', panel)}>
-        {resolveLines(order.lines).map((l) => (
+        {resolveLines(order.lines, catalog).map((l) => (
           <li key={l.key} className="grid grid-cols-[40px_1fr_auto_auto] items-center gap-2.5 py-2 text-[14px]">
             <span>
               <ItemArt art={l.item.art} className="block h-11 w-10" />

@@ -1,10 +1,14 @@
 import { useRef, useState } from 'react'
 import { EmptyState } from '../../components/EmptyState'
 import { Sheet, SheetBody, SheetDock } from '../../components/Sheet'
+import { ShopPickerSheet } from '../../components/ShopPickerSheet'
 import { Summary, SummaryRow, SummaryTotal } from '../../components/Summary'
 import { addBtn, addPrice, textBtn } from '../../components/ui'
-import { isDrink, menuItems, type MenuItem } from '../../data/menu'
+import { isDrink, isPaused, type MenuItem } from '../../domain'
 import { useAppNavigate } from '../../hooks/useAppNavigate'
+import { useNow } from '../../hooks/useNow'
+import { useCatalog } from '../../queries/useCatalog'
+import { useShop } from '../../queries/useShop'
 import { useApp } from '../../state/AppContext'
 import { countOf, resolveLines, type ResolvedLine } from '../../state/cart'
 import { giftValue } from '../../state/loyalty'
@@ -14,7 +18,7 @@ import { formatPrice } from '../../utils/format'
 import { collapseOut, fadeAway } from '../../utils/motion'
 import { readSavedName } from '../../utils/storage'
 import { CartLineItem } from './CartLineItem'
-import { cartPricing, type CartLoyalty } from './cartPricing'
+import { cartPricing, type AppliedPromo, type CartLoyalty } from './cartPricing'
 import { LoyaltyOffer } from './LoyaltyOffer'
 import { NameField } from './NameField'
 import { PaymentPicker } from './PaymentPicker'
@@ -30,17 +34,22 @@ export function CartPage() {
   const [nameError, setNameError] = useState(false)
   const [pickup, setPickup] = useState<Pickup>({ kind: 'asap' })
   const [payment, setPayment] = useState<PaymentMethod>('card')
-  const [promo, setPromo] = useState<string | null>(null)
+  const [promo, setPromo] = useState<AppliedPromo | null>(null)
   const [useGift, setUseGift] = useState(true)
+  const [showShopPicker, setShowShopPicker] = useState(false)
   const nameRef = useRef<HTMLInputElement>(null)
 
-  const lines = resolveLines(cart.lines)
+  const catalog = useCatalog()
+  const shop = useShop()
+  const now = useNow(30_000)
+  const paused = !!shop && isPaused(shop, now)
+  const lines = resolveLines(cart.lines, catalog)
   const cartLoyalty: CartLoyalty = profile
-    ? { levelName: loyalty.level.name, levelPercent: loyalty.level.percent, giftValue: giftValue(cart.lines), giftsAvailable: loyalty.giftsAvailable }
+    ? { levelName: loyalty.level.name, levelPercent: loyalty.level.percent, giftValue: giftValue(cart.lines, catalog), giftsAvailable: loyalty.giftsAvailable }
     : null
-  const price = cartPricing(cart.lines, cartLoyalty, promo, useGift)
+  const price = cartPricing(cart.lines, cartLoyalty, promo, useGift, catalog)
   const inCart = new Set(cart.lines.map((l) => l.itemId))
-  const upsell = menuItems.filter((i) => !isDrink(i) && !inCart.has(i.id)).slice(0, 6)
+  const upsell = catalog.items.filter((i) => !isDrink(i) && !inCart.has(i.id) && !i.variants[0]?.stopped).slice(0, 6)
 
   const bodyRef = useRef<HTMLDivElement>(null)
   const dockRef = useRef<HTMLElement>(null)
@@ -77,6 +86,8 @@ export function CartPage() {
 
   const { paying, pay } = useCheckout({
     pricing: price,
+    promo,
+    shopId: shop?.id,
     pickup,
     payment,
     onMissingName: () => {
@@ -121,7 +132,7 @@ export function CartPage() {
               if (value.trim()) setNameError(false)
             }}
           />
-          <PickupPicker value={pickup} onChange={setPickup} />
+          <PickupPicker shop={shop} value={pickup} onChange={setPickup} onChangeShop={() => setShowShopPicker(true)} />
           <PromoField applied={promo} onApply={setPromo} />
           <PaymentPicker value={payment} onChange={setPayment} />
           <Summary>
@@ -130,7 +141,7 @@ export function CartPage() {
             {price.levelDiscount > 0 && cartLoyalty && (
               <SummaryRow label={`Уровень «${cartLoyalty.levelName}» · ${cartLoyalty.levelPercent}%`} amount={price.levelDiscount} discount />
             )}
-            {price.promoDiscount > 0 && <SummaryRow label={`Промокод ${promo}`} amount={price.promoDiscount} discount />}
+            {price.promoDiscount > 0 && <SummaryRow label={`Промокод ${promo?.code}`} amount={price.promoDiscount} discount />}
             <SummaryTotal label="Итого" amount={price.total} />
           </Summary>
         </SheetBody>
@@ -138,7 +149,12 @@ export function CartPage() {
 
       {lines.length > 0 && (
         <SheetDock ref={dockRef}>
-          <button className={cx(addBtn, 'w-full shadow-lift')} onClick={() => void pay(name)} disabled={paying} aria-busy={paying}>
+          {paused && (
+            <p className="mb-2 text-center text-[13px] font-semibold text-danger" role="alert">
+              {shop?.pauseReason ? `Кофейня временно не принимает заказы: ${shop.pauseReason}` : 'Кофейня временно не принимает заказы'}
+            </p>
+          )}
+          <button className={cx(addBtn, 'w-full shadow-lift')} onClick={() => void pay(name)} disabled={paying || paused} aria-busy={paying}>
             {paying ? (
               <span className="flex w-full items-center justify-center gap-2.5">
                 <span className="size-5 rounded-full border-[2.5px] border-white/35 border-t-white animate-[spin_0.8s_linear_infinite]" aria-hidden="true" />
@@ -155,6 +171,7 @@ export function CartPage() {
           </button>
         </SheetDock>
       )}
+      {showShopPicker && <ShopPickerSheet onClose={() => setShowShopPicker(false)} />}
     </Sheet>
   )
 }

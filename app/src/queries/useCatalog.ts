@@ -1,26 +1,26 @@
 import { useQuery } from '@tanstack/react-query'
 import { useMemo } from 'react'
 import { api } from '../api'
-import { categories, ingredientGroups, menuItems, staticCatalog } from '../data/menu'
-import { createCatalog, type Catalog, type CatalogData } from '../domain'
+import { createCatalog, type Catalog } from '../domain'
 import { queryKeys } from './keys'
 
-export const fallbackCatalogData: CatalogData = {
-  items: menuItems,
-  categories,
-  ingredientGroups,
-}
+/** Stand-in while the menu loads or when it failed: every lookup simply finds nothing. */
+export const emptyCatalog: Catalog = createCatalog({ items: [], categories: [], ingredientGroups: [] })
 
-export { staticCatalog }
+// Prices and the stop-list change in the admin during the day, so the menu is refreshed periodically.
+const CATALOG_REFRESH_MS = 60_000
 
-/** Hook providing indexed catalog with synchronous fallback to static menu data. */
-export function useCatalog(): Catalog {
-  const { data } = useQuery({
+export function useCatalogQuery() {
+  return useQuery({
     queryKey: queryKeys.catalog,
     queryFn: () => api.getCatalog(),
-    initialData: fallbackCatalogData,
-    staleTime: 5 * 60_000,
+    staleTime: CATALOG_REFRESH_MS,
+    refetchInterval: CATALOG_REFRESH_MS,
   })
+}
 
-  return useMemo(() => createCatalog(data), [data])
+/** Indexed catalog from the API; empty until the first response arrives. */
+export function useCatalog(): Catalog {
+  const { data } = useCatalogQuery()
+  return useMemo(() => (data ? createCatalog(data) : emptyCatalog), [data])
 }

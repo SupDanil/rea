@@ -1,32 +1,48 @@
+import { useState } from 'react'
 import { avatar, openDot, roundBtn } from '../../components/ui'
 import { BagIcon, ChevronDownIcon, PersonIcon, RabbitIcon } from '../../components/icons'
+import { shopStatus } from '../../domain'
 import { useAppNavigate } from '../../hooks/useAppNavigate'
+import { useNow } from '../../hooks/useNow'
+import { useShop } from '../../queries/useShop'
 import { useApp } from '../../state/AppContext'
 import { countOf } from '../../state/cart'
+import { ShopPickerSheet } from '../../components/ShopPickerSheet'
 
 export function MenuHeader() {
   const { cart, profile, loyalty, theme, toggleTheme } = useApp()
   const { go } = useAppNavigate()
+  const [showShopPicker, setShowShopPicker] = useState(false)
   const cartCount = countOf(cart.lines)
   const gifts = loyalty.giftsAvailable
+  const shop = useShop()
+  const now = useNow(60_000)
+  const status = shop ? shopStatus(shop, now) : null
 
   return (
-    <header className="flex items-center justify-between gap-1.5 sm:gap-2 px-2.5 sm:px-4 pt-[calc(12px+env(safe-area-inset-top))] pb-2.5">
-      <button className="flex min-w-0 items-center gap-2 sm:gap-2.5 text-left" aria-label="shit кофе: Невский, 12, открыто до 22:00">
-        <div className="grid size-9 sm:size-10 place-items-center rounded-[12px] sm:rounded-[13px] bg-[#3d2c55] text-[#c5c7d7] shadow-card overflow-hidden">
-          <RabbitIcon size={24} className="size-6 sm:size-7 text-[#c5c7d7]" />
-        </div>
-        <div>
-          <div className="flex items-center gap-[5px] text-[14px] sm:text-[15px] font-bold tracking-[-0.01em]">
-            shit кофе
-            <ChevronDownIcon className="text-muted" />
+    <>
+      <header className="flex items-center justify-between gap-1.5 sm:gap-2 px-2.5 sm:px-4 pt-[calc(12px+env(safe-area-inset-top))] pb-2.5">
+        <button
+          onClick={() => setShowShopPicker(true)}
+          className="flex min-w-0 items-center gap-2 sm:gap-2.5 text-left cursor-pointer hover:opacity-90 active:scale-98 transition-all"
+          aria-label={shop && status ? `shit кофе: ${shop.address}, ${status.text}` : 'shit кофе'}
+        >
+          <div className="grid size-9 sm:size-10 place-items-center rounded-[12px] sm:rounded-[13px] bg-[#3d2c55] text-[#c5c7d7] shadow-card overflow-hidden">
+            <RabbitIcon size={24} className="size-6 sm:size-7 text-[#c5c7d7]" />
           </div>
-          <div className="mt-px flex items-center gap-1.5 text-[11px] sm:text-[12px] text-muted">
-            <span className={openDot} aria-hidden="true" />
-            Невский, 12 · до 22:00
+          <div>
+            <div className="flex items-center gap-[5px] text-[14px] sm:text-[15px] font-bold tracking-[-0.01em]">
+              shit кофе
+              <ChevronDownIcon className="text-muted" />
+            </div>
+            {shop && status && (
+              <div className="mt-px flex items-center gap-1.5 text-[11px] sm:text-[12px] text-muted" data-shop-status={status.kind}>
+                <span className={status.kind === 'open' ? openDot : 'size-1.5 rounded-full bg-danger'} aria-hidden="true" />
+                {shop.address} · {status.text}
+              </div>
+            )}
           </div>
-        </div>
-      </button>
+        </button>
       <div className="flex gap-1.5 sm:gap-2">
         <button className={roundBtn} onClick={toggleTheme} aria-label={theme === 'dark' ? 'Включить светлую тему' : 'Включить тёмную тему'}>
           <ThemeIcon dark={theme === 'dark'} />
@@ -61,6 +77,8 @@ export function MenuHeader() {
         </button>
       </div>
     </header>
+    {showShopPicker && <ShopPickerSheet onClose={() => setShowShopPicker(false)} />}
+  </>
   )
 }
 

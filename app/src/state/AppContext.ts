@@ -11,11 +11,13 @@ export type AppState = {
   orders: Orders
   profile: Profile | null
   loyalty: Loyalty
-  signIn: (phone: string, name: string) => void
-  updateProfile: (patch: Partial<Profile>) => void
-  signOut: () => void
+  signIn: (profile: Profile) => void
+  updateProfile: (patch: Partial<Profile>) => Promise<Profile>
+  signOut: () => Promise<void>
   /** Orders placed while signed in to the current profile */
   myOrders: Order[]
+  selectedShopId: string | null
+  setSelectedShopId: (id: string) => void
   theme: Theme
   toggleTheme: () => void
   toast: Toast | null

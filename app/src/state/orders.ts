@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
 import { api } from '../api'
+import type { CreateOrderDto, UpdateOrderDto } from '../api/types'
 import {
   canCancel,
   isActive,
@@ -15,65 +16,67 @@ import {
 export type { Pickup, PaymentMethod, Order, OrderStatus }
 export { readyTimeFor, statusOf, makingProgress, canCancel, isActive }
 
-export function useOrders() {
+const POLL_MS = 4000
+
+/** Orders of this device / signed-in guest, kept in sync with the server. */
+export function useOrders(sessionKey: string | null = null) {
   const [orders, setOrders] = useState<Order[]>([])
 
-  const fetchOrders = useCallback(async () => {
+  const refresh = useCallback(async () => {
     try {
-      const list = await api.getOrders()
-      if (Array.isArray(list)) {
-        setOrders(list)
-      }
-    } catch (e) {
-      // Ignore background fetch error
+      setOrders(await api.getOrders())
+    } catch {
+      // Keep the last known list; the next poll retries.
     }
   }, [])
 
+  // Re-fetch right away when the signed-in phone changes, then poll.
   useEffect(() => {
-    fetchOrders()
-    const timer = setInterval(fetchOrders, 4000)
-    return () => clearInterval(timer)
-  }, [fetchOrders])
+    let alive = true
+    const tick = () =>
+      api.getOrders().then(
+        (list) => alive && setOrders(list),
+        () => {
+          // Keep the last known list; the next poll retries.
+        },
+      )
+    void tick()
+    const timer = setInterval(() => void tick(), POLL_MS)
+    return () => {
+      alive = false
+      clearInterval(timer)
+    }
+  }, [sessionKey])
+
+  const upsert = useCallback((order: Order) => {
+    setOrders((prev) => [order, ...prev.filter((o) => o.id !== order.id)].sort((a, b) => b.createdAt - a.createdAt))
+  }, [])
 
   const create = useCallback(
-    async (order: Omit<Order, 'id' | 'number'>): Promise<Order> => {
-      try {
-        const created = await api.createOrder(order as any)
-        setOrders((prev) => [created, ...prev.filter((o) => o.id !== created.id)].slice(0, 30))
-        return created
-      } catch (err) {
-        // Fallback for offline/test environments
-        const fallback: Order = {
-          ...order,
-          id: Math.random().toString(36).slice(2, 10),
-          number: 10 + Math.floor(Math.random() * 90),
-        }
-        setOrders((prev) => [fallback, ...prev].slice(0, 20))
-        return fallback
-      }
+    async (dto: CreateOrderDto): Promise<Order> => {
+      const created = await api.createOrder(dto)
+      upsert(created)
+      return created
     },
-    [],
+    [upsert],
   )
 
+  /** Rate or cancel: the server's answer replaces the local copy. */
   const update = useCallback(
-    async (id: string, patch: Partial<Order>) => {
-      if (patch.rating !== undefined || patch.cancelledAt !== undefined) {
-        try {
-          await api.updateOrder(id, patch as any)
-        } catch {}
-      }
-      setOrders((prev) => {
-        const exists = prev.some((o) => o.id === id)
-        if (!exists && (patch as any).number) {
-          return [{ id, ...(patch as any) }, ...prev]
-        }
-        return prev.map((o) => (o.id === id ? { ...o, ...patch } : o))
-      })
+    async (id: string, patch: UpdateOrderDto): Promise<Order> => {
+      const updated = await api.updateOrder(id, patch)
+      upsert(updated)
+      return updated
     },
-    [],
+    [upsert],
   )
 
-  return { orders, create, update }
+  /** Applies a live status push (SSE / polling) without another round trip. */
+  const merge = useCallback((id: string, patch: Partial<Order>) => {
+    setOrders((prev) => prev.map((o) => (o.id === id ? { ...o, ...patch } : o)))
+  }, [])
+
+  return { orders, refresh, create, update, merge, upsert }
 }
 
 export type Orders = ReturnType<typeof useOrders>

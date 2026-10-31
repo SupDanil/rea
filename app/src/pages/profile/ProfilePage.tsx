@@ -23,6 +23,10 @@ function ProfileView({ profile }: { profile: Profile }) {
   const { go, back } = useAppNavigate()
   const [confirmExit, setConfirmExit] = useState(false)
 
+  const saveProfile = (patch: Partial<Profile>) => {
+    updateProfile(patch).catch(() => showToast({ text: 'Не удалось сохранить — попробуйте ещё раз' }))
+  }
+
   const repeat = (order: Order) => {
     order.lines.forEach((l) => cart.add(l.itemId, l.variantId, l.ingredientIds, l.qty))
     showToast({ text: `Заказ № ${order.number} в корзине` })
@@ -45,7 +49,7 @@ function ProfileView({ profile }: { profile: Profile }) {
         <LevelCard loyalty={loyalty} />
         <StampCard loyalty={loyalty} />
         <OrderHistory orders={myOrders} onOpen={(o) => go(`/order/${o.id}`)} onRepeat={repeat} />
-        <ProfileSettings profile={profile} theme={theme} onToggleTheme={toggleTheme} onUpdate={updateProfile} />
+        <ProfileSettings profile={profile} theme={theme} onToggleTheme={toggleTheme} onUpdate={saveProfile} />
 
         <div className="mt-[22px] text-center">
           {confirmExit ? (
@@ -55,7 +59,7 @@ function ProfileView({ profile }: { profile: Profile }) {
               confirmLabel="Выйти"
               cancelLabel="Остаться"
               onConfirm={() => {
-                signOut()
+                void signOut()
                 showToast({ text: 'Вы вышли из профиля' })
                 back()
               }}

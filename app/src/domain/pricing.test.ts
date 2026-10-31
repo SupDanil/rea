@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { cartPricing } from './pricing'
-import { staticCatalog } from '../queries/useCatalog'
+import { testCatalog as staticCatalog } from '../test/catalogFixture'
 
 describe('domain/pricing', () => {
   const lines = [
@@ -27,7 +27,7 @@ describe('domain/pricing', () => {
   it('applies gift drink first before percentage discounts', () => {
     // Gift drink = 330 (latte L + vanilla). Base becomes 820 - 330 = 490.
     const loyalty = { levelName: 'Обжарка', levelPercent: 5, giftValue: 330, giftsAvailable: 1 }
-    const result = cartPricing(lines, loyalty, 'SHIT10', true, staticCatalog)
+    const result = cartPricing(lines, loyalty, { code: 'SHIT10', percent: 10 }, true, staticCatalog)
 
     expect(result.canGift).toBe(true)
     expect(result.rewardDiscount).toBe(330)
@@ -38,5 +38,24 @@ describe('domain/pricing', () => {
     expect(result.promoDiscount).toBe(49)
     expect(result.discount).toBe(330 + 25 + 49)
     expect(result.total).toBe(820 - (330 + 25 + 49))
+  })
+
+  it('does not take the gift when the guest turned it off', () => {
+    const loyalty = { levelName: 'Обжарка', levelPercent: 0, giftValue: 330, giftsAvailable: 1 }
+    const result = cartPricing(lines, loyalty, null, false, staticCatalog)
+    expect(result.canGift).toBe(true)
+    expect(result.rewardDiscount).toBe(0)
+    expect(result.total).toBe(820)
+  })
+
+  it('never goes below zero and gives no level discount to guests', () => {
+    const result = cartPricing(lines, null, { code: 'ALL', percent: 150 }, true, staticCatalog)
+    expect(result.levelDiscount).toBe(0)
+    expect(result.rewardDiscount).toBe(0)
+    expect(result.total).toBe(0)
+  })
+
+  it('returns zeros for an empty cart', () => {
+    expect(cartPricing([], null, null, false, staticCatalog)).toMatchObject({ subtotal: 0, discount: 0, total: 0, canGift: false })
   })
 })

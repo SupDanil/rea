@@ -20,9 +20,10 @@ describe('Order copy helpers', () => {
 
   it('has readable titles for all statuses', () => {
     expect(statusTitles.paying).toBe('Проводим оплату')
-    expect(statusTitles.accepted).toBe('Приняли заказ')
-    expect(statusTitles.making).toBe('Готовим')
+    expect(statusTitles.accepted).toBe('Готовим ваш кофе')
+    expect(statusTitles.making).toBe('Готовим ваш кофе')
     expect(statusTitles.ready).toBe('Заказ готов')
+    expect(statusTitles.completed).toBe('Заказ выдан')
     expect(statusTitles.cancelled).toBe('Заказ отменён')
   })
 
@@ -31,16 +32,16 @@ describe('Order copy helpers', () => {
     expect(statusSubtitle(baseOrder, 'paying', 1000000)).toBe('Секунду, подтверждаем платёж')
     expect(statusSubtitle({ ...baseOrder, payment: 'cash' }, 'paying', 1000000)).toBe('Секунду, отправляем на кухню')
 
-    // accepted
-    expect(statusSubtitle(baseOrder, 'accepted', 1000000)).toBe('Скоро начнём готовить')
-
-    // making
-    const makingSub = statusSubtitle(baseOrder, 'making', 1200000)
-    expect(makingSub).toContain('·')
+    // accepted & making: clean, honest ready time estimate without cartoonish steps
+    expect(statusSubtitle(baseOrder, 'accepted', 1000000)).toContain('·')
+    expect(statusSubtitle(baseOrder, 'making', 1200000)).toContain('·')
 
     // ready
-    expect(statusSubtitle(baseOrder, 'ready', 1600000)).toBe('Заберите на стойке выдачи. Всё хорошо?')
+    expect(statusSubtitle(baseOrder, 'ready', 1600000)).toBe('Заберите на стойке выдачи')
     expect(statusSubtitle({ ...baseOrder, rating: 'good' }, 'ready', 1600000)).toBe('Спасибо за оценку!')
+
+    // completed
+    expect(statusSubtitle(baseOrder, 'completed', 1600000)).toBe('Приятного кофепития! Будем рады видеть снова')
 
     // cancelled
     expect(statusSubtitle(baseOrder, 'cancelled', 1600000)).toBe('Деньги вернутся на карту в течение 3 дней')

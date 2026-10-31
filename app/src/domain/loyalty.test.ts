@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { giftValue, loyaltyOf, STAMP_MIN_TOTAL } from './loyalty'
 import type { Order } from './orders'
 import type { UserProfile } from './profile'
-import { staticCatalog } from '../queries/useCatalog'
+import { testCatalog as staticCatalog } from '../test/catalogFixture'
 
 describe('domain/loyalty', () => {
   const profile: UserProfile = {

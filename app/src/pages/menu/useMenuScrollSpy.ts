@@ -48,7 +48,7 @@ export function useMenuScrollSpy(providedCatalog?: Catalog) {
   // sticky bar (both rows), so the chip switches as the heading slides under it.
   useEffect(() => {
     const onScroll = () => {
-      if (scrollLock.current) return
+      if (scrollLock.current || sections.length === 0) return
       const barBottom = navRef.current?.getBoundingClientRect().bottom ?? 0
       // Never below where a tapped tab parks its heading (scroll-margin-top).
       const offset = Math.max(barBottom, SECTION_SCROLL_MARGIN) + 12

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { countOf, lineKey, normalizePromo, promoCodes, resolveLine, subtotalOf } from './cart'
-import { staticCatalog } from '../queries/useCatalog'
+import { countOf, lineKey, normalizePromo, resolveLine, resolveLines, subtotalOf } from './cart'
+import { testCatalog as staticCatalog } from '../test/catalogFixture'
 
 describe('domain/cart', () => {
   it('formats lineKey with sorted ingredientIds', () => {
@@ -40,9 +40,28 @@ describe('domain/cart', () => {
     expect(subtotalOf(lines, staticCatalog)).toBe(620)
   })
 
-  it('normalizes promo codes and finds valid discounts', () => {
+  it('normalizes promo codes for the server check', () => {
     expect(normalizePromo(' shit10 ')).toBe('SHIT10')
-    expect(promoCodes[normalizePromo('заяц')].percent).toBe(15)
-    expect(promoCodes[normalizePromo('rabbit')].percent).toBe(15)
+    expect(normalizePromo('заяц')).toBe('ЗАЯЦ')
+  })
+
+  it('drops a line whose variant no longer exists on the server menu', () => {
+    const line = { key: 'x', itemId: 'latte', variantId: 's', ingredientIds: [], qty: 1 }
+    expect(resolveLine(line, staticCatalog)).toBeNull()
+  })
+
+  it('ignores unknown add-on ids instead of charging for them', () => {
+    const line = { key: 'x', itemId: 'latte', variantId: 'm', ingredientIds: ['gone', 'vanilla', 'vanilla'], qty: 1 }
+    const resolved = resolveLine(line, staticCatalog)
+    expect(resolved?.unitPrice).toBe(230 + 50 * 2)
+    expect(resolved?.ingredients.map((i) => i.id)).toEqual(['vanilla', 'vanilla'])
+  })
+
+  it('resolveLines filters out unresolvable lines', () => {
+    const lines = [
+      { key: '1', itemId: 'latte', variantId: 'm', ingredientIds: [], qty: 1 },
+      { key: '2', itemId: 'ghost', variantId: 'm', ingredientIds: [], qty: 1 },
+    ]
+    expect(resolveLines(lines, staticCatalog).map((l) => l.key)).toEqual(['1'])
   })
 })

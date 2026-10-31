@@ -1,5 +1,5 @@
 import type { CartLine } from './cart'
-import { promoCodes, subtotalOf } from './cart'
+import { subtotalOf } from './cart'
 import type { Catalog } from './catalog'
 
 /** What the signed-in guest brings to the cart; null for a guest. */
@@ -9,6 +9,9 @@ export type CartLoyalty = {
   giftValue: number
   giftsAvailable: number
 } | null
+
+/** A promo code the server confirmed, with its percentage off. */
+export type AppliedPromo = { code: string; percent: number; label?: string }
 
 export type PricingResult = {
   subtotal: number
@@ -23,7 +26,7 @@ export type PricingResult = {
 export function cartPricing(
   lines: CartLine[],
   loyalty: CartLoyalty,
-  promo: string | null,
+  promo: AppliedPromo | null,
   useGift: boolean,
   catalog: Catalog,
 ): PricingResult {
@@ -33,8 +36,7 @@ export function cartPricing(
   const rewardDiscount = canGift && useGift ? loyalty.giftValue : 0
   const base = subtotal - rewardDiscount
   const levelDiscount = loyalty ? Math.round((base * loyalty.levelPercent) / 100) : 0
-  const promoConfig = promo ? promoCodes[promo] : null
-  const promoDiscount = promoConfig ? Math.round((base * promoConfig.percent) / 100) : 0
+  const promoDiscount = promo ? Math.round((base * promo.percent) / 100) : 0
   const discount = rewardDiscount + levelDiscount + promoDiscount
   return {
     subtotal,

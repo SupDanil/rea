@@ -1,4 +1,6 @@
-import { useCatalog } from '../../queries/useCatalog'
+import { EmptyState } from '../../components/EmptyState'
+import { useCatalog, useCatalogQuery } from '../../queries/useCatalog'
+import { useShop } from '../../queries/useShop'
 import { useAppNavigate } from '../../hooks/useAppNavigate'
 import { cx } from '../../utils/cx'
 import { CategoryNav } from './CategoryNav'
@@ -10,16 +12,37 @@ import { sectionId, useMenuScrollSpy } from './useMenuScrollSpy'
 /** The base layer: every other screen opens on top of it. */
 export function MenuPage() {
   const { go } = useAppNavigate()
+  const { isPending, isError, refetch } = useCatalogQuery()
   const catalog = useCatalog()
+  const shop = useShop()
   const spy = useMenuScrollSpy(catalog)
   const hero = catalog.itemById.get(spy.activeTop?.heroItemId ?? '')
   const open = (id: string) => go(`/product/${id}`)
+
+  if (!spy.activeTop) {
+    return (
+      <div className="flex min-h-dvh flex-col">
+        <MenuHeader />
+        {isPending ? (
+          <MenuSkeleton />
+        ) : (
+          <EmptyState
+            title={isError ? 'Меню не загрузилось' : 'Меню пока пустое'}
+            text={isError ? 'Проверьте интернет и попробуйте ещё раз' : 'Скоро здесь появятся напитки и еда'}
+            actionLabel="Обновить"
+            onAction={() => void refetch()}
+          />
+        )}
+      </div>
+    )
+  }
 
   return (
     <div>
       <MenuHeader />
       {hero && <HeroBanner item={hero} onOpen={() => open(hero.id)} />}
       <CategoryNav
+        catalog={catalog}
         navRef={spy.navRef}
         activeTop={spy.activeTop}
         activeSub={spy.activeSub}
@@ -47,9 +70,26 @@ export function MenuPage() {
           </section>
         ))}
         <p className="px-8 pt-7 pb-[calc(96px+env(safe-area-inset-bottom))] text-center text-[12px] text-muted">
-          Цены указаны для кофейни на Невском. Состав и аллергены — в карточке товара.
+          {shop ? `Цены указаны для кофейни: ${shop.address}. ` : ''}Состав и аллергены — в карточке товара.
         </p>
       </main>
+    </div>
+  )
+}
+
+function MenuSkeleton() {
+  return (
+    <div className="px-2.5 sm:px-3 pt-4" role="status" aria-label="Загружаем меню">
+      <div className="mb-4 flex gap-3.5 px-1">
+        {[72, 96, 64].map((w) => (
+          <div key={w} className="h-6 rounded-lg bg-surface-2 animate-pulse" style={{ width: w }} />
+        ))}
+      </div>
+      <div className="grid grid-cols-2 gap-2 sm:gap-2.5 wide:grid-cols-3 lg:grid-cols-4">
+        {Array.from({ length: 6 }, (_, i) => (
+          <div key={i} className="h-[220px] rounded-[22px] bg-surface-2 animate-pulse" />
+        ))}
+      </div>
     </div>
   )
 }

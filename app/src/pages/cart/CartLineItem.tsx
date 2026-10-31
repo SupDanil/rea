@@ -1,7 +1,7 @@
 import { useRef, type CSSProperties } from 'react'
 import { TrashIcon } from '../../components/icons'
 import { ItemArt } from '../../components/ItemArt'
-import { addonLabel, countAddons } from '../../data/menu'
+import { addonLabel, countAddons } from '../../domain'
 import { panel } from '../../components/ui'
 import type { ResolvedLine } from '../../state/cart'
 import { cx } from '../../utils/cx'

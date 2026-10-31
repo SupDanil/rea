@@ -18,6 +18,8 @@ export type Order = {
   cancelledAt?: number
   rating?: 'good' | 'bad'
   status?: OrderStatus | 'completed'
+  /** Shop the order is picked up from */
+  shopId?: string
   /** Set when placed while signed in: counts towards level and stamps */
   phone?: string
   levelDiscount?: number
@@ -26,8 +28,8 @@ export type Order = {
   rewardDiscount?: number
 }
 
-/** Status ladder mirrors Drinkit's active order: accepted → making → ready (+ cancelled). */
-export type OrderStatus = 'paying' | 'accepted' | 'making' | 'ready' | 'cancelled'
+/** Status ladder mirrors Drinkit's active order: accepted → making → ready (+ completed / cancelled). */
+export type OrderStatus = 'paying' | 'accepted' | 'making' | 'ready' | 'completed' | 'cancelled'
 
 // Demo timings: an ASAP order is ready in under a minute so the whole flow can be watched.
 export const ACCEPT_AFTER = 2_000
@@ -44,7 +46,8 @@ export const makingStartsAt = (order: Order): number =>
 export function statusOf(order: Order, now: number): OrderStatus {
   if (order.cancelledAt || order.status === 'cancelled') return 'cancelled'
   if (order.status) {
-    if (order.status === 'ready' || (order.status as string) === 'completed') return 'ready'
+    if (order.status === 'completed') return 'completed'
+    if (order.status === 'ready') return 'ready'
     if (order.status === 'making') return 'making'
     if (order.status === 'accepted') return 'accepted'
     if (order.status === 'paying') return 'paying'
@@ -56,7 +59,7 @@ export function statusOf(order: Order, now: number): OrderStatus {
 
 /** 0..1 progress through the making stage, used for the sub-step captions. */
 export function makingProgress(order: Order, now: number): number {
-  if (order.status === 'ready' || (order.status as string) === 'completed') return 1
+  if (order.status === 'ready' || order.status === 'completed') return 1
   if (order.status === 'accepted') return 0
   const from = makingStartsAt(order)
   if (order.readyAt <= from) return 1
@@ -70,4 +73,4 @@ export const canCancel = (order: Order, now: number): boolean => {
 
 /** An order stays "active" on the menu until a while after it is ready. */
 export const isActive = (order: Order, now: number): boolean =>
-  !order.cancelledAt && now < order.readyAt + 15 * 60_000 && !order.rating
+  !order.cancelledAt && order.status !== 'completed' && now < order.readyAt + 15 * 60_000 && !order.rating

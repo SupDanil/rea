@@ -1,5 +1,5 @@
 import { useId, type Ref, type SVGProps } from 'react'
-import type { Art } from '../data/menu'
+import type { Art } from '../domain'
 
 type Props = { art: Art; ref?: Ref<SVGSVGElement> } & Omit<SVGProps<SVGSVGElement>, 'viewBox'>
 

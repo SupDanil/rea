@@ -1,4 +1,5 @@
 import { describe, it, expect, beforeEach } from 'vitest'
+import { testCatalog } from '../test/catalogFixture'
 import { renderHook, act } from '@testing-library/react'
 import { useCart, resolveLine, resolveLines, subtotalOf } from './cart'
 
@@ -113,15 +114,15 @@ describe('useCart hook and state', () => {
       qty: 2,
     }
 
-    const resolved = resolveLine(line)
+    const resolved = resolveLine(line, testCatalog)
     expect(resolved).not.toBeNull()
     expect(resolved!.item.name).toBe('Капучино')
     expect(resolved!.variant.volume).toBe('300 мл')
-    expect(resolved!.unitPrice).toBeGreaterThan(0)
+    expect(resolved!.unitPrice).toBe(210 + 70)
     expect(resolved!.qty).toBe(2)
 
-    const all = resolveLines([line])
+    const all = resolveLines([line], testCatalog)
     expect(all.length).toBe(1)
-    expect(subtotalOf([line])).toBe(resolved!.unitPrice * 2)
+    expect(subtotalOf([line], testCatalog)).toBe(resolved!.unitPrice * 2)
   })
 })

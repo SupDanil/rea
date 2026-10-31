@@ -1,7 +1,7 @@
 import type { CSSProperties } from 'react'
 import { ItemArt } from '../../components/ItemArt'
 import { block, blockTitle, panel } from '../../components/ui'
-import type { MenuItem } from '../../data/menu'
+import type { MenuItem } from '../../domain'
 import { cx } from '../../utils/cx'
 import { formatPrice } from '../../utils/format'
 

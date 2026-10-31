@@ -1,5 +1,5 @@
 import { useRef } from 'react'
-import type { Variant } from '../../data/menu'
+import type { Variant } from '../../domain'
 import { useSlidingIndicator } from '../../hooks/useSlidingIndicator'
 
 const sizeLabel = { S: 'S', M: 'M', L: 'L', ONE: '' } as const

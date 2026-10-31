@@ -1,15 +1,41 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { HttpApiClient, createHttpClient } from './httpClient'
-import { mockApiClient } from './mockClient'
+import { ApiError, AUTH_PHONE_KEY, GUEST_ORDERS_KEY, HttpApiClient, createHttpClient } from './httpClient'
+import type { Order } from '../domain'
+
+const baseUrl = 'https://api.test.rea.local/api/v1'
+
+const json = (body: unknown, status = 200) =>
+  ({
+    ok: status >= 200 && status < 300,
+    status,
+    json: async () => body,
+  }) as Response
+
+const order = (id: string, createdAt = 1000, extra: Partial<Order> = {}): Order => ({
+  id,
+  number: 12,
+  createdAt,
+  readyAt: createdAt + 420_000,
+  lines: [],
+  subtotal: 200,
+  discount: 0,
+  total: 200,
+  name: 'Аня',
+  pickup: { kind: 'asap' },
+  payment: 'card',
+  status: 'accepted',
+  ...extra,
+})
 
 describe('HttpApiClient', () => {
-  const baseUrl = 'https://api.test.rea.local/api/v1'
   let client: HttpApiClient
+  let fetchMock: ReturnType<typeof vi.fn>
 
   beforeEach(() => {
-    client = new HttpApiClient(baseUrl)
+    client = new HttpApiClient(`${baseUrl}/`)
     localStorage.clear()
-    vi.restoreAllMocks()
+    fetchMock = vi.fn()
+    globalThis.fetch = fetchMock as unknown as typeof fetch
   })
 
   afterEach(() => {
@@ -17,255 +43,217 @@ describe('HttpApiClient', () => {
     localStorage.clear()
   })
 
-  it('createHttpClient factory returns an HttpApiClient instance', () => {
-    const instance = createHttpClient(baseUrl)
+  const lastCall = () => fetchMock.mock.calls.at(-1) as [string, RequestInit]
+
+  it('createHttpClient returns an HttpApiClient and trims the trailing slash', async () => {
+    const instance = createHttpClient(`${baseUrl}///`)
     expect(instance).toBeInstanceOf(HttpApiClient)
+    fetchMock.mockResolvedValue(json({ items: [], categories: [], ingredientGroups: [] }))
+    await instance.getCatalog()
+    expect(lastCall()[0]).toBe(`${baseUrl}/catalog`)
   })
 
-  describe('getCatalog()', () => {
-    it('fetches catalog from backend when endpoint succeeds', async () => {
-      const mockCatalog = {
-        topCategories: [{ id: 'coffee', name: 'Кофе', sort: 1 }],
-        subCategories: [{ id: 'classic', topId: 'coffee', name: 'Классика', sort: 1 }],
-        items: [],
-        ingredients: [],
-        ingredientGroups: [],
-      }
-
-      globalThis.fetch = vi.fn().mockResolvedValue({
-        ok: true,
-        json: async () => mockCatalog,
-      } as Response)
-
-      const result = await client.getCatalog()
-      expect(result).toEqual(mockCatalog)
-      expect(globalThis.fetch).toHaveBeenCalledWith(`${baseUrl}/catalog`, expect.objectContaining({
-        headers: expect.objectContaining({ 'Content-Type': 'application/json' }),
-      }))
+  describe('errors are surfaced, never replaced with fake data', () => {
+    it('throws ApiError with the server message and reason on a non-2xx response', async () => {
+      fetchMock.mockResolvedValue(json({ error: 'Неверный код', reason: 'invalid' }, 401))
+      const err = await client.verifySmsCode('+79990001122', '0000').catch((e) => e)
+      expect(err).toBeInstanceOf(ApiError)
+      expect(err).toMatchObject({ status: 401, message: 'Неверный код', reason: 'invalid' })
     })
 
-    it('falls back to mockApiClient when fetch fails', async () => {
-      globalThis.fetch = vi.fn().mockRejectedValue(new Error('Network error'))
-      const mockSpy = vi.spyOn(mockApiClient, 'getCatalog')
-
-      const result = await client.getCatalog()
-      expect(mockSpy).toHaveBeenCalled()
-      expect(result.categories.length).toBeGreaterThan(0)
-      expect(result.items.length).toBeGreaterThan(0)
-    })
-  })
-
-  describe('getProfile() and Auth Phone Handling', () => {
-    it('returns null if no phone is saved in localStorage', async () => {
-      const fetchSpy = vi.fn()
-      globalThis.fetch = fetchSpy
-
-      const profile = await client.getProfile()
-      expect(profile).toBeNull()
-      expect(fetchSpy).not.toHaveBeenCalled()
+    it('falls back to a generic message when the error body is not JSON', async () => {
+      fetchMock.mockResolvedValue({ ok: false, status: 502, json: async () => Promise.reject(new Error('html')) } as unknown as Response)
+      await expect(client.getCatalog()).rejects.toMatchObject({ status: 502, message: 'HTTP 502 at /catalog' })
     })
 
-    it('fetches profile from backend when phone is present in localStorage', async () => {
-      localStorage.setItem('shit_coffee_phone', '+79991234567')
-      const mockProfile = {
-        phone: '+79991234567',
-        name: 'Данил',
-        stamps: 4,
-      }
-
-      globalThis.fetch = vi.fn().mockResolvedValue({
-        ok: true,
-        json: async () => mockProfile,
-      } as Response)
-
-      const profile = await client.getProfile()
-      expect(profile).toEqual(mockProfile)
-      expect(globalThis.fetch).toHaveBeenCalledWith(
-        `${baseUrl}/profile?phone=%2B79991234567`,
-        expect.anything(),
-      )
+    it('propagates network failures from getCatalog', async () => {
+      fetchMock.mockRejectedValue(new TypeError('Failed to fetch'))
+      await expect(client.getCatalog()).rejects.toThrow('Failed to fetch')
     })
 
-    it('returns null on network failure during getProfile()', async () => {
-      localStorage.setItem('shit_coffee_phone', '+79991234567')
-      globalThis.fetch = vi.fn().mockRejectedValue(new Error('500 Server error'))
-
-      const profile = await client.getProfile()
-      expect(profile).toBeNull()
+    it.each([
+      ['createOrder', () => client.createOrder({ lines: [], subtotal: 0, discount: 0, total: 0, name: 'X', pickup: { kind: 'asap' }, payment: 'card' })],
+      ['updateOrder', () => client.updateOrder('ord-1', { rating: 'good' })],
+      ['checkPromo', () => client.checkPromo('X')],
+      ['sendSmsCode', () => client.sendSmsCode('+79990001122')],
+    ])('%s rejects when the server is down', async (_name, call) => {
+      fetchMock.mockRejectedValue(new TypeError('Failed to fetch'))
+      await expect(call()).rejects.toThrow()
     })
   })
 
-  describe('sendSmsCode() and verifySmsCode()', () => {
-    it('sends SMS code via POST /auth/send-code', async () => {
-      globalThis.fetch = vi.fn().mockResolvedValue({
-        ok: true,
-        json: async () => ({ success: true, retryAfter: 60 }),
-      } as Response)
-
-      const res = await client.sendSmsCode('+79990001122')
-      expect(res.success).toBe(true)
-      expect(globalThis.fetch).toHaveBeenCalledWith(`${baseUrl}/auth/send-code`, expect.objectContaining({
-        method: 'POST',
-        body: JSON.stringify({ phone: '+79990001122' }),
-      }))
-    })
-
-    it('falls back to mockApiClient on sendSmsCode failure', async () => {
-      globalThis.fetch = vi.fn().mockResolvedValue({ ok: false, status: 500 } as Response)
-      const mockSpy = vi.spyOn(mockApiClient, 'sendSmsCode')
-
-      const res = await client.sendSmsCode('+79990001122')
-      expect(mockSpy).toHaveBeenCalledWith('+79990001122')
-      expect(res.success).toBe(true)
-    })
-
-    it('verifies code and saves phone in localStorage on success', async () => {
-      const mockVerifyRes = {
-        token: 'jwt-token-xyz',
-        profile: { phone: '+79990001122', name: 'Алекс' },
-      }
-
-      globalThis.fetch = vi.fn().mockResolvedValue({
-        ok: true,
-        json: async () => mockVerifyRes,
-      } as Response)
-
-      const res = await client.verifySmsCode('+79990001122', '1234', 'Алекс')
-      expect(res).toEqual(mockVerifyRes)
-      expect(localStorage.getItem('shit_coffee_phone')).toBe('+79990001122')
+  describe('catalog', () => {
+    it('GETs /catalog with JSON headers', async () => {
+      const catalog = { items: [], categories: [{ id: 'coffee', name: 'Кофе' }], ingredientGroups: [] }
+      fetchMock.mockResolvedValue(json(catalog))
+      expect(await client.getCatalog()).toEqual(catalog)
+      const [url, init] = lastCall()
+      expect(url).toBe(`${baseUrl}/catalog`)
+      expect(init.headers).toMatchObject({ 'Content-Type': 'application/json' })
     })
   })
 
-  describe('updateProfile() and signOut()', () => {
-    it('sends PATCH /profile with patch and saved phone', async () => {
-      localStorage.setItem('shit_coffee_phone', '+79990001122')
-      const updatedProfile = { phone: '+79990001122', name: 'Данил Новый' }
+  describe('auth & profile', () => {
+    const profile = { phone: '+79990001122', name: 'Аня', email: '', notifications: true, joinedAt: 1 }
 
-      globalThis.fetch = vi.fn().mockResolvedValue({
-        ok: true,
-        json: async () => updatedProfile,
-      } as Response)
-
-      const res = await client.updateProfile({ name: 'Данил Новый' })
-      expect(res.name).toBe('Данил Новый')
-      expect(globalThis.fetch).toHaveBeenCalledWith(`${baseUrl}/profile`, expect.objectContaining({
-        method: 'PATCH',
-        body: JSON.stringify({ name: 'Данил Новый', phone: '+79990001122' }),
-      }))
+    it('sendSmsCode POSTs the phone and returns the devCode when the server gives one', async () => {
+      fetchMock.mockResolvedValue(json({ phone: profile.phone, success: true, devCode: '4821' }))
+      const res = await client.sendSmsCode(profile.phone)
+      expect(res.devCode).toBe('4821')
+      const [url, init] = lastCall()
+      expect(url).toBe(`${baseUrl}/auth/send-code`)
+      expect(init.method).toBe('POST')
+      expect(JSON.parse(init.body as string)).toEqual({ phone: profile.phone })
     })
 
-    it('signOut() removes phone from localStorage and calls /auth/sign-out', async () => {
-      localStorage.setItem('shit_coffee_phone', '+79990001122')
-      globalThis.fetch = vi.fn().mockResolvedValue({ ok: true, json: async () => ({}) } as Response)
+    it('verifySmsCode saves the normalized phone as the session only on success', async () => {
+      fetchMock.mockResolvedValueOnce(json({ error: 'Неверный код' }, 401))
+      await expect(client.verifySmsCode('8 999 000 11 22', '0000')).rejects.toBeInstanceOf(ApiError)
+      expect(localStorage.getItem(AUTH_PHONE_KEY)).toBeNull()
 
+      fetchMock.mockResolvedValueOnce(json({ phone: profile.phone, code: '4821', profile }))
+      const res = await client.verifySmsCode('8 999 000 11 22', '4821', 'Аня')
+      expect(res.profile).toEqual(profile)
+      expect(JSON.parse(lastCall()[1].body as string)).toEqual({ phone: '8 999 000 11 22', code: '4821', name: 'Аня' })
+      expect(localStorage.getItem(AUTH_PHONE_KEY)).toBe(profile.phone)
+    })
+
+    it('getProfile returns null without a session and does not call the server', async () => {
+      expect(await client.getProfile()).toBeNull()
+      expect(fetchMock).not.toHaveBeenCalled()
+    })
+
+    it('getProfile loads the profile for the saved phone', async () => {
+      localStorage.setItem(AUTH_PHONE_KEY, profile.phone)
+      fetchMock.mockResolvedValue(json(profile))
+      expect(await client.getProfile()).toEqual(profile)
+      expect(lastCall()[0]).toBe(`${baseUrl}/profile?phone=%2B79990001122`)
+    })
+
+    it('getProfile drops a stale session when the server no longer knows the phone', async () => {
+      localStorage.setItem(AUTH_PHONE_KEY, profile.phone)
+      fetchMock.mockResolvedValue(json({ error: 'Profile not found' }, 404))
+      expect(await client.getProfile()).toBeNull()
+      expect(localStorage.getItem(AUTH_PHONE_KEY)).toBeNull()
+    })
+
+    it('getProfile rethrows other failures and keeps the session', async () => {
+      localStorage.setItem(AUTH_PHONE_KEY, profile.phone)
+      fetchMock.mockResolvedValue(json({ error: 'boom' }, 500))
+      await expect(client.getProfile()).rejects.toMatchObject({ status: 500 })
+      expect(localStorage.getItem(AUTH_PHONE_KEY)).toBe(profile.phone)
+    })
+
+    it('updateProfile PATCHes with the session phone', async () => {
+      localStorage.setItem(AUTH_PHONE_KEY, profile.phone)
+      fetchMock.mockResolvedValue(json({ ...profile, name: 'Анна' }))
+      const updated = await client.updateProfile({ name: 'Анна' })
+      expect(updated.name).toBe('Анна')
+      const [url, init] = lastCall()
+      expect(url).toBe(`${baseUrl}/profile`)
+      expect(init.method).toBe('PATCH')
+      expect(JSON.parse(init.body as string)).toEqual({ name: 'Анна', phone: profile.phone })
+    })
+
+    it('updateProfile refuses to run without a session', async () => {
+      await expect(client.updateProfile({ name: 'X' })).rejects.toMatchObject({ status: 401 })
+      expect(fetchMock).not.toHaveBeenCalled()
+    })
+
+    it('signOut clears the session even if the server call fails', async () => {
+      localStorage.setItem(AUTH_PHONE_KEY, profile.phone)
+      fetchMock.mockRejectedValue(new TypeError('offline'))
+      await expect(client.signOut()).rejects.toThrow()
+      expect(localStorage.getItem(AUTH_PHONE_KEY)).toBeNull()
+    })
+
+    it('signOut POSTs /auth/sign-out', async () => {
+      fetchMock.mockResolvedValue(json({ success: true }))
       await client.signOut()
-      expect(localStorage.getItem('shit_coffee_phone')).toBeNull()
-      expect(globalThis.fetch).toHaveBeenCalledWith(`${baseUrl}/auth/sign-out`, expect.objectContaining({
-        method: 'POST',
-      }))
+      expect(lastCall()[0]).toBe(`${baseUrl}/auth/sign-out`)
+      expect(lastCall()[1].method).toBe('POST')
     })
   })
 
-  describe('Orders API: getOrders(), getOrder(), createOrder(), updateOrder()', () => {
-    it('getOrders() queries with phone query parameter when user is logged in', async () => {
-      localStorage.setItem('shit_coffee_phone', '+79998887766')
-      globalThis.fetch = vi.fn().mockResolvedValue({
-        ok: true,
-        json: async () => [{ id: 'order-1', number: 10, total: 350 }],
-      } as Response)
-
-      const orders = await client.getOrders()
-      expect(orders.length).toBe(1)
-      expect(globalThis.fetch).toHaveBeenCalledWith(
-        `${baseUrl}/orders?phone=%2B79998887766`,
-        expect.anything(),
-      )
+  describe('orders', () => {
+    it('getOrders returns [] for a fresh guest without asking the server for everyone’s orders', async () => {
+      expect(await client.getOrders()).toEqual([])
+      expect(fetchMock).not.toHaveBeenCalled()
     })
 
-    it('getOrder(id) requests /orders/:id', async () => {
-      const mockOrder = { id: 'ord-99', number: 99, status: 'making', total: 400 }
-      globalThis.fetch = vi.fn().mockResolvedValue({
-        ok: true,
-        json: async () => mockOrder,
-      } as Response)
-
-      const order = await client.getOrder('ord-99')
-      expect(order).toEqual(mockOrder)
-      expect(globalThis.fetch).toHaveBeenCalledWith(`${baseUrl}/orders/ord-99`, expect.anything())
+    it('createOrder remembers the id so a guest can follow it, newest first, de-duplicated', async () => {
+      localStorage.setItem(GUEST_ORDERS_KEY, JSON.stringify(['ord-old', 'ord-new']))
+      fetchMock.mockResolvedValue(json(order('ord-new')))
+      await client.createOrder({ lines: [], subtotal: 200, discount: 0, total: 200, name: 'Аня', pickup: { kind: 'asap' }, payment: 'card' })
+      expect(JSON.parse(localStorage.getItem(GUEST_ORDERS_KEY)!)).toEqual(['ord-new', 'ord-old'])
+      expect(lastCall()[1].method).toBe('POST')
     })
 
-    it('getOrder(id) falls back to mock client when backend fails', async () => {
-      globalThis.fetch = vi.fn().mockRejectedValue(new Error('Network fail'))
-      const mockSpy = vi.spyOn(mockApiClient, 'getOrder').mockResolvedValue({
-        id: 'mock-1',
-        number: 1,
-        status: 'accepted',
-      } as any)
-
-      const order = await client.getOrder('mock-1')
-      expect(mockSpy).toHaveBeenCalledWith('mock-1')
-      expect(order?.id).toBe('mock-1')
+    it('getOrders for a guest fetches the remembered ids', async () => {
+      localStorage.setItem(GUEST_ORDERS_KEY, JSON.stringify(['a', 'b c']))
+      fetchMock.mockResolvedValue(json([order('a')]))
+      await client.getOrders()
+      expect(lastCall()[0]).toBe(`${baseUrl}/orders?ids=a,b%20c`)
     })
 
-    it('createOrder() posts to /orders and returns created order', async () => {
-      const dto = {
-        lines: [],
-        subtotal: 500,
-        discount: 50,
-        total: 450,
-        name: 'Данил',
-        pickup: { kind: 'asap' as const },
-        payment: 'card' as const,
-      }
-
-      const createdOrder = { ...dto, id: 'ord-new', number: 12, createdAt: 1000, readyAt: 2000, status: 'accepted' }
-      globalThis.fetch = vi.fn().mockResolvedValue({
-        ok: true,
-        json: async () => createdOrder,
-      } as Response)
-
-      const res = await client.createOrder(dto)
-      expect(res).toEqual(createdOrder)
-      expect(globalThis.fetch).toHaveBeenCalledWith(`${baseUrl}/orders`, expect.objectContaining({
-        method: 'POST',
-        body: JSON.stringify(dto),
-      }))
+    it('getOrders tolerates corrupted guest storage', async () => {
+      localStorage.setItem(GUEST_ORDERS_KEY, '{not json')
+      expect(await client.getOrders()).toEqual([])
+      localStorage.setItem(GUEST_ORDERS_KEY, JSON.stringify({ a: 1 }))
+      expect(await client.getOrders()).toEqual([])
     })
 
-    it('updateOrder() sends PATCH /orders/:id', async () => {
-      globalThis.fetch = vi.fn().mockResolvedValue({
-        ok: true,
-        json: async () => ({ id: 'ord-1', rating: 'good' }),
-      } as Response)
+    it('getOrders for a signed-in guest merges phone orders with earlier device orders, newest first', async () => {
+      localStorage.setItem(AUTH_PHONE_KEY, '+79990001122')
+      localStorage.setItem(GUEST_ORDERS_KEY, JSON.stringify(['mine', 'device']))
+      fetchMock.mockResolvedValueOnce(json([order('mine', 2000)])).mockResolvedValueOnce(json([order('device', 3000)]))
+      const list = await client.getOrders()
+      expect(list.map((o) => o.id)).toEqual(['device', 'mine'])
+      expect(fetchMock.mock.calls[0][0]).toBe(`${baseUrl}/orders?phone=%2B79990001122`)
+      expect(fetchMock.mock.calls[1][0]).toBe(`${baseUrl}/orders?ids=device`)
+    })
 
-      const res = await client.updateOrder('ord-1', { rating: 'good' })
-      expect(res.rating).toBe('good')
-      expect(globalThis.fetch).toHaveBeenCalledWith(`${baseUrl}/orders/ord-1`, expect.objectContaining({
-        method: 'PATCH',
-        body: JSON.stringify({ rating: 'good' }),
-      }))
+    it('getOrders for a signed-in guest makes one call when there are no extra device orders', async () => {
+      localStorage.setItem(AUTH_PHONE_KEY, '+79990001122')
+      localStorage.setItem(GUEST_ORDERS_KEY, JSON.stringify(['mine']))
+      fetchMock.mockResolvedValue(json([order('mine')]))
+      expect((await client.getOrders()).map((o) => o.id)).toEqual(['mine'])
+      expect(fetchMock).toHaveBeenCalledTimes(1)
+    })
+
+    it('getOrder returns the order, null on 404, and throws on other errors', async () => {
+      fetchMock.mockResolvedValueOnce(json(order('ord-1')))
+      expect((await client.getOrder('ord-1'))?.id).toBe('ord-1')
+      fetchMock.mockResolvedValueOnce(json({ error: 'Order not found' }, 404))
+      expect(await client.getOrder('nope')).toBeNull()
+      fetchMock.mockResolvedValueOnce(json({ error: 'boom' }, 500))
+      await expect(client.getOrder('x')).rejects.toMatchObject({ status: 500 })
+    })
+
+    it('updateOrder PATCHes and returns the server copy', async () => {
+      fetchMock.mockResolvedValue(json(order('ord-1', 1000, { rating: 'good' })))
+      const updated = await client.updateOrder('ord-1', { rating: 'good' })
+      expect(updated.rating).toBe('good')
+      expect(lastCall()[0]).toBe(`${baseUrl}/orders/ord-1`)
+      expect(lastCall()[1].method).toBe('PATCH')
+    })
+
+    it('updateOrder surfaces a 409 when the order can no longer be cancelled', async () => {
+      fetchMock.mockResolvedValue(json({ error: 'Order can no longer be cancelled' }, 409))
+      await expect(client.updateOrder('ord-1', { cancelledAt: 1 })).rejects.toMatchObject({ status: 409 })
+    })
+
+    it('orderEventsUrl points at the SSE stream', () => {
+      expect(client.orderEventsUrl('ord 1')).toBe(`${baseUrl}/orders/ord%201/events`)
     })
   })
 
-  describe('checkPromo()', () => {
-    it('checks promo code via GET /promo/check?code=...', async () => {
-      globalThis.fetch = vi.fn().mockResolvedValue({
-        ok: true,
-        json: async () => ({ valid: true, discount: 10, percent: true }),
-      } as Response)
-
-      const res = await client.checkPromo('COFFEE10')
-      expect(res.valid).toBe(true)
-      expect(globalThis.fetch).toHaveBeenCalledWith(`${baseUrl}/promo/check?code=COFFEE10`, expect.anything())
-    })
-
-    it('falls back to mockApiClient when checkPromo fails', async () => {
-      globalThis.fetch = vi.fn().mockRejectedValue(new Error('Network error'))
-      const mockSpy = vi.spyOn(mockApiClient, 'checkPromo')
-
-      const res = await client.checkPromo('RABBIT')
-      expect(mockSpy).toHaveBeenCalledWith('RABBIT')
-      expect(res.valid).toBe(true)
+  describe('promo', () => {
+    it('checkPromo URL-encodes Cyrillic codes and returns the server verdict', async () => {
+      fetchMock.mockResolvedValue(json({ code: 'ЗЕРНО10', valid: true, percent: 10, label: '−10%' }))
+      const res = await client.checkPromo('ЗЕРНО10')
+      expect(res).toEqual({ code: 'ЗЕРНО10', valid: true, percent: 10, label: '−10%' })
+      expect(lastCall()[0]).toBe(`${baseUrl}/promo/check?code=${encodeURIComponent('ЗЕРНО10')}`)
     })
   })
 })

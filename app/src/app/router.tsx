@@ -1,4 +1,4 @@
-import { createHashRouter, Navigate } from 'react-router'
+import { createHashRouter, Navigate, type RouteObject } from 'react-router'
 import { CartPage } from '../pages/cart/CartPage'
 import { LoginPage } from '../pages/login/LoginPage'
 import { OrderPage } from '../pages/order/OrderPage'
@@ -8,7 +8,7 @@ import { RootLayout } from './RootLayout'
 
 // Hash routing keeps deep links working on GitHub Pages without a server fallback;
 // the paths mirror Drinkit's app links (/menu, /product/<id>, /orderHistory → /order/<id>).
-export const router = createHashRouter([
+export const routes: RouteObject[] = [
   {
     path: '/',
     element: <RootLayout />,
@@ -23,4 +23,6 @@ export const router = createHashRouter([
       { path: '*', element: <Navigate to="/" replace /> },
     ],
   },
-])
+]
+
+export const router = createHashRouter(routes)

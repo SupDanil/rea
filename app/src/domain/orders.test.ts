@@ -52,7 +52,7 @@ describe('domain/orders', () => {
     expect(statusOf({ ...baseOrder, status: 'accepted' }, baseOrder.createdAt)).toBe('accepted')
     expect(statusOf({ ...baseOrder, status: 'making' }, baseOrder.createdAt)).toBe('making')
     expect(statusOf({ ...baseOrder, status: 'ready' }, baseOrder.createdAt)).toBe('ready')
-    expect(statusOf({ ...baseOrder, status: 'completed' }, baseOrder.createdAt)).toBe('ready')
+    expect(statusOf({ ...baseOrder, status: 'completed' }, baseOrder.createdAt)).toBe('completed')
     expect(statusOf({ ...baseOrder, status: 'cancelled' }, baseOrder.createdAt)).toBe('cancelled')
   })
 

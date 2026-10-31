@@ -1,8 +1,9 @@
 import { useEffect, useRef, type RefObject } from 'react'
-import { subcategoriesOf, topCategories, type Category } from '../../data/menu'
+import type { Catalog, Category } from '../../domain'
 import { useSlidingIndicator } from '../../hooks/useSlidingIndicator'
 
 type Props = {
+  catalog: Catalog
   navRef: RefObject<HTMLElement | null>
   activeTop: Category
   activeSub: string
@@ -12,7 +13,7 @@ type Props = {
 }
 
 /** Sticky two-row tab bar: categories, then subcategories of the active one. */
-export function CategoryNav({ navRef, activeTop, activeSub, activeSubs, showSubtabs, onSelect }: Props) {
+export function CategoryNav({ catalog, navRef, activeTop, activeSub, activeSubs, showSubtabs, onSelect }: Props) {
   const tabsRef = useRef<HTMLDivElement>(null)
   const subTabsRef = useRef<HTMLDivElement>(null)
   const tabIndicator = useSlidingIndicator(tabsRef, activeTop.id)
@@ -39,13 +40,16 @@ export function CategoryNav({ navRef, activeTop, activeSub, activeSubs, showSubt
           ref={tabIndicator}
           aria-hidden="true"
         />
-        {topCategories.map((top) => (
+        {catalog.topCategories.map((top) => (
           <button
             key={top.id}
             role="tab"
             aria-selected={top.id === activeTop.id}
             className="relative pt-0.5 pb-1.5 text-[18px] sm:text-[21px] font-extrabold tracking-[-0.035em] whitespace-nowrap text-faint transition-[color] duration-250 ease-[ease] aria-selected:text-ink"
-            onClick={() => onSelect(subcategoriesOf(top.id)[0].id)}
+            onClick={() => {
+              const first = catalog.subcategoriesOf(top.id)[0]
+              if (first) onSelect(first.id)
+            }}
           >
             {top.name}
           </button>

@@ -1,30 +1,30 @@
-import { makingProgress, type Order, type OrderStatus } from '../../state/orders'
+import type { Order, OrderStatus } from '../../state/orders'
 import { clockTime } from '../../utils/format'
 
 export const statusTitles: Record<OrderStatus, string> = {
   paying: 'Проводим оплату',
-  accepted: 'Приняли заказ',
-  making: 'Готовим',
+  accepted: 'Готовим ваш кофе',
+  making: 'Готовим ваш кофе',
   ready: 'Заказ готов',
+  completed: 'Заказ выдан',
   cancelled: 'Заказ отменён',
 }
-
-// Same sub-steps Drinkit narrates while an order is being made.
-const makingSteps = ['заказ в очереди', 'изучаем рецепт', 'готовим ингредиенты', 'взбиваем и смешиваем', 'последние штрихи', 'аккуратно упаковываем']
 
 export function statusSubtitle(order: Order, status: OrderStatus, now: number) {
   switch (status) {
     case 'paying':
       return order.payment === 'card' ? 'Секунду, подтверждаем платёж' : 'Секунду, отправляем на кухню'
     case 'accepted':
-      return order.pickup.kind === 'asap' ? 'Скоро начнём готовить' : `Приготовим к ${clockTime(order.readyAt)}`
     case 'making': {
-      const p = makingProgress(order, now)
       const left = Math.max(1, Math.ceil((order.readyAt - now) / 60_000))
-      return `${makingSteps[Math.min(makingSteps.length - 1, Math.floor(p * makingSteps.length))]} · ${p > 0.8 ? 'пара минут' : `~${left} мин`}`
+      return order.pickup.kind === 'asap'
+        ? `Будет готов к ${clockTime(order.readyAt)} · ~${left} мин`
+        : `Приготовим к ${clockTime(order.readyAt)}`
     }
     case 'ready':
-      return order.rating ? 'Спасибо за оценку!' : 'Заберите на стойке выдачи. Всё хорошо?'
+      return order.rating ? 'Спасибо за оценку!' : 'Заберите на стойке выдачи'
+    case 'completed':
+      return 'Приятного кофепития! Будем рады видеть снова'
     case 'cancelled':
       return order.payment === 'card' ? 'Деньги вернутся на карту в течение 3 дней' : 'Будем ждать вас снова'
   }

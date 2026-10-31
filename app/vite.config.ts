@@ -49,6 +49,12 @@ export default defineConfig({
         globPatterns: ['**/*.{js,css,html,svg,png,woff2}'],
         runtimeCaching: [
           {
+            // Offline the app still shows the last menu it got from the API.
+            urlPattern: ({ url }) => url.pathname.endsWith('/api/v1/catalog'),
+            handler: 'NetworkFirst',
+            options: { cacheName: 'api-catalog', networkTimeoutSeconds: 4, expiration: { maxEntries: 1, maxAgeSeconds: 60 * 60 * 24 * 7 } },
+          },
+          {
             urlPattern: /^https:\/\/fonts\.(googleapis|gstatic)\.com\/.*/,
             handler: 'CacheFirst',
             options: { cacheName: 'google-fonts', expiration: { maxEntries: 10, maxAgeSeconds: 60 * 60 * 24 * 365 } },

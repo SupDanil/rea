@@ -1,6 +1,6 @@
 import { useRef, type CSSProperties } from 'react'
 import { IngredientArt } from '../../components/ItemArt'
-import type { Ingredient } from '../../data/menu'
+import type { Ingredient } from '../../domain'
 import { cx } from '../../utils/cx'
 import { formatPrice } from '../../utils/format'
 

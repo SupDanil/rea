@@ -9,12 +9,14 @@ export type CreateOrderDto = {
   pickup: Pickup
   payment: PaymentMethod
   phone?: string
+  shopId?: string
   levelDiscount?: number
+  promoCode?: string
   promoDiscount?: number
   rewardDiscount?: number
 }
 
-export type UpdateOrderDto = Partial<Pick<Order, 'cancelledAt' | 'rating'>>
+export type UpdateOrderDto = Partial<Pick<Order, 'cancelledAt' | 'rating' | 'status'>>
 
 export type CheckPromoDto = {
   code: string
@@ -26,11 +28,15 @@ export type CheckPromoDto = {
 export type SendSmsDto = {
   phone: string
   success: boolean
+  /** Returned by the server outside production while no SMS provider is connected */
+  devCode?: string
 }
 
 export type VerifySmsDto = {
   phone: string
   code: string
+  /** The phone had no customer yet and one was just created */
+  isNew?: boolean
   profile: UserProfile
 }
 

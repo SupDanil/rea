@@ -1,12 +1,14 @@
 import type { ApiClient } from './client'
 import { createHttpClient } from './httpClient'
-import { mockApiClient } from './mockClient'
 
 export * from './client'
-export * from './mockClient'
 export * from './httpClient'
 export * from './types'
 
-const apiUrl = typeof import.meta !== 'undefined' ? (import.meta.env?.VITE_API_URL as string | undefined) : undefined
+const apiUrl = import.meta.env.VITE_API_URL as string | undefined
 
-export const api: ApiClient = apiUrl ? createHttpClient(apiUrl) : mockApiClient
+if (!apiUrl) {
+  throw new Error('VITE_API_URL is not set: point it at the REA-ADMIN API, e.g. http://localhost:3000/api/v1')
+}
+
+export const api: ApiClient = createHttpClient(apiUrl)

@@ -1,4 +1,4 @@
-import type { MenuItem } from '../../data/menu'
+import type { MenuItem } from '../../domain'
 import { useExitTransition } from '../../hooks/useExitTransition'
 import { cx } from '../../utils/cx'
 

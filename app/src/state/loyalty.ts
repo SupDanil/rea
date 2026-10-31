@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { api } from '../api'
 import {
   GIFT_DRINK_LIMIT,
-  giftValue as domainGiftValue,
+  giftValue,
   levels,
   loyaltyOf,
   STAMP_MIN_TOTAL,
@@ -10,76 +10,51 @@ import {
   type Level,
   type Loyalty,
 } from '../domain/loyalty'
-import type { CartLine } from '../domain/cart'
 import type { UserProfile } from '../domain/profile'
-import { staticCatalog } from '../queries/useCatalog'
 
 export type Profile = UserProfile
 export type { Level, Loyalty }
-export { levels, STAMPS_PER_GIFT, STAMP_MIN_TOTAL, GIFT_DRINK_LIMIT, loyaltyOf }
+export { levels, STAMPS_PER_GIFT, STAMP_MIN_TOTAL, GIFT_DRINK_LIMIT, loyaltyOf, giftValue }
 
-export const giftValue = (lines: CartLine[]) => domainGiftValue(lines, staticCatalog)
+// Keys the old demo build kept its fake profile and orders under.
+const LEGACY_KEYS = ['zerno-orders', 'zerno-profile', 'mock-api-orders', 'mock-api-profile']
 
+/** The signed-in guest, loaded from the server for the phone saved on this device. */
 export function useProfile() {
   const [profile, setProfile] = useState<Profile | null>(null)
 
-  const refreshProfile = useCallback(async () => {
+  useEffect(() => {
     try {
-      const p = await api.getProfile()
-      if (p) setProfile(p)
-    } catch {}
+      LEGACY_KEYS.forEach((key) => localStorage.removeItem(key))
+    } catch {
+      // Storage unavailable: nothing to clean up.
+    }
+    let cancelled = false
+    api
+      .getProfile()
+      .then((p) => {
+        if (!cancelled) setProfile(p)
+      })
+      .catch(() => {
+        // Offline or server down: stay signed out until the next load.
+      })
+    return () => {
+      cancelled = true
+    }
   }, [])
 
-  useEffect(() => {
-    // Clear any legacy mock localStorage keys
-    try {
-      localStorage.removeItem('zerno-orders')
-      localStorage.removeItem('zerno-profile')
-      localStorage.removeItem('mock-api-orders')
-      localStorage.removeItem('mock-api-profile')
-    } catch {}
-    refreshProfile()
-  }, [refreshProfile])
+  /** Called with the profile the server returned after a successful SMS check. */
+  const signIn = useCallback((next: Profile) => setProfile(next), [])
 
-  const signIn = useCallback(
-    async (phone: string, name = 'Гость') => {
-      try {
-        const res = await api.verifySmsCode(phone, '1234', name)
-        if (res?.profile) {
-          setProfile(res.profile)
-          return
-        }
-      } catch {}
-      setProfile((prev) => ({
-        phone,
-        name: prev?.name || name,
-        email: prev?.email || '',
-        notifications: prev?.notifications ?? true,
-        joinedAt: prev?.joinedAt || Date.now(),
-      }))
-    },
-    [],
-  )
-
-  const update = useCallback(
-    async (patch: Partial<Profile>) => {
-      try {
-        const updated = await api.updateProfile(patch)
-        if (updated) {
-          setProfile(updated)
-          return
-        }
-      } catch {}
-      setProfile((prev) => (prev ? { ...prev, ...patch } : null))
-    },
-    [],
-  )
+  const update = useCallback(async (patch: Partial<Profile>) => {
+    const updated = await api.updateProfile(patch)
+    setProfile(updated)
+    return updated
+  }, [])
 
   const signOut = useCallback(async () => {
-    try {
-      await api.signOut()
-    } catch {}
     setProfile(null)
+    await api.signOut().catch(() => {})
   }, [])
 
   return { profile, signIn, update, signOut }

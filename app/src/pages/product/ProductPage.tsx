@@ -2,8 +2,8 @@ import { useLayoutEffect, useRef, useState, type CSSProperties, type RefObject }
 import { Navigate, useParams } from 'react-router'
 import { CloseIcon } from '../../components/icons'
 import { ItemArt } from '../../components/ItemArt'
-import type { Ingredient, IngredientGroup, MenuItem } from '../../data/menu'
-import { useCatalog } from '../../queries/useCatalog'
+import type { Ingredient, IngredientGroup, MenuItem } from '../../domain'
+import { useCatalog, useCatalogQuery } from '../../queries/useCatalog'
 import { useAppNavigate } from '../../hooks/useAppNavigate'
 import { useEscape } from '../../hooks/useEscape'
 import { useExitTransition } from '../../hooks/useExitTransition'
@@ -25,8 +25,11 @@ const CONFIRM_MS = 420
 
 export function ProductPage() {
   const { id = '' } = useParams()
+  const { isPending } = useCatalogQuery()
   const catalog = useCatalog()
   const item = catalog.itemById.get(id)
+  // A deep link can arrive before the menu does: wait for it rather than bouncing to the menu.
+  if (!item && isPending) return <div className="min-h-dvh" role="status" aria-label="Загружаем товар" />
   if (!item) return <Navigate to="/" replace />
   return <ProductView item={item} />
 }

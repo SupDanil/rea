@@ -1,8 +1,9 @@
-import type { CatalogData, Order, UserProfile } from '../domain'
+import type { CatalogData, Order, Shop, UserProfile } from '../domain'
 import type { CheckPromoDto, CreateOrderDto, SendSmsDto, UpdateOrderDto, VerifySmsDto } from './types'
 
 export interface ApiClient {
   getCatalog(): Promise<CatalogData>
+  getShops(): Promise<Shop[]>
   getProfile(): Promise<UserProfile | null>
   sendSmsCode(phone: string): Promise<SendSmsDto>
   verifySmsCode(phone: string, code: string, name?: string): Promise<VerifySmsDto>
@@ -13,4 +14,6 @@ export interface ApiClient {
   createOrder(dto: CreateOrderDto): Promise<Order>
   updateOrder(id: string, patch: UpdateOrderDto): Promise<Order>
   checkPromo(code: string): Promise<CheckPromoDto>
+  /** URL of the server-sent events stream for one order */
+  orderEventsUrl(id: string): string
 }

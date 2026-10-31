@@ -1,20 +1,29 @@
 import { useAppNavigate } from '../../hooks/useAppNavigate'
 import { useNow } from '../../hooks/useNow'
+import { useCatalog } from '../../queries/useCatalog'
 import { useApp } from '../../state/AppContext'
 import { countOf, subtotalOf } from '../../state/cart'
-import { isActive, statusOf } from '../../state/orders'
+import { isActive, statusOf, type OrderStatus } from '../../state/orders'
 import { cx } from '../../utils/cx'
 import { formatPrice } from '../../utils/format'
 
-const short = { paying: 'оплата', accepted: 'принят', making: 'готовим', ready: 'готов!', cancelled: 'отменён' } as const
+const short: Record<OrderStatus, string> = {
+  paying: 'оплата',
+  accepted: 'принят',
+  making: 'готовим',
+  ready: 'готов!',
+  completed: 'выдан',
+  cancelled: 'отменён',
+}
 
 /** Floating bar over the menu: the live order (if any) and the cart preview. */
 export function MenuDock() {
   const { cart, orders } = useApp()
   const { go } = useAppNavigate()
   const now = useNow(2000)
+  const catalog = useCatalog()
   const count = countOf(cart.lines)
-  const total = subtotalOf(cart.lines)
+  const total = subtotalOf(cart.lines, catalog)
   const activeOrder = orders.orders.find((o) => isActive(o, now))
   if (!count && !activeOrder) return null
   const status = activeOrder && statusOf(activeOrder, now)

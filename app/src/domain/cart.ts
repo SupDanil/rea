@@ -48,13 +48,4 @@ export function subtotalOf(lines: CartLine[], catalog: Catalog): number {
 
 export const countOf = (lines: CartLine[]): number => lines.reduce((sum, l) => sum + l.qty, 0)
 
-export const promoCodes: Record<string, { percent: number; label: string }> = {
-  SHIT10: { percent: 10, label: '−10% на заказ' },
-  ЗАЯЦ: { percent: 15, label: '−15% от зайца' },
-  RABBIT: { percent: 15, label: '−15% от зайца' },
-  ОСЕНЬ: { percent: 15, label: '−15% на заказ' },
-  ЗЕРНО10: { percent: 10, label: '−10% на заказ' },
-  ZERNO10: { percent: 10, label: '−10% на заказ' },
-}
-
 export const normalizePromo = (code: string): string => code.trim().toUpperCase()

@@ -1,7 +1,7 @@
 import type { ReactNode, Ref } from 'react'
 import { useEscape } from '../hooks/useEscape'
-import { BackIcon } from './icons'
-import { iconBtn, sheetBody, sheetDock, sheetHead, sheetTitle } from './ui'
+import { BackIcon, CloseIcon } from './icons'
+import { iconBtn, sheetBody, sheetDock, sheetTitle } from './ui'
 import { cx } from '../utils/cx'
 
 type Props = {
@@ -45,12 +45,48 @@ export function Sheet({ label, title, onBack, backLabel = 'Назад', locked =
           className,
         )}
       >
-        <header className={cx(sheetHead, 'flex-none')}>
-          <button className={iconBtn('left')} onClick={onBack} aria-label={backLabel} disabled={locked}>
+        <header
+          className={cx(
+            'flex-none min-h-14 items-center px-3 sm:px-6 pt-[calc(8px+env(safe-area-inset-top))] pb-1',
+            // Mobile: 3-column grid (Back arrow on left, Title in middle, Action on right)
+            'grid grid-cols-[44px_1fr_auto] gap-2',
+            // Desktop: clean flex row (Title on left, Action + Close cross on right)
+            'wide:flex wide:items-center wide:justify-between wide:gap-3 wide:pt-5 wide:pb-3',
+          )}
+        >
+          {/* Mobile Back Button (chevron) */}
+          <button className={cx(iconBtn('left'), 'wide:hidden')} onClick={onBack} aria-label={backLabel} disabled={locked}>
             <BackIcon />
           </button>
-          {title && <h1 className={sheetTitle}>{title}</h1>}
-          {action}
+
+          {/* Title (centered on mobile, left-aligned on desktop) */}
+          {title ? (
+            <h1 className={cx(sheetTitle, 'truncate')}>
+              {title}
+            </h1>
+          ) : (
+            <h1 className={cx(sheetTitle, 'hidden wide:block truncate')}>
+              {label}
+            </h1>
+          )}
+
+          {/* Right Action (e.g. "Очистить" in Cart) + Desktop Close Cross (крестик) */}
+          <div className="col-start-3 flex items-center justify-end gap-2.5">
+            {action}
+            <button
+              type="button"
+              className={cx(
+                'hidden wide:grid size-10 place-items-center rounded-full',
+                'bg-surface-2 hover:bg-surface-2/80 text-muted hover:text-ink',
+                'border border-line shadow-xs transition-all active:scale-95 cursor-pointer',
+              )}
+              onClick={onBack}
+              aria-label="Закрыть"
+              disabled={locked}
+            >
+              <CloseIcon />
+            </button>
+          </div>
         </header>
         {children}
       </div>

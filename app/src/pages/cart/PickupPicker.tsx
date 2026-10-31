@@ -1,10 +1,21 @@
 import { block, blockTitle, hint } from '../../components/ui'
+import { prepRange, type Shop } from '../../domain'
 import type { Pickup } from '../../state/orders'
 
 const options: Pickup[] = [{ kind: 'asap' }, { kind: 'in', minutes: 15 }, { kind: 'in', minutes: 30 }, { kind: 'in', minutes: 45 }]
 const same = (a: Pickup, b: Pickup) => a.kind === b.kind && (a.kind === 'asap' || (b.kind === 'in' && a.minutes === b.minutes))
 
-export function PickupPicker({ value, onChange }: { value: Pickup; onChange: (pickup: Pickup) => void }) {
+export function PickupPicker({
+  shop,
+  value,
+  onChange,
+  onChangeShop,
+}: {
+  shop?: Shop
+  value: Pickup
+  onChange: (pickup: Pickup) => void
+  onChangeShop?: () => void
+}) {
   return (
     <section className={block}>
       <h2 className={blockTitle}>Когда забрать</h2>
@@ -19,7 +30,20 @@ export function PickupPicker({ value, onChange }: { value: Pickup; onChange: (pi
           </button>
         ))}
       </div>
-      <p className={hint()}>Невский, 12 · {value.kind === 'asap' ? 'приготовим за 5–7 минут' : 'приготовим к нужному времени'}</p>
+      {shop && (
+        <p className={hint()}>
+          <span>{shop.address} · {value.kind === 'asap' ? `приготовим за ${prepRange(shop)} минут` : 'приготовим к нужному времени'}</span>
+          {onChangeShop && (
+            <button
+              type="button"
+              onClick={onChangeShop}
+              className="ml-2 font-bold text-accent underline cursor-pointer hover:opacity-80"
+            >
+              Сменить
+            </button>
+          )}
+        </p>
+      )}
     </section>
   )
 }

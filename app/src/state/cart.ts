@@ -1,24 +1,9 @@
 import { useCallback } from 'react'
-import { staticCatalog } from '../queries/useCatalog'
-import {
-  lineKey,
-  resolveLine as domainResolveLine,
-  resolveLines as domainResolveLines,
-  subtotalOf as domainSubtotalOf,
-  countOf,
-  promoCodes,
-  normalizePromo,
-  type CartLine,
-  type ResolvedLine,
-} from '../domain/cart'
+import { lineKey, resolveLine, resolveLines, subtotalOf, countOf, normalizePromo, type CartLine, type ResolvedLine } from '../domain/cart'
 import { usePersistent } from '../hooks/usePersistent'
 
 export type { CartLine, ResolvedLine }
-export { lineKey, countOf, promoCodes, normalizePromo }
-
-export const resolveLine = (line: CartLine) => domainResolveLine(line, staticCatalog)
-export const resolveLines = (lines: CartLine[]) => domainResolveLines(lines, staticCatalog)
-export const subtotalOf = (lines: CartLine[]) => domainSubtotalOf(lines, staticCatalog)
+export { lineKey, countOf, normalizePromo, resolveLine, resolveLines, subtotalOf }
 
 export function useCart() {
   const [lines, setLines] = usePersistent<CartLine[]>('zerno-cart', [])

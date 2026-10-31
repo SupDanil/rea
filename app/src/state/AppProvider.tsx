@@ -5,12 +5,28 @@ import { loyaltyOf, useProfile } from './loyalty'
 import { useOrders } from './orders'
 import { useTheme } from './theme'
 
+export const SELECTED_SHOP_KEY = 'zerno_selected_shop_id'
+
 export function AppProvider({ children }: { children: ReactNode }) {
   const cart = useCart()
-  const orders = useOrders()
   const { profile, signIn, update: updateProfile, signOut } = useProfile()
+  const orders = useOrders(profile?.phone ?? null)
   const { theme, toggle: toggleTheme } = useTheme()
   const [toast, setToast] = useState<Toast | null>(null)
+  const [selectedShopId, setSelectedShopIdState] = useState<string | null>(() => {
+    try {
+      return localStorage.getItem(SELECTED_SHOP_KEY)
+    } catch {
+      return null
+    }
+  })
+
+  const setSelectedShopId = useCallback((id: string) => {
+    setSelectedShopIdState(id)
+    try {
+      localStorage.setItem(SELECTED_SHOP_KEY, id)
+    } catch {}
+  }, [])
 
   useEffect(() => {
     if (!toast) return
@@ -30,6 +46,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
     updateProfile,
     signOut,
     myOrders,
+    selectedShopId,
+    setSelectedShopId,
     theme,
     toggleTheme,
     toast,
