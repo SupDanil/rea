@@ -37,15 +37,15 @@ export function Sheet({ label, title, onBack, backLabel = 'Назад', locked =
       <div
         className={cx(
           // Mobile: full-screen sheet
-          'relative flex h-full w-full max-w-[480px] flex-col overflow-y-auto overscroll-contain bg-bg',
+          'relative flex h-full w-full max-w-[480px] flex-col overflow-hidden bg-bg',
           // Desktop: beautiful centered floating card
-          maxWidth ?? 'wide:max-w-[640px]',
-          'wide:h-auto wide:max-h-[min(90dvh,840px)] wide:rounded-[28px] wide:border wide:border-line wide:shadow-[0_24px_64px_rgba(0,0,0,0.35)]',
+          maxWidth ?? 'wide:max-w-[540px]',
+          'wide:h-[min(90dvh,780px)] wide:max-h-[min(90dvh,840px)] wide:rounded-[28px] wide:border wide:border-line wide:shadow-[0_24px_64px_rgba(0,0,0,0.35)]',
           'animate-[sheet-up_0.38s_var(--ease-soft)_both]',
           className,
         )}
       >
-        <header className={sheetHead}>
+        <header className={cx(sheetHead, 'flex-none')}>
           <button className={iconBtn('left')} onClick={onBack} aria-label={backLabel} disabled={locked}>
             <BackIcon />
           </button>
@@ -68,7 +68,7 @@ export function SheetBody({ className, children, ref }: { className?: string; ch
 
 export function SheetDock({ className, children, ref }: { className?: string; children: ReactNode; ref?: Ref<HTMLElement> }) {
   return (
-    <footer ref={ref} className={className ? `${sheetDock} ${className}` : sheetDock}>
+    <footer ref={ref} className={cx(sheetDock, 'flex-none border-t border-line/30 bg-bg/95 backdrop-blur-md', className)}>
       {children}
     </footer>
   )

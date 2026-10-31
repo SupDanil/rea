@@ -51,7 +51,7 @@ export function AddonPanel({ group, groupIndex, qtyOf, total, canAdd, onPick, on
       {onClose && (
         <div
           className={cx(
-            'fixed inset-0 z-20 bg-pd-scrim backdrop-blur-[2px] wide:hidden',
+            'fixed inset-0 z-20 bg-pd-scrim backdrop-blur-[2px]',
             leaving ? 'pointer-events-none animate-[fade-out_0.22s_ease_both]' : 'animate-[fade-only_0.24s_ease_both]',
           )}
           onClick={onClose}
