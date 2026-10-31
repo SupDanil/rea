@@ -92,66 +92,99 @@ export function CartPage() {
     </button>
   )
 
+  const checkoutBtnContent = paying ? (
+    <span className="flex w-full items-center justify-center gap-2.5">
+      <span className="size-5 rounded-full border-[2.5px] border-white/35 border-t-white animate-[spin_0.8s_linear_infinite]" aria-hidden="true" />
+      {payment === 'card' ? 'Оплачиваем…' : 'Отправляем…'}
+    </span>
+  ) : (
+    <>
+      <span>{payment === 'card' ? 'Оплатить' : 'Заказать'}</span>
+      <span className={addPrice} key={price.total}>
+        {formatPrice(price.total)}
+      </span>
+    </>
+  )
+
   return (
-    <Sheet label="Корзина" title="Корзина" onBack={back} backLabel="Назад в меню" locked={paying} action={clearButton}>
+    <Sheet
+      label="Корзина"
+      title="Корзина"
+      onBack={back}
+      backLabel="Назад в меню"
+      locked={paying}
+      action={clearButton}
+      maxWidth="wide:max-w-[960px] lg:wide:max-w-[1020px]"
+    >
       {lines.length === 0 ? (
         <EmptyState art={<EmptyCartArt />} title="Пока пусто" text="Загляните в меню — там капучино с зайцем и тёплые круассаны" actionLabel="В меню" onAction={back} />
       ) : (
         <SheetBody ref={bodyRef}>
-          <ul ref={listRef} className="flex flex-col gap-2">
-            {lines.map((line) => (
-              <CartLineItem
-                key={line.key}
-                line={line}
-                disabled={paying}
-                onOpen={() => go(`/product/${line.item.id}`)}
-                onQty={(qty) => cart.setQty(line.key, qty)}
-                onRemove={(row) => void remove(line, row)}
+          <div className="wide:grid wide:grid-cols-[1fr_360px] lg:wide:grid-cols-[1fr_380px] wide:gap-8 wide:items-start">
+            {/* Left: Cart Items, Upsells, Loyalty */}
+            <div className="flex flex-col gap-4 min-w-0">
+              <div className="hidden wide:flex items-center justify-between pb-1">
+                <h2 className="text-[16px] font-bold text-ink">Позиции в заказе ({countOf(cart.lines)})</h2>
+              </div>
+              <ul ref={listRef} className="flex flex-col gap-2.5">
+                {lines.map((line) => (
+                  <CartLineItem
+                    key={line.key}
+                    line={line}
+                    disabled={paying}
+                    onOpen={() => go(`/product/${line.item.id}`)}
+                    onQty={(qty) => cart.setQty(line.key, qty)}
+                    onRemove={(row) => void remove(line, row)}
+                  />
+                ))}
+              </ul>
+              <UpsellRow items={upsell} disabled={paying} onAdd={addUpsell} />
+              <LoyaltyOffer loyalty={cartLoyalty} canGift={price.canGift} useGift={useGift} onToggleGift={() => setUseGift((v) => !v)} onLogin={() => go('/login')} />
+            </div>
+
+            {/* Right: Details & Sticky Checkout Panel */}
+            <div className="flex flex-col gap-3.5 wide:sticky wide:top-0 bg-surface border border-line rounded-[24px] p-4 sm:p-5 shadow-sm mt-4 wide:mt-0">
+              <h3 className="hidden wide:block text-[16px] font-bold text-ink">Детали заказа</h3>
+              <NameField
+                value={name}
+                error={nameError}
+                inputRef={nameRef}
+                onChange={(value) => {
+                  setName(value)
+                  if (value.trim()) setNameError(false)
+                }}
               />
-            ))}
-          </ul>
-          <UpsellRow items={upsell} disabled={paying} onAdd={addUpsell} />
-          <LoyaltyOffer loyalty={cartLoyalty} canGift={price.canGift} useGift={useGift} onToggleGift={() => setUseGift((v) => !v)} onLogin={() => go('/login')} />
-          <NameField
-            value={name}
-            error={nameError}
-            inputRef={nameRef}
-            onChange={(value) => {
-              setName(value)
-              if (value.trim()) setNameError(false)
-            }}
-          />
-          <PickupPicker value={pickup} onChange={setPickup} />
-          <PromoField applied={promo} onApply={setPromo} />
-          <PaymentPicker value={payment} onChange={setPayment} />
-          <Summary>
-            <SummaryRow label={`Товары · ${countOf(cart.lines)}`} amount={price.subtotal} />
-            {price.rewardDiscount > 0 && <SummaryRow label="Напиток в подарок" amount={price.rewardDiscount} discount />}
-            {price.levelDiscount > 0 && cartLoyalty && (
-              <SummaryRow label={`Уровень «${cartLoyalty.levelName}» · ${cartLoyalty.levelPercent}%`} amount={price.levelDiscount} discount />
-            )}
-            {price.promoDiscount > 0 && <SummaryRow label={`Промокод ${promo}`} amount={price.promoDiscount} discount />}
-            <SummaryTotal label="Итого" amount={price.total} />
-          </Summary>
+              <PickupPicker value={pickup} onChange={setPickup} />
+              <PromoField applied={promo} onApply={setPromo} />
+              <PaymentPicker value={payment} onChange={setPayment} />
+              <Summary>
+                <SummaryRow label={`Товары · ${countOf(cart.lines)}`} amount={price.subtotal} />
+                {price.rewardDiscount > 0 && <SummaryRow label="Напиток в подарок" amount={price.rewardDiscount} discount />}
+                {price.levelDiscount > 0 && cartLoyalty && (
+                  <SummaryRow label={`Уровень «${cartLoyalty.levelName}» · ${cartLoyalty.levelPercent}%`} amount={price.levelDiscount} discount />
+                )}
+                {price.promoDiscount > 0 && <SummaryRow label={`Промокод ${promo}`} amount={price.promoDiscount} discount />}
+                <SummaryTotal label="Итого" amount={price.total} />
+              </Summary>
+
+              {/* Desktop Checkout CTA button */}
+              <button
+                className={cx(addBtn, 'w-full shadow-lift hidden wide:flex mt-1')}
+                onClick={() => void pay(name)}
+                disabled={paying}
+                aria-busy={paying}
+              >
+                {checkoutBtnContent}
+              </button>
+            </div>
+          </div>
         </SheetBody>
       )}
 
       {lines.length > 0 && (
-        <SheetDock ref={dockRef}>
+        <SheetDock ref={dockRef} className="wide:hidden">
           <button className={cx(addBtn, 'w-full shadow-lift')} onClick={() => void pay(name)} disabled={paying} aria-busy={paying}>
-            {paying ? (
-              <span className="flex w-full items-center justify-center gap-2.5">
-                <span className="size-5 rounded-full border-[2.5px] border-white/35 border-t-white animate-[spin_0.8s_linear_infinite]" aria-hidden="true" />
-                {payment === 'card' ? 'Оплачиваем…' : 'Отправляем…'}
-              </span>
-            ) : (
-              <>
-                <span>{payment === 'card' ? 'Оплатить' : 'Заказать'}</span>
-                <span className={addPrice} key={price.total}>
-                  {formatPrice(price.total)}
-                </span>
-              </>
-            )}
+            {checkoutBtnContent}
           </button>
         </SheetDock>
       )}

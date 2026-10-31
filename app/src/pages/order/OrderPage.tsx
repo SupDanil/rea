@@ -99,43 +99,57 @@ function OrderView({ order }: { order: Order }) {
   }, [order.id, order.status, orders])
 
   return (
-    <Sheet label={`Заказ № ${order.number}`} title="Заказ" onBack={back} backLabel="В меню">
+    <Sheet
+      label={`Заказ № ${order.number}`}
+      title="Заказ"
+      onBack={back}
+      backLabel="В меню"
+      maxWidth="wide:max-w-[880px] lg:wide:max-w-[940px]"
+    >
       <SheetBody>
-        <OrderStatusCard order={order} status={status} now={now} onRate={(rating) => orders.update(order.id, { rating })} />
+        <div className="wide:grid wide:grid-cols-[1.1fr_1fr] wide:gap-8 wide:items-start">
+          {/* Left Column: Big Status Hero Card + Pickup block + Cancellation */}
+          <div className="flex flex-col gap-4">
+            <OrderStatusCard order={order} status={status} now={now} onRate={(rating) => orders.update(order.id, { rating })} />
 
-        <section className={block}>
-          <h2 className={blockTitle}>Забрать</h2>
-          <div className={cx('flex items-center gap-3 rounded-[18px] px-4 py-3.5', panel)}>
-            <span className={openDot} aria-hidden="true" />
-            <div>
-              <div className="text-[15px] font-semibold">shit кофе · Невский, 12</div>
-              <div className="mt-0.5 text-[12px] text-muted">
-                {order.pickup.kind === 'asap' ? 'Как можно скорее' : `К ${clockTime(order.readyAt)}`} · заказ от {clockTime(order.createdAt)}
+            <section className={block}>
+              <h2 className={blockTitle}>Забрать</h2>
+              <div className={cx('flex items-center gap-3 rounded-[18px] px-4 py-3.5', panel)}>
+                <span className={openDot} aria-hidden="true" />
+                <div>
+                  <div className="text-[15px] font-semibold">shit кофе · Невский, 12</div>
+                  <div className="mt-0.5 text-[12px] text-muted">
+                    {order.pickup.kind === 'asap' ? 'Как можно скорее' : `К ${clockTime(order.readyAt)}`} · заказ от {clockTime(order.createdAt)}
+                  </div>
+                </div>
               </div>
-            </div>
-          </div>
-        </section>
+            </section>
 
-        <OrderLines order={order} status={status} />
-
-        {canCancel(order, now) && (
-          <div className="mt-[22px] text-center">
-            {confirming ? (
-              <ConfirmBox
-                title="Точно отменить?"
-                text={order.payment === 'card' ? 'Вернём деньги на карту — обычно это 1–3 рабочих дня.' : 'Заказ не начнут готовить.'}
-                confirmLabel="Отменить"
-                cancelLabel="Не отменять"
-                onConfirm={() => orders.update(order.id, { cancelledAt: Date.now() })}
-                onCancel={() => setConfirming(false)}
-              />
-            ) : (
-              <button className={textBtn(true)} onClick={() => setConfirming(true)}>
-                Отменить заказ
-              </button>
+            {canCancel(order, now) && (
+              <div className="mt-2 text-center">
+                {confirming ? (
+                  <ConfirmBox
+                    title="Точно отменить?"
+                    text={order.payment === 'card' ? 'Вернём деньги на карту — обычно это 1–3 рабочих дня.' : 'Заказ не начнут готовить.'}
+                    confirmLabel="Отменить"
+                    cancelLabel="Не отменять"
+                    onConfirm={() => orders.update(order.id, { cancelledAt: Date.now() })}
+                    onCancel={() => setConfirming(false)}
+                  />
+                ) : (
+                  <button className={textBtn(true)} onClick={() => setConfirming(true)}>
+                    Отменить заказ
+                  </button>
+                )}
+              </div>
             )}
           </div>
-        )}
+
+          {/* Right Column: Order breakdown lines and totals */}
+          <div className="flex flex-col">
+            <OrderLines order={order} status={status} />
+          </div>
+        </div>
       </SheetBody>
     </Sheet>
   )

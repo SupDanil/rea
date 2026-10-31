@@ -95,106 +95,117 @@ function ProductView({ item }: { item: MenuItem }) {
 
   return (
     <div
-      ref={sheetRef}
-      className={cx(
-        // One column on every screen. Unfolded/tablet: the same card, wider, centred
-        // over the dimmed menu.
-        'tinted fixed inset-0 z-20 mx-auto grid max-w-[480px] grid-cols-[minmax(0,1fr)] grid-rows-[auto_auto_minmax(0,1fr)_auto] overflow-x-hidden overflow-y-auto overscroll-contain text-pd-ink',
-        'wide:max-w-[560px] wide:shadow-[0_0_0_100vmax_rgba(0,0,0,0.55)]',
-        'animate-[sheet-up_0.38s_var(--ease-soft)_both]',
-      )}
-      style={{
-        '--tint': item.art.bg,
-        // Studio light around the cup, tinted by the drink; light/dark comes from the --pd-* tokens.
-        background: `radial-gradient(ellipse 80% 55% at 50% 42%, color-mix(in srgb, var(--tint, #c5c7d7) var(--pd-spot-mix), var(--pd-spot-base)) 0%, transparent 80%),
-                     linear-gradient(180deg, var(--pd-bg-from) 0%, var(--pd-bg-to) 100%)`,
-      } as CSSProperties}
+      className="fixed inset-0 z-20 flex flex-col items-center justify-center overscroll-contain wide:bg-black/55 wide:backdrop-blur-sm wide:p-4 md:wide:p-6"
       role="dialog"
       aria-modal="true"
       aria-label={item.name}
+      onClick={(e) => {
+        if (e.target === e.currentTarget) back()
+      }}
     >
-      {/* Above the add-on backdrop: the macros stay readable while add-ons are picked. */}
-      <div ref={topRef} className="relative z-[31]">
-      <header className="grid grid-cols-[40px_1fr_40px] items-center px-3 pt-[calc(10px+env(safe-area-inset-top))] pb-0.5">
-        <h1 key={item.id} className="col-start-2 text-center text-[19px] xs:text-[20px] sm:text-[22px] font-bold text-pd-ink tracking-tight truncate px-1 animate-fade-in">
-          {item.name}
-        </h1>
-        <button
-          className="col-start-3 justify-self-end size-10 grid place-items-center [&>svg]:block rounded-full bg-pd-glass hover:bg-pd-glass-hover text-pd-ink backdrop-blur-md border border-pd-line transition-[background-color,color,border-color,scale] active:scale-95"
-          onClick={back}
-          aria-label="Закрыть"
-        >
-          <CloseIcon />
-        </button>
-      </header>
-
-      <NutritionBar nutrition={config.nutrition} />
-      </div>
-      <div>
-        <ProductDetails item={item} open={showDetails} onToggle={() => setShowDetails((v) => !v)} hidden={!!openGroupId} />
-      </div>
-
       <div
-        className="relative grid min-h-0 place-items-center py-1 sm:py-2"
-        onClick={() => {
-          setOpenGroupId(null)
-          setShowDetails(false)
-        }}
+        ref={sheetRef}
+        className={cx(
+          // Mobile: full-screen sheet
+          'tinted relative flex h-full w-full max-w-[480px] flex-col overflow-x-hidden overflow-y-auto overscroll-contain text-pd-ink',
+          // Desktop: 2-column studio modal
+          'wide:h-auto wide:max-h-[min(90dvh,820px)] wide:max-w-[940px] lg:wide:max-w-[980px] wide:rounded-[32px] wide:border wide:border-pd-line wide:shadow-[0_24px_70px_rgba(0,0,0,0.5)] wide:grid wide:grid-cols-[1.1fr_1fr] wide:overflow-hidden',
+          'animate-[sheet-up_0.38s_var(--ease-soft)_both]',
+        )}
+        style={{
+          '--tint': item.art.bg,
+          // Studio light around the cup, tinted by the drink; light/dark comes from the --pd-* tokens.
+          background: `radial-gradient(ellipse 80% 55% at 50% 42%, color-mix(in srgb, var(--tint, #c5c7d7) var(--pd-spot-mix), var(--pd-spot-base)) 0%, transparent 80%),
+                       linear-gradient(180deg, var(--pd-bg-from) 0%, var(--pd-bg-to) 100%)`,
+        } as CSSProperties}
       >
-        <div
-          className="relative grid h-full max-h-[300px] sm:max-h-[360px] wide:max-h-[min(56dvh,460px)] place-items-center transition-transform duration-[420ms] ease-[cubic-bezier(0.34,1.4,0.64,1)]"
-          style={{ transform: `scale(${variant.size === 'L' ? 1.08 : variant.size === 'S' ? 0.88 : 1})` }}
-        >
-          {/* The shadow lives on this wrapper, not on the art: a filter on the
-              view-transition element widens its snapshot, so on real GPUs the
-              cup flew in at one size and snapped to another when it landed. */}
+        {/* Left Column on Desktop / Top Section on Mobile: Header, Macros, Details, Floating Cup */}
+        <div className="wide:flex wide:flex-col wide:justify-between wide:p-6 wide:border-r wide:border-pd-line/40 wide:relative wide:min-h-[520px]">
+          <div ref={topRef} className="relative z-[31]">
+            <header className="grid grid-cols-[40px_1fr_40px] items-center px-3 pt-[calc(10px+env(safe-area-inset-top))] pb-0.5 wide:pt-0 wide:px-0">
+              <h1 key={item.id} className="col-start-2 text-center text-[19px] xs:text-[20px] sm:text-[22px] font-bold text-pd-ink tracking-tight truncate px-1 animate-fade-in">
+                {item.name}
+              </h1>
+              <button
+                className="col-start-3 justify-self-end size-10 grid place-items-center [&>svg]:block rounded-full bg-pd-glass hover:bg-pd-glass-hover text-pd-ink backdrop-blur-md border border-pd-line transition-[background-color,color,border-color,scale] active:scale-95"
+                onClick={back}
+                aria-label="Закрыть"
+              >
+                <CloseIcon />
+              </button>
+            </header>
+
+            <NutritionBar nutrition={config.nutrition} />
+            <ProductDetails item={item} open={showDetails} onToggle={() => setShowDetails((v) => !v)} hidden={!!openGroupId} />
+          </div>
+
           <div
-            ref={cupRef}
-            className="grid h-full origin-bottom place-items-center drop-shadow-[0_16px_28px_var(--pd-cup-shadow)] animate-[float-soft_6s_ease-in-out_0.5s_infinite]"
+            className="relative grid min-h-0 place-items-center py-2 sm:py-3 wide:my-auto"
+            onClick={() => {
+              setOpenGroupId(null)
+              setShowDetails(false)
+            }}
           >
-            <ItemArt
-              key={item.id}
-              art={item.art}
-              className={cx(
-                'h-full max-h-[260px] sm:max-h-[320px] wide:max-h-[min(50dvh,420px)] w-auto aspect-[200/220] select-none pointer-events-none',
-                // Hot ↔ iced swap: the new cup settles in place (on open it flies in instead).
-                item.id !== openedWith && 'animate-[swap-in_0.4s_var(--ease-soft)_both]',
-              )}
-              ref={artRef}
-              {...{ [ART_ATTR]: item.id }}
-            />
+            <div
+              className="relative grid h-full max-h-[280px] sm:max-h-[340px] wide:max-h-[380px] place-items-center transition-transform duration-[420ms] ease-[cubic-bezier(0.34,1.4,0.64,1)]"
+              style={{ transform: `scale(${variant.size === 'L' ? 1.08 : variant.size === 'S' ? 0.88 : 1})` }}
+            >
+              <div
+                ref={cupRef}
+                className="grid h-full origin-bottom place-items-center drop-shadow-[0_16px_28px_var(--pd-cup-shadow)] animate-[float-soft_6s_ease-in-out_0.5s_infinite]"
+              >
+                <ItemArt
+                  key={item.id}
+                  art={item.art}
+                  className={cx(
+                    'h-full max-h-[240px] sm:max-h-[300px] wide:max-h-[340px] w-auto aspect-[200/220] select-none pointer-events-none',
+                    item.id !== openedWith && 'animate-[swap-in_0.4s_var(--ease-soft)_both]',
+                  )}
+                  ref={artRef}
+                  {...{ [ART_ATTR]: item.id }}
+                />
+              </div>
+            </div>
           </div>
         </div>
-      </div>
 
-      <div ref={bottomRef} className="relative z-30">
-        {panelGroup && (
-          <AddonPanel
-            group={panelGroup}
-            groupIndex={config.groups.indexOf(panelGroup)}
-            qtyOf={(id) => config.qtyOf(panelGroup, id)}
-            total={config.totalOf(panelGroup)}
-            canAdd={(ing) => config.canAdd(panelGroup, ing)}
-            onPick={(ing) => pick(panelGroup, ing)}
-            onRemove={(ing) => config.removeOne(panelGroup, ing.id)}
-            onClose={() => setOpenGroupId(null)}
-            leaving={panelLeaving}
-            maxHeight={panelMax}
-          />
-        )}
-        <AddonChips
-          item={item}
-          related={config.related}
-          groups={config.groups}
-          selection={config.selection}
-          openGroupId={openGroupId}
-          onOpenGroup={setOpenGroupId}
-          onOpenRelated={(next) => replace(`/product/${next.id}`)}
-        />
-        <footer className="relative z-[25] mx-2.5 sm:mx-4 mb-[calc(12px+env(safe-area-inset-bottom))] flex items-center gap-2 sm:gap-2.5">
-          {variant.size !== 'ONE' && <SizePicker variants={item.variants} selected={config.variantIdx} onSelect={config.setVariantIdx} />}
-          <AddToCartButton price={config.price} soldOut={config.soldOut} added={added} onAdd={add} />
-        </footer>
+        {/* Right Column on Desktop / Bottom Section on Mobile: Addons, Size, Add to Cart */}
+        <div ref={bottomRef} className="relative z-30 wide:flex wide:flex-col wide:justify-between wide:p-6 wide:bg-pd-panel/25 wide:backdrop-blur-md wide:overflow-y-auto">
+          <div className="wide:space-y-4">
+            <div className="hidden wide:block text-[16px] font-bold text-pd-ink mb-1">
+              Настройка напитка
+            </div>
+
+            {panelGroup && (
+              <AddonPanel
+                group={panelGroup}
+                groupIndex={config.groups.indexOf(panelGroup)}
+                qtyOf={(id) => config.qtyOf(panelGroup, id)}
+                total={config.totalOf(panelGroup)}
+                canAdd={(ing) => config.canAdd(panelGroup, ing)}
+                onPick={(ing) => pick(panelGroup, ing)}
+                onRemove={(ing) => config.removeOne(panelGroup, ing.id)}
+                onClose={() => setOpenGroupId(null)}
+                leaving={panelLeaving}
+                maxHeight={panelMax}
+              />
+            )}
+            <AddonChips
+              item={item}
+              related={config.related}
+              groups={config.groups}
+              selection={config.selection}
+              openGroupId={openGroupId}
+              onOpenGroup={setOpenGroupId}
+              onOpenRelated={(next) => replace(`/product/${next.id}`)}
+            />
+          </div>
+
+          <footer className="relative z-[25] mx-2.5 sm:mx-4 wide:mx-0 mb-[calc(12px+env(safe-area-inset-bottom))] wide:mb-0 flex items-center gap-2 sm:gap-2.5 wide:mt-6">
+            {variant.size !== 'ONE' && <SizePicker variants={item.variants} selected={config.variantIdx} onSelect={config.setVariantIdx} />}
+            <AddToCartButton price={config.price} soldOut={config.soldOut} added={added} onAdd={add} />
+          </footer>
+        </div>
       </div>
     </div>
   )

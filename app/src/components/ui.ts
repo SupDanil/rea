@@ -27,10 +27,10 @@ export const sheet = cx(
   'animate-[sheet-up_0.38s_var(--ease-soft)_both]',
 )
 export const sheetHead =
-  'grid min-h-14 grid-cols-[44px_1fr_auto] items-center gap-2 px-3 pt-[calc(8px+env(safe-area-inset-top))] pb-1'
-export const sheetTitle = 'text-[24px]'
-export const sheetBody = 'min-h-0 flex-1 overflow-y-auto overscroll-contain px-3 pt-1 pb-6'
-export const sheetDock = 'px-2 pt-2 pb-[calc(10px+env(safe-area-inset-bottom))]'
+  'grid min-h-14 grid-cols-[44px_1fr_auto] items-center gap-2 px-3 sm:px-6 pt-[calc(8px+env(safe-area-inset-top))] pb-1'
+export const sheetTitle = 'text-[22px] sm:text-[24px] font-bold tracking-tight text-ink'
+export const sheetBody = 'min-h-0 flex-1 overflow-y-auto overscroll-contain px-3 sm:px-6 pt-1 pb-6'
+export const sheetDock = 'px-3 sm:px-6 pt-2 pb-[calc(10px+env(safe-area-inset-bottom))]'
 
 export const textBtn = (danger = false) =>
   cx('px-1.5 py-2 text-[14px] font-semibold disabled:opacity-60', danger ? 'text-danger' : 'text-muted')

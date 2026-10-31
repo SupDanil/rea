@@ -67,19 +67,19 @@ export function ProductCard({ item, onOpen }: { item: MenuItem; onOpen: () => vo
   return (
     <div
       className={cx(
-        'group relative flex flex-col rounded-[24px] px-1.5 pt-1.5 pb-3 text-left [transition:transform_0.18s_var(--ease-soft),scale_0.18s_var(--ease-soft),box-shadow_0.18s,background-color_0.3s_ease] has-[[data-open]:active]:scale-97',
+        'group relative flex flex-col rounded-[24px] sm:rounded-[28px] p-1.5 sm:p-2.5 pb-3 sm:pb-4 text-left [transition:transform_0.2s_var(--ease-soft),scale_0.2s_var(--ease-soft),box-shadow_0.2s,background-color_0.3s_ease] has-[[data-open]:active]:scale-97 sm:hover:-translate-y-1 sm:hover:shadow-lift',
         soldOut ? 'bg-[color-mix(in_oklab,var(--surface)_55%,transparent)]' : 'bg-surface shadow-card hover:shadow-lift',
       )}
     >
       {/* The whole card opens the product; the "+" sits above this layer. */}
       <button
         data-open
-        className="absolute inset-0 rounded-[24px]"
+        className="absolute inset-0 rounded-[24px] sm:rounded-[28px] cursor-pointer"
         onClick={onOpen}
         aria-label={`${item.name}, от ${formatPrice(minPrice(item))}${soldOut ? ', закончилось' : ''}`}
       />
       <div
-        className={cx('art-glow pointer-events-none relative grid aspect-square place-items-center overflow-hidden rounded-[19px]', soldOut && 'opacity-55 grayscale-70')}
+        className={cx('art-glow pointer-events-none relative grid aspect-square place-items-center overflow-hidden rounded-[19px] sm:rounded-[22px]', soldOut && 'opacity-55 grayscale-70')}
         style={{ '--tint': item.art.bg } as CSSProperties}
       >
         <ItemArt
@@ -94,18 +94,18 @@ export function ProductCard({ item, onOpen }: { item: MenuItem; onOpen: () => vo
           </span>
         )}
       </div>
-      <div className={cx('pointer-events-none mx-2 mt-2.5 text-[15px] leading-[1.2] font-bold tracking-[-0.015em]', soldOut && 'opacity-55')}>{item.name}</div>
-      <div className={cx('pointer-events-none mx-2 mt-1 line-clamp-2 flex-1 text-[12px] leading-[1.35] text-muted', soldOut && 'opacity-55')}>
+      <div className={cx('pointer-events-none mx-2 mt-2.5 text-[15px] sm:text-[16.5px] leading-[1.25] font-bold tracking-[-0.015em]', soldOut && 'opacity-55')}>{item.name}</div>
+      <div className={cx('pointer-events-none mx-2 mt-1 line-clamp-2 flex-1 text-[12px] sm:text-[13px] leading-[1.4] text-muted', soldOut && 'opacity-55')}>
         {item.description}
       </div>
-      <div className="mt-2 sm:mt-2.5 mr-1 ml-1.5 sm:ml-2 flex items-center justify-between">
-        <span className={cx('pointer-events-none text-[14px] sm:text-[15px] font-bold', soldOut && 'text-[12px] sm:text-[13px] font-semibold text-muted')}>
+      <div className="mt-2.5 sm:mt-3 mr-1 ml-1.5 sm:ml-2 flex items-center justify-between">
+        <span className={cx('pointer-events-none text-[14px] sm:text-[16px] font-bold', soldOut && 'text-[12px] sm:text-[13px] font-semibold text-muted')}>
           {soldOut ? 'Закончилось' : `${item.variants.length > 1 ? 'от ' : ''}${formatPrice(minPrice(item))}`}
         </span>
         {!soldOut && (
           <button
             className={cx(
-              'relative z-1 grid size-7 sm:size-8 place-items-center rounded-full transition-[background,color,scale] duration-200 ease-[ease] active:scale-88',
+              'relative z-1 grid size-7 sm:size-9 place-items-center rounded-full cursor-pointer shadow-sm transition-[background,color,scale,transform] duration-200 ease-[ease] active:scale-88 sm:hover:scale-105',
               justAdded ? 'bg-accent text-accent-ink' : 'bg-surface-2 text-ink hover:bg-accent hover:text-accent-ink',
             )}
             onClick={quickAdd}
