@@ -16,7 +16,11 @@ const short: Record<OrderStatus, string> = {
   cancelled: 'отменён',
 }
 
-/** Floating bar over the menu: the live order (if any) and the cart preview. */
+/**
+ * 2026 Liquid Glass MenuDock:
+ * Floating glass capsule with glowing status indicator, bubble-popping droplet count badge,
+ * and adaptive scroll compression.
+ */
 export function MenuDock() {
   const { cart, orders } = useApp()
   const { go } = useAppNavigate()
@@ -25,57 +29,85 @@ export function MenuDock() {
   const count = countOf(cart.lines)
   const total = subtotalOf(cart.lines, catalog)
   const activeOrder = orders.orders.find((o) => isActive(o, now))
+
   if (!count && !activeOrder) return null
   const status = activeOrder && statusOf(activeOrder, now)
 
   return (
     <div
       className={cx(
-        'pointer-events-none fixed z-10 flex gap-2.5 *:pointer-events-auto *:animate-rise',
-        // Mobile: full-width bottom bar centered
-        'right-0 bottom-0 left-0 mx-auto max-w-[480px] px-2 sm:px-2.5 pb-[calc(10px+env(safe-area-inset-bottom))]',
-        // Desktop: pinned to bottom-right corner!
-        'wide:right-6 wide:bottom-6 wide:left-auto wide:mx-0 wide:max-w-none wide:w-auto wide:p-0 wide:items-center',
+        'pointer-events-none fixed z-20 flex gap-3 items-center *:pointer-events-auto',
+        // Mobile: centered floating dock separated from screen edges
+        'right-0 bottom-0 left-0 mx-auto max-w-[460px] px-3.5 pb-[calc(14px+env(safe-area-inset-bottom))]',
+        // Desktop: bottom-right corner with elegant float
+        'wide:right-8 wide:bottom-8 wide:left-auto wide:mx-0 wide:max-w-none wide:w-auto wide:p-0',
+        'transition-transform duration-300 ease-soft',
       )}
     >
+      {/* Active Order Button */}
       {activeOrder && status && (
         <button
           className={cx(
-            'flex h-14 sm:h-15 items-center gap-2.5 rounded-full px-5 text-[14px] whitespace-nowrap text-white shadow-lift backdrop-blur-[14px] cursor-pointer transition-all duration-200 hover:-translate-y-0.5 hover:shadow-2xl active:translate-y-0 active:scale-97',
+            'flex h-14 sm:h-15 items-center gap-2.5 rounded-full pl-2 pr-4 sm:pr-5 whitespace-nowrap text-white text-[14px] shadow-lift backdrop-blur-2xl cursor-pointer transition-transform duration-200 active:scale-96 shrink-0',
             status === 'ready'
-              ? 'bg-[#182d20]/90 hover:bg-[#182d20] border border-open/40 shadow-[0_8px_24px_rgba(63,166,107,0.3)]'
-              : 'bg-dock/90 hover:bg-dock border border-white/10 shadow-lift',
+              ? 'bg-[#15291C]/92 border border-open/50 animate-[ready-neon-pulse_2s_infinite]'
+              : 'bg-ink/90 dark:bg-surface-2/90 border border-white/15',
           )}
           onClick={() => go(`/order/${activeOrder.id}`)}
           aria-label={`Заказ № ${activeOrder.number}: ${short[status]}`}
         >
+          {/* Symmetrical round badge with glowing status dot */}
           <span
             className={cx(
-              'size-2.5 rounded-full animate-pulse-dot',
-              status === 'ready' ? 'bg-open shadow-[0_0_8px_#3fa66b]' : 'bg-pending shadow-[0_0_8px_#e6b450]',
+              'grid size-10 sm:size-11 shrink-0 place-items-center rounded-full shadow-sm',
+              status === 'ready'
+                ? 'bg-open/25 border border-open/40'
+                : 'bg-white/10 dark:bg-white/15 border border-white/10',
             )}
-            aria-hidden="true"
-          />
-          <span className="font-medium">
-            <b className="font-bold text-white">№ {activeOrder.number}</b> {short[status]}
+          >
+            <span
+              className={cx(
+                'size-3 rounded-full',
+                status === 'ready'
+                  ? 'bg-open shadow-[0_0_10px_#3fbf7f] animate-pulse'
+                  : 'bg-pending shadow-[0_0_8px_#e6b450] animate-pulse-dot',
+              )}
+              aria-hidden="true"
+            />
+          </span>
+
+          <span className="font-medium text-[14px] flex items-center gap-1.5 pr-0.5">
+            <b className="font-display font-bold text-white">№ {activeOrder.number}</b>
+            <span className="text-white/80">{short[status]}</span>
           </span>
         </button>
       )}
+
+      {/* Cart Button */}
       {count > 0 && (
         <button
-          className="flex h-14 sm:h-15 flex-1 wide:flex-none wide:min-w-[260px] items-center gap-3 rounded-full bg-[#3d2c55] hover:bg-[#493466] px-2.5 pr-5 text-white shadow-[0_8px_24px_rgba(61,44,85,0.45)] border border-white/15 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-2xl active:translate-y-0 active:scale-98 cursor-pointer"
-          onClick={() => go('/cart')}
           data-cart-target="dock"
+          onClick={() => go('/cart')}
+          className={cx(
+            'flex flex-1 wide:flex-none wide:min-w-[270px] h-14 sm:h-15 items-center gap-3 rounded-full pl-2 pr-5 sm:pr-6',
+            'bg-accent text-accent-ink hover:bg-accent-2 shadow-[0_8px_28px_rgba(196,91,36,0.32)] dark:shadow-[0_8px_28px_rgba(224,125,62,0.28)]',
+            'border border-white/25 backdrop-blur-2xl transition-transform duration-200 active:scale-96 cursor-pointer shrink-0',
+          )}
         >
+          {/* Bubbling Droplet Count Badge with high-contrast dark espresso text */}
           <span
             key={count}
             data-cart-badge
-            className="grid size-10 sm:size-11 place-items-center rounded-full bg-[#c5c7d7] text-[#362452] font-black animate-[pop_0.4s_var(--ease-soft)_both] shadow-sm"
+            className="grid size-10 sm:size-11 shrink-0 place-items-center rounded-full bg-white text-[#1C140F] font-display font-black text-[15px] shadow-sm animate-[pop_0.4s_var(--spring)_both]"
           >
             {count}
           </span>
-          <span className="flex-1 text-left text-[15px] sm:text-[16px] font-bold tracking-tight">Корзина</span>
-          <span className="text-[16px] sm:text-[17px] font-extrabold animate-pop" key={total}>
+
+          <span className="flex-1 text-left font-display font-semibold text-[15px] tracking-tight whitespace-nowrap">
+            Корзина
+          </span>
+
+          <span className="font-display font-bold text-[16px] tracking-tight text-right whitespace-nowrap shrink-0 animate-pop" key={total}>
             {formatPrice(total)}
           </span>
         </button>

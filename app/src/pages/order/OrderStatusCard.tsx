@@ -1,19 +1,19 @@
+import { useEffect } from 'react'
 import { QrCodeView } from '../../components/QrCodeView'
 import type { Order, OrderStatus } from '../../state/orders'
 import { cx } from '../../utils/cx'
 import { statusSubtitle, statusTitles } from './orderCopy'
 
-// Clean lavender-glow card while in progress, radiant emerald once ready, calm emerald once completed, plain when cancelled.
 const inProgressBg =
-  'bg-surface border border-accent/20 dark:border-accent/30 shadow-card [background-image:radial-gradient(120%_85%_at_50%_0%,var(--glow),transparent_70%)]'
+  'bg-surface/90 border border-line shadow-card [background-image:radial-gradient(120%_85%_at_50%_0%,var(--glow),transparent_70%)]'
 
 const readyBg =
-  'bg-surface border-2 border-emerald-500/70 dark:border-emerald-400/80 shadow-[0_8px_32px_-4px_rgba(16,185,129,0.22)] dark:shadow-[0_8px_36px_-4px_rgba(52,211,153,0.32)] ring-1 ring-emerald-500/30 dark:ring-emerald-400/40 [background-image:radial-gradient(120%_90%_at_50%_0%,rgba(16,185,129,0.18)_0%,rgba(16,185,129,0.05)_55%,transparent_80%)] dark:[background-image:radial-gradient(120%_90%_at_50%_0%,rgba(16,185,129,0.32)_0%,rgba(16,185,129,0.1)_55%,transparent_85%)]'
+  'bg-surface/95 border-2 border-open/70 shadow-[0_8px_32px_-4px_rgba(45,158,94,0.3)] dark:shadow-[0_8px_36px_-4px_rgba(63,191,127,0.35)] ring-1 ring-open/40 animate-[ready-neon-pulse_2.5s_infinite] [background-image:radial-gradient(120%_90%_at_50%_0%,rgba(45,158,94,0.2)_0%,rgba(45,158,94,0.05)_55%,transparent_80%)]'
 
 const completedBg =
-  'bg-surface border-2 border-emerald-500/50 dark:border-emerald-400/50 shadow-card [background-image:radial-gradient(120%_90%_at_50%_0%,rgba(16,185,129,0.12)_0%,transparent_70%)]'
+  'bg-surface/90 border-2 border-open/40 shadow-card [background-image:radial-gradient(120%_90%_at_50%_0%,rgba(45,158,94,0.12)_0%,transparent_70%)]'
 
-const cancelledBg = 'bg-surface border border-line opacity-90'
+const cancelledBg = 'bg-surface/70 border border-line opacity-85'
 
 const statusBg: Record<OrderStatus, string> = {
   paying: inProgressBg,
@@ -33,21 +33,33 @@ type Props = {
   onRate: (rating: 'good' | 'bad') => void
 }
 
-/** Big order number, live status, pickup QR and the three-step progress bar. */
+/**
+ * 2026 Liquid Glass OrderStatusCard:
+ * Giant Unbounded order number, animated step-track, glowing neon ready pulse,
+ * and high-contrast QR platter.
+ */
 export function OrderStatusCard({ order, status, now, onRate }: Props) {
   const step = stepIndex[status]
   const isReady = status === 'ready'
   const isCompleted = status === 'completed'
   const isCancelled = status === 'cancelled'
 
+  useEffect(() => {
+    if (isReady && typeof navigator !== 'undefined' && 'vibrate' in navigator) {
+      try {
+        navigator.vibrate?.([40, 70, 40])
+      } catch {}
+    }
+  }, [isReady])
+
   return (
-    <section className={cx('mt-1 rounded-[28px] px-5 pt-[22px] pb-5 text-center transition-colors duration-300', statusBg[status])} aria-live="polite">
-      {/* Big Order Number */}
+    <section className={cx('mt-1 rounded-[30px] p-5 sm:p-6 text-center transition-all duration-300', statusBg[status])} aria-live="polite">
+      {/* Big Unbounded Order Number */}
       <div
         className={cx(
-          'text-[64px] leading-none font-extrabold tracking-[-0.05em] transition-colors',
+          'font-display text-[64px] sm:text-[72px] leading-none font-black tracking-tight transition-colors',
           isReady || isCompleted
-            ? 'text-emerald-950 dark:text-emerald-50'
+            ? 'text-open'
             : isCancelled
               ? 'text-faint line-through decoration-[3px]'
               : 'text-ink',
@@ -55,8 +67,8 @@ export function OrderStatusCard({ order, status, now, onRate }: Props) {
       >
         <span
           className={cx(
-            'mr-1 align-[0.6em] text-[28px] font-bold transition-colors',
-            isReady || isCompleted ? 'text-emerald-600/80 dark:text-emerald-400/80' : 'text-muted',
+            'mr-1 align-[0.55em] font-display text-[26px] sm:text-[30px] font-bold transition-colors',
+            isReady || isCompleted ? 'text-open/80' : 'text-muted',
           )}
         >
           №
@@ -64,21 +76,25 @@ export function OrderStatusCard({ order, status, now, onRate }: Props) {
         {order.number}
       </div>
 
-      {order.name && <div className="mt-1 text-[15px] font-semibold text-ink-2">{order.name}</div>}
+      {order.name && (
+        <div className="mt-1 font-display text-[15px] font-bold text-ink-2">
+          {order.name}
+        </div>
+      )}
 
       {/* Main Title Badge */}
       <div className="mt-3 flex items-center justify-center gap-2">
         {isReady && (
           <span className="relative flex size-2.5">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
-            <span className="relative inline-flex rounded-full size-2.5 bg-emerald-500" />
+            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-open opacity-75" />
+            <span className="relative inline-flex rounded-full size-2.5 bg-open" />
           </span>
         )}
         <h1
           className={cx(
-            'text-[21px] font-extrabold tracking-[-0.02em] transition-colors',
+            'font-display text-[21px] font-extrabold tracking-tight transition-colors',
             isReady || isCompleted
-              ? 'text-emerald-900 dark:text-emerald-200'
+              ? 'text-open'
               : isCancelled
                 ? 'text-muted font-bold'
                 : 'text-ink',
@@ -90,8 +106,8 @@ export function OrderStatusCard({ order, status, now, onRate }: Props) {
 
       <p
         className={cx(
-          'mt-1 text-[13px] transition-colors',
-          isReady || isCompleted ? 'text-emerald-800/90 dark:text-emerald-300/90 font-medium' : 'text-muted',
+          'mt-1 text-[13px] leading-relaxed transition-colors',
+          isReady || isCompleted ? 'text-open/90 font-medium' : 'text-muted',
         )}
       >
         {statusSubtitle(order, status, now)}
@@ -119,19 +135,19 @@ export function OrderStatusCard({ order, status, now, onRate }: Props) {
                   className={cx(
                     'h-2 overflow-hidden rounded-full transition-colors',
                     isReady || isCompleted
-                      ? 'bg-emerald-100 dark:bg-emerald-950/60 border border-emerald-500/30 dark:border-emerald-400/30'
-                      : 'bg-surface-2 border border-line/50',
+                      ? 'bg-open/20 border border-open/30'
+                      : 'bg-surface-2 border border-line/60',
                   )}
                 >
                   <span
                     className={cx(
                       'block h-full origin-left transition-transform duration-1000 ease-linear',
                       isReady || isCompleted
-                        ? 'bg-emerald-500 dark:bg-emerald-400 shadow-[0_0_10px_rgba(16,185,129,0.55)]'
+                        ? 'bg-open shadow-[0_0_10px_rgba(45,158,94,0.6)]'
                         : isCurrent
-                          ? 'bg-gradient-to-r from-accent to-accent-soft dark:from-accent-soft dark:to-accent-2 shadow-[0_0_8px_rgba(142,119,184,0.45)]'
+                          ? 'bg-accent shadow-[0_0_8px_rgba(196,91,36,0.5)]'
                           : isFinished
-                            ? 'bg-accent-soft dark:bg-accent-soft'
+                            ? 'bg-accent/80'
                             : 'bg-transparent',
                     )}
                     style={{ transform: `scaleX(${fill})` }}
@@ -142,10 +158,10 @@ export function OrderStatusCard({ order, status, now, onRate }: Props) {
                     'text-[12px] font-semibold transition-colors',
                     isReady || isCompleted
                       ? isFinished || isCurrent
-                        ? 'text-emerald-700 dark:text-emerald-300 font-extrabold'
+                        ? 'text-open font-extrabold'
                         : 'text-muted'
                       : isCurrent
-                        ? 'text-accent dark:text-accent-soft font-bold'
+                        ? 'text-accent font-bold'
                         : isFinished
                           ? 'text-ink font-semibold'
                           : 'text-muted',
@@ -159,16 +175,16 @@ export function OrderStatusCard({ order, status, now, onRate }: Props) {
         </ol>
       )}
 
-      {/* Luckin Coffee Smart Pickup QR Code once order is ready */}
+      {/* QR Code platter once order is ready */}
       {isReady && (
-        <div className="mt-5 flex flex-col items-center gap-2.5 p-4 rounded-2xl bg-emerald-500/10 dark:bg-emerald-400/10 border border-emerald-500/20">
+        <div className="mt-5 flex flex-col items-center gap-2.5 p-4 rounded-[22px] bg-open/10 border border-open/20">
           <QrCodeView value={`ORD:${order.id}`} size={160} />
           <div className="text-center">
-            <div className="text-[13px] font-bold text-emerald-900 dark:text-emerald-100">
+            <div className="text-[13px] font-bold text-ink">
               Покажите QR-код сканеру на стойке
             </div>
-            <div className="text-[11.5px] text-emerald-800/80 dark:text-emerald-300/80 mt-0.5">
-              Или назовите номер заказа <span className="font-extrabold text-emerald-900 dark:text-emerald-100">№ {order.number}</span>
+            <div className="text-[12px] text-muted mt-0.5">
+              Или назовите номер заказа <span className="font-display font-bold text-ink">№ {order.number}</span>
             </div>
           </div>
         </div>
@@ -177,7 +193,7 @@ export function OrderStatusCard({ order, status, now, onRate }: Props) {
       {/* Completed state badge and rating */}
       {isCompleted && (
         <div className="mt-5 flex flex-col items-center gap-3">
-          <div className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-emerald-500/15 dark:bg-emerald-400/20 border border-emerald-500/25 text-emerald-900 dark:text-emerald-100 text-[14px] font-bold">
+          <div className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full bg-open/15 border border-open/25 text-open text-[14px] font-bold">
             <span>☕ Заказ выдан. Приятного кофепития!</span>
           </div>
 
@@ -187,21 +203,21 @@ export function OrderStatusCard({ order, status, now, onRate }: Props) {
               <button
                 type="button"
                 onClick={() => onRate('good')}
-                className="px-3 py-1.5 rounded-xl bg-surface border border-line text-[13px] font-bold hover:bg-accent/10 transition-colors cursor-pointer"
+                className="px-3.5 py-1.5 rounded-xl bg-surface border border-line text-[13px] font-bold hover:bg-accent/10 active:scale-95 transition-all cursor-pointer"
               >
                 👍 Отлично
               </button>
               <button
                 type="button"
                 onClick={() => onRate('bad')}
-                className="px-3 py-1.5 rounded-xl bg-surface border border-line text-[13px] font-bold hover:bg-danger/10 transition-colors cursor-pointer"
+                className="px-3.5 py-1.5 rounded-xl bg-surface border border-line text-[13px] font-bold hover:bg-danger/10 active:scale-95 transition-all cursor-pointer"
               >
                 👎 Есть вопрос
               </button>
             </div>
           )}
           {order.rating && (
-            <span className="text-[12px] text-muted">Спасибо за вашу оценку!</span>
+            <span className="text-[12px] text-muted font-medium">Спасибо за вашу оценку!</span>
           )}
         </div>
       )}

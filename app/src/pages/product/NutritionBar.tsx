@@ -34,7 +34,7 @@ function Cell({ label, value, unit }: { label: string; value: number; unit: stri
           key={delta.id}
           className={cx(
             'pointer-events-none absolute -top-3.5 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full px-1.5 text-[10px] font-bold leading-[16px] tabular-nums animate-[delta-float_1.1s_var(--ease-soft)_both]',
-            delta.amount > 0 ? 'bg-[#c5c7d7] text-[#362452]' : 'bg-pd-glass text-pd-ink',
+            delta.amount > 0 ? 'bg-accent text-accent-ink shadow-sm' : 'bg-pd-glass text-pd-ink',
           )}
           aria-hidden="true"
         >

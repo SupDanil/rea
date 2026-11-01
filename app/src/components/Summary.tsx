@@ -10,8 +10,10 @@ export function Summary({ children }: { children: ReactNode }) {
 export function SummaryRow({ label, amount, discount = false }: { label: ReactNode; amount: number; discount?: boolean }) {
   return (
     <div className={summaryRow}>
-      <dt>{label}</dt>
-      <dd className={discount ? summaryDiscount : undefined}>{discount ? `−${formatPrice(amount)}` : formatPrice(amount)}</dd>
+      <dt className="text-muted">{label}</dt>
+      <dd className={discount ? summaryDiscount : 'text-ink font-medium'}>
+        {discount ? `−${formatPrice(amount)}` : formatPrice(amount)}
+      </dd>
     </div>
   )
 }
@@ -20,7 +22,7 @@ export function SummaryTotal({ label, amount }: { label: ReactNode; amount: numb
   return (
     <div className={summaryTotal}>
       <dt>{label}</dt>
-      <dd>{formatPrice(amount)}</dd>
+      <dd className="font-display font-bold text-[20px] text-ink">{formatPrice(amount)}</dd>
     </div>
   )
 }

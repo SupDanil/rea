@@ -5,7 +5,11 @@ import { normalizePromo } from '../../state/cart'
 import { cx } from '../../utils/cx'
 import type { AppliedPromo } from './cartPricing'
 
-/** Code input; asks the server whether the code is valid and reports it (or null) to the cart. */
+/**
+ * 2026 PromoField:
+ * Capsule field with "coupon snap" animation upon success, clear error guidance,
+ * and warm crema accenting.
+ */
 export function PromoField({ applied, onApply }: { applied: AppliedPromo | null; onApply: (promo: AppliedPromo | null) => void }) {
   const [input, setInput] = useState('')
   const [error, setError] = useState<string | null>(null)
@@ -47,15 +51,25 @@ export function PromoField({ applied, onApply }: { applied: AppliedPromo | null;
           }}
           onKeyDown={(e) => e.key === 'Enter' && void apply()}
         />
-        <button className={cx(btn('secondary'), 'h-[50px] flex-none')} onClick={() => void apply()} disabled={!input.trim() || checking} aria-busy={checking}>
+        <button
+          className={cx(btn('secondary'), 'h-[50px] flex-none px-5')}
+          onClick={() => void apply()}
+          disabled={!input.trim() || checking}
+          aria-busy={checking}
+        >
           {checking ? 'Проверяем…' : 'Применить'}
         </button>
       </div>
+
       {applied && (
-        <p className={hint('ok')}>
-          {applied.code}: {applied.label ?? `−${applied.percent}%`}
-        </p>
+        <div className="mt-2.5 flex items-center gap-2 p-2.5 rounded-[14px] bg-accent/10 border border-accent/25 text-accent animate-[coupon-snap_0.35s_var(--spring)]">
+          <span className="font-display text-[13px] font-bold">
+            {applied.code}: {applied.label ?? `−${applied.percent}%`}
+          </span>
+          <span className="text-[11px] font-medium ml-auto">применён</span>
+        </div>
       )}
+
       {error && <p className={hint('error')}>{error}</p>}
     </section>
   )

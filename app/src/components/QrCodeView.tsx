@@ -7,6 +7,11 @@ interface QrCodeViewProps {
   className?: string
 }
 
+/**
+ * 2026 QrCodeView:
+ * Always rendered on a pure white elevated platter with high optical scan contrast
+ * in both light and dark themes.
+ */
 export function QrCodeView({ value, size = 180, className = '' }: QrCodeViewProps) {
   const [svg, setSvg] = useState<string>('')
 
@@ -17,7 +22,7 @@ export function QrCodeView({ value, size = 180, className = '' }: QrCodeViewProp
       margin: 1,
       width: size,
       color: {
-        dark: '#141416',
+        dark: '#120E0C',
         light: '#FFFFFF',
       },
     })
@@ -36,7 +41,7 @@ export function QrCodeView({ value, size = 180, className = '' }: QrCodeViewProp
   if (!svg) {
     return (
       <div
-        className={`grid place-items-center bg-white rounded-2xl p-3 shadow-inner ${className}`}
+        className={`grid place-items-center bg-white rounded-[24px] p-4 shadow-lift ${className}`}
         style={{ width: size, height: size }}
         aria-label="Загрузка QR-кода"
       >
@@ -47,9 +52,9 @@ export function QrCodeView({ value, size = 180, className = '' }: QrCodeViewProp
 
   return (
     <div
-      className={`relative inline-block bg-white p-3 rounded-2xl shadow-card overflow-hidden border border-black/5 ${className}`}
-      aria-label={`QR-код заказа: ${value}`}
+      className={`relative inline-block bg-white p-4 rounded-[24px] shadow-lift overflow-hidden border border-black/10 ${className}`}
       dangerouslySetInnerHTML={{ __html: svg }}
+      aria-label="QR-код для выдачи заказа"
     />
   )
 }

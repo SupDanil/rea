@@ -2,24 +2,37 @@ import { useExitTransition } from '../hooks/useExitTransition'
 import { useApp } from '../state/AppContext'
 import { cx } from '../utils/cx'
 
+/**
+ * 2026 Dynamic Island Toast:
+ * Floats at the top with safe-area spacing, expands like a liquid capsule,
+ * displays actions ("Вернуть" / "Отменить"), and dismisses smoothly.
+ */
 export function Toast() {
   const { toast: current, hideToast } = useApp()
-  // Slides away instead of vanishing; a new toast replaces the old one with a fresh entrance.
-  const { rendered: toast, leaving } = useExitTransition(current, 200)
+  const { rendered: toast, leaving } = useExitTransition(current, 240)
   if (!toast) return null
+
   return (
     <div
       key={toast.text}
-      className={cx(
-        "fixed bottom-[calc(84px+env(safe-area-inset-bottom))] left-1/2 z-30 flex max-w-[calc(100%-32px)] items-center gap-3.5 overflow-hidden rounded-full bg-inverse px-[18px] py-3 text-[14px] font-semibold whitespace-nowrap text-inverse-ink shadow-lift [transform:translateX(-50%)]",
-        leaving ? 'pointer-events-none animate-[toast-out_0.2s_ease-in_both]' : 'animate-toast-in',
-      )}
       role="status"
+      aria-live="polite"
+      className={cx(
+        'fixed top-[calc(12px+env(safe-area-inset-top))] left-1/2 z-50',
+        'flex max-w-[min(calc(100%-28px),420px)] items-center gap-3 overflow-hidden rounded-full',
+        'bg-ink/90 dark:bg-surface/90 text-inverse-ink dark:text-ink backdrop-blur-2xl',
+        'border border-white/15 dark:border-white/10 px-4 py-2.5 text-[14px] font-medium shadow-lift',
+        'transition-all duration-200 [transform:translateX(-50%)]',
+        leaving
+          ? 'pointer-events-none animate-[toast-island-out_0.22s_ease-in_both]'
+          : 'animate-[toast-island-in_0.32s_var(--spring)_both]',
+      )}
     >
-      <span className="overflow-hidden text-ellipsis">{toast.text}</span>
+      <span className="size-2 rounded-full bg-accent flex-none animate-pulse" aria-hidden="true" />
+      <span className="overflow-hidden text-ellipsis whitespace-nowrap">{toast.text}</span>
       {toast.action && (
         <button
-          className="flex-none font-extrabold text-[#8fd1bb] dark:text-accent"
+          className="flex-none font-display text-[13px] font-bold text-accent dark:text-accent-soft hover:opacity-85 active:scale-95 transition-transform ml-1 cursor-pointer"
           onClick={() => {
             toast.action?.run()
             hideToast()

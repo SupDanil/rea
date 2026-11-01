@@ -7,118 +7,150 @@
 
 :root {
   color-scheme: light;
-  --bg: #f5f4f8;
-  --surface: #ffffff;
-  --surface-2: #ecebf5;
-  --ink: #221b2c;
-  --ink-2: #423851;
-  --muted: #746884;
-  --faint: #b9b1c6;
-  --line: rgba(34, 27, 44, 0.08);
-  --accent: #5e4b7e;
-  --accent-2: #735d9a;
-  --accent-soft: #8e77b8;
-  --accent-ink: #ffffff;
-  --inverse: #221b2c;
-  --inverse-ink: #ffffff;
-  /* Frosted controls laid over tinted backgrounds */
-  --glass: rgba(255, 255, 255, 0.65);
-  --glass-strong: rgba(255, 255, 255, 0.85);
-  --glow: rgba(197, 199, 215, 0.65);
-  --sticky: rgba(245, 244, 248, 0.92);
-  --dock: rgba(34, 27, 44, 0.92);
-  --panel: rgba(34, 27, 44, 0.95);
+  /* Palette: Warm Specialty Espresso Glass Light */
+  --bg: #F4F1EB;
+  --surface: #FCFAF7;
+  --surface-2: #EAE3D8;
+  --ink: #1C140F;
+  --ink-2: #3D2F26;
+  --muted: #7D6D63;
+  --faint: #B8ABA0;
+  --line: rgba(28, 20, 15, 0.09);
+  --line-strong: rgba(28, 20, 15, 0.18);
+  /* Signature warm amber caramel & roasted crema accent - NOT blue/Drinkit! */
+  --accent: #C45B24;
+  --accent-2: #D96E32;
+  --accent-soft: #F2A272;
+  --accent-ink: #FFFFFF;
+  --inverse: #1C140F;
+  --inverse-ink: #FCFAF7;
+  --crema: #D9954C;
+  --clay: #B85F38;
+  --sage: #7E9470;
+  --open: #2D9E5E;
+  --pending: #D4932A;
+  --error: #D6453D;
+  --danger: #D6453D;
+
+  /* Liquid Glass tokens (warm amber/espresso reflection) */
+  --glass: rgba(252, 250, 247, 0.72);
+  --glass-strong: rgba(255, 255, 255, 0.9);
+  --glass-border: rgba(255, 255, 255, 0.65);
+  --glass-edge: rgba(255, 255, 255, 0.85);
+  --glass-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8), inset 0 -1px 0 rgba(28, 20, 15, 0.05), 0 18px 48px rgba(28, 20, 15, 0.1);
+  --glass-panel: rgba(252, 250, 247, 0.88);
+  --glow: rgba(217, 149, 76, 0.35);
+  --sticky: rgba(244, 241, 235, 0.9);
+  --dock: rgba(252, 250, 247, 0.88);
+  --panel: rgba(252, 250, 247, 0.96);
+
   /* Item tints */
-  --tint-base: #f5f4f8;
-  --tint-amount: 100%;
+  --tint-base: #F4F1EB;
+  --tint-amount: 88%;
   --tabs-h: 96px;
-  --card-shadow: 0 1px 2px rgba(34, 27, 44, 0.04), 0 4px 14px rgba(34, 27, 44, 0.05);
-  --lift-shadow: 0 2px 6px rgba(34, 27, 44, 0.06), 0 16px 40px rgba(34, 27, 44, 0.08);
+  --card-shadow: 0 2px 10px rgba(28, 20, 15, 0.04), 0 12px 30px rgba(28, 20, 15, 0.05);
+  --lift-shadow: 0 4px 16px rgba(28, 20, 15, 0.06), 0 22px 50px rgba(28, 20, 15, 0.1);
   --ease-soft: cubic-bezier(0.2, 0.8, 0.2, 1);
-  /* Product screen: soft lavender studio in light mode */
-  --pd-bg-from: #f7f5fb;
-  --pd-bg-to: #ebe7f3;
-  --pd-spot-mix: 70%;
-  --pd-spot-base: #ffffff;
-  --pd-ink: #221b2c;
-  --pd-ink-2: #3c3248;
-  --pd-muted: #6e6380;
-  --pd-faint: #a79db6;
+  --spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* Product screen: warm espresso studio */
+  --pd-bg-from: #F8F5EE;
+  --pd-bg-to: #E9E2D5;
+  --pd-spot-mix: 65%;
+  --pd-spot-base: #FFFFFF;
+  --pd-ink: #1C140F;
+  --pd-ink-2: #3D2F26;
+  --pd-muted: #7D6D63;
+  --pd-faint: #B8ABA0;
   --pd-glass: rgba(255, 255, 255, 0.72);
   --pd-glass-hover: rgba(255, 255, 255, 0.92);
-  --pd-glass-strong: #ffffff;
-  --pd-line: rgba(34, 27, 44, 0.08);
-  --pd-line-strong: rgba(34, 27, 44, 0.2);
-  --pd-panel: rgba(255, 255, 255, 0.96);
-  --pd-scrim: rgba(34, 27, 44, 0.22);
-  --pd-tile: rgba(34, 27, 44, 0.045);
-  --pd-tile-hover: rgba(34, 27, 44, 0.08);
-  --pd-tile-on: color-mix(in oklab, #5e4b7e 12%, #ffffff);
-  --pd-tile-on-line: #8e77b8;
-  --pd-step: rgba(34, 27, 44, 0.06);
-  --pd-step-on: rgba(94, 75, 126, 0.12);
-  --pd-track: rgba(34, 27, 44, 0.07);
-  --pd-cup-shadow: rgba(54, 36, 82, 0.22);
-  --pd-panel-shadow: 0 20px 50px rgba(34, 27, 44, 0.18);
+  --pd-glass-strong: #FFFFFF;
+  --pd-line: rgba(28, 20, 15, 0.08);
+  --pd-line-strong: rgba(28, 20, 15, 0.18);
+  --pd-panel: rgba(252, 250, 247, 0.96);
+  --pd-scrim: rgba(28, 20, 15, 0.25);
+  --pd-tile: rgba(28, 20, 15, 0.04);
+  --pd-tile-hover: rgba(28, 20, 15, 0.07);
+  --pd-tile-on: color-mix(in oklab, #C45B24 14%, #FFFFFF);
+  --pd-tile-on-line: #C45B24;
+  --pd-step: rgba(28, 20, 15, 0.06);
+  --pd-step-on: rgba(196, 91, 36, 0.14);
+  --pd-track: rgba(28, 20, 15, 0.07);
+  --pd-cup-shadow: rgba(28, 20, 15, 0.18);
+  --pd-panel-shadow: 0 20px 50px rgba(28, 20, 15, 0.12);
 }
 
-/* Velvet night lavender dark palette */
+/* Dark Palette: "Тёмная обжарка" (Dark Roast Velvet) */
 :root[data-theme='dark'] {
   color-scheme: dark;
-  --bg: #140f1c;
-  --surface: #1e172a;
-  --surface-2: #281f37;
-  --ink: #f4f2f8;
-  --ink-2: #cac3d6;
-  --muted: #887d99;
-  --faint: #534a62;
-  --line: rgba(244, 242, 248, 0.08);
-  --accent: #8e77b8;
-  --accent-2: #a58fd1;
-  --accent-soft: #bfafe4;
-  --accent-ink: #ffffff;
-  --inverse: #f4f2f8;
-  --inverse-ink: #140f1c;
-  --glass: rgba(255, 255, 255, 0.08);
-  --glass-strong: rgba(255, 255, 255, 0.12);
-  --glow: rgba(197, 199, 215, 0.15);
-  --sticky: rgba(20, 15, 28, 0.9);
-  --dock: rgba(30, 23, 42, 0.94);
-  --panel: rgba(30, 23, 42, 0.96);
-  --tint-base: #1a1324;
-  --tint-amount: 24%;
-  --card-shadow: 0 1px 2px rgba(0, 0, 0, 0.35);
-  --lift-shadow: 0 2px 6px rgba(0, 0, 0, 0.35), 0 16px 40px rgba(0, 0, 0, 0.45);
-  /* Product screen: velvet night studio */
-  --pd-bg-from: #221832;
-  --pd-bg-to: #0f0a17;
+  --bg: #0C0806;
+  --surface: #18110D;
+  --surface-2: #241A14;
+  --ink: #F7F1EB;
+  --ink-2: #D8CBC0;
+  --muted: #998A7E;
+  --faint: #544439;
+  --line: rgba(247, 241, 235, 0.08);
+  --line-strong: rgba(247, 241, 235, 0.18);
+  /* Glowing amber crema accent */
+  --accent: #E07D3E;
+  --accent-2: #EC9255;
+  --accent-soft: #7C3A16;
+  --accent-ink: #0C0806;
+  --inverse: #F7F1EB;
+  --inverse-ink: #0C0806;
+  --crema: #D48C42;
+  --clay: #C06B42;
+  --sage: #8DA87E;
+  --open: #3FBF7F;
+  --pending: #E6A238;
+  --error: #E05349;
+  --danger: #E05349;
+
+  /* Liquid Glass tokens - dark */
+  --glass: rgba(24, 17, 13, 0.72);
+  --glass-strong: rgba(36, 26, 20, 0.85);
+  --glass-border: rgba(255, 255, 255, 0.14);
+  --glass-edge: rgba(255, 255, 255, 0.22);
+  --glass-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18), inset 0 -1px 0 rgba(0, 0, 0, 0.4), 0 18px 48px rgba(0, 0, 0, 0.6);
+  --glass-panel: rgba(24, 17, 13, 0.92);
+  --glow: rgba(212, 140, 66, 0.28);
+  --sticky: rgba(12, 8, 6, 0.9);
+  --dock: rgba(24, 17, 13, 0.88);
+  --panel: rgba(24, 17, 13, 0.96);
+
+  --tint-base: #140E0A;
+  --tint-amount: 28%;
+  --card-shadow: 0 2px 8px rgba(0, 0, 0, 0.45), 0 12px 28px rgba(0, 0, 0, 0.5);
+  --lift-shadow: 0 4px 16px rgba(0, 0, 0, 0.5), 0 24px 56px rgba(0, 0, 0, 0.7);
+
+  /* Product screen: dark espresso studio */
+  --pd-bg-from: #1C130D;
+  --pd-bg-to: #0C0806;
   --pd-spot-mix: 35%;
-  --pd-spot-base: #564575;
-  --pd-ink: #ffffff;
-  --pd-ink-2: rgba(255, 255, 255, 0.9);
-  --pd-muted: rgba(255, 255, 255, 0.66);
-  --pd-faint: rgba(255, 255, 255, 0.38);
-  --pd-glass: rgba(255, 255, 255, 0.1);
-  --pd-glass-hover: rgba(255, 255, 255, 0.15);
-  --pd-glass-strong: rgba(255, 255, 255, 0.22);
-  --pd-line: rgba(255, 255, 255, 0.1);
-  --pd-line-strong: rgba(255, 255, 255, 0.28);
-  --pd-panel: rgba(30, 23, 42, 0.95);
-  --pd-scrim: rgba(0, 0, 0, 0.45);
-  --pd-tile: rgba(255, 255, 255, 0.08);
-  --pd-tile-hover: rgba(255, 255, 255, 0.13);
-  /* Picked add-on: lit violet glass instead of a white slab */
-  --pd-tile-on: color-mix(in oklab, #8e77b8 34%, #1e172a);
-  --pd-tile-on-line: #bfafe4;
-  --pd-step: rgba(255, 255, 255, 0.12);
-  --pd-step-on: rgba(255, 255, 255, 0.14);
-  --pd-track: rgba(255, 255, 255, 0.12);
-  --pd-cup-shadow: rgba(0, 0, 0, 0.35);
-  --pd-panel-shadow: 0 20px 50px rgba(0, 0, 0, 0.65);
+  --pd-spot-base: #382418;
+  --pd-ink: #F7F1EB;
+  --pd-ink-2: rgba(247, 241, 235, 0.9);
+  --pd-muted: rgba(247, 241, 235, 0.65);
+  --pd-faint: rgba(247, 241, 235, 0.38);
+  --pd-glass: rgba(255, 255, 255, 0.08);
+  --pd-glass-hover: rgba(255, 255, 255, 0.14);
+  --pd-glass-strong: rgba(255, 255, 255, 0.2);
+  --pd-line: rgba(247, 241, 235, 0.09);
+  --pd-line-strong: rgba(247, 241, 235, 0.24);
+  --pd-panel: rgba(24, 17, 13, 0.95);
+  --pd-scrim: rgba(0, 0, 0, 0.6);
+  --pd-tile: rgba(255, 255, 255, 0.06);
+  --pd-tile-hover: rgba(255, 255, 255, 0.1);
+  --pd-tile-on: color-mix(in oklab, #E07D3E 32%, #18110D);
+  --pd-tile-on-line: #E07D3E;
+  --pd-step: rgba(255, 255, 255, 0.1);
+  --pd-step-on: rgba(224, 125, 62, 0.25);
+  --pd-track: rgba(255, 255, 255, 0.1);
+  --pd-cup-shadow: rgba(0, 0, 0, 0.5);
+  --pd-panel-shadow: 0 20px 50px rgba(0, 0, 0, 0.75);
 }
 
-/* xs: phones wider than a Fold cover screen. wide: unfolded foldables
-   (Galaxy Fold inner display, foldable iPhone) and tablets. */
 @theme {
   --breakpoint-xs: 23.75rem;
   --breakpoint-wide: 37.5rem;
@@ -126,7 +158,9 @@
 
 /* `inline` keeps the var() references, so utilities re-theme live. */
 @theme inline {
-  --font-sans: 'Manrope', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-sans: 'Onest', system-ui, -apple-system, sans-serif;
+  --font-display: 'Unbounded', system-ui, -apple-system, sans-serif;
+  --font-serif: 'Cormorant Garamond', Georgia, serif;
 
   --color-bg: var(--bg);
   --color-surface: var(--surface);
@@ -136,22 +170,28 @@
   --color-muted: var(--muted);
   --color-faint: var(--faint);
   --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
   --color-accent: var(--accent);
   --color-accent-2: var(--accent-2);
   --color-accent-soft: var(--accent-soft);
   --color-accent-ink: var(--accent-ink);
   --color-inverse: var(--inverse);
   --color-inverse-ink: var(--inverse-ink);
+  --color-crema: var(--crema);
+  --color-clay: var(--clay);
+  --color-sage: var(--sage);
   --color-glass: var(--glass);
   --color-glass-strong: var(--glass-strong);
+  --color-glass-border: var(--glass-border);
+  --color-glass-edge: var(--glass-edge);
   --color-glow: var(--glow);
   --color-sticky: var(--sticky);
   --color-dock: var(--dock);
   --color-panel: var(--panel);
-  --color-danger: #c4453a;
-  --color-error: #d0574c;
-  --color-open: #3fa66b;
-  --color-pending: #e6b450;
+  --color-danger: var(--danger);
+  --color-error: var(--error);
+  --color-open: var(--open);
+  --color-pending: var(--pending);
   --color-pd-ink: var(--pd-ink);
   --color-pd-ink-2: var(--pd-ink-2);
   --color-pd-muted: var(--pd-muted);
@@ -173,52 +213,91 @@
 
   --shadow-card: var(--card-shadow);
   --shadow-lift: var(--lift-shadow);
+  --shadow-glass: var(--glass-shadow);
   --ease-soft: var(--ease-soft);
+  --spring: var(--spring);
 
   --animate-float: float 6s ease-in-out infinite;
   --animate-fade-in: fade-in 0.25s var(--ease-soft);
   --animate-rise: rise 0.3s var(--ease-soft);
-  --animate-sheet-in: sheet-in 0.32s var(--ease-soft);
-  --animate-pop: pop 0.3s var(--ease-soft);
-  --animate-toast-in: toast-in 0.3s var(--ease-soft);
+  --animate-sheet-in: sheet-in 0.34s var(--spring);
+  --animate-pop: pop 0.3s var(--spring);
+  --animate-toast-in: toast-island-in 0.34s var(--spring);
   --animate-spin-in: spin-in 0.4s var(--ease-soft);
-  --animate-pulse-dot: pulse-dot 1.4s ease-in-out infinite;
+  --animate-pulse-dot: pulse-dot 1.6s ease-in-out infinite;
 }
 
 /* ---------- Motion ---------- */
-/* Global (not inside @theme) so arbitrary `animate-[name_…]` values always find them. */
 
 @keyframes float { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
 @keyframes fade-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
 @keyframes rise { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
-@keyframes sheet-in { from { opacity: 0; transform: translateY(40px) scale(0.98); } to { opacity: 1; transform: none; } }
-@keyframes pop { 0% { transform: scale(0.7); } 60% { transform: scale(1.12); } 100% { transform: scale(1); } }
-@keyframes toast-in { from { opacity: 0; transform: translate(-50%, 12px); } to { opacity: 1; transform: translate(-50%, 0); } }
+@keyframes sheet-in { from { opacity: 0; transform: translateY(40px) scale(0.97); } to { opacity: 1; transform: none; } }
+@keyframes pop { 0% { transform: scale(0.7); } 60% { transform: scale(1.1); } 100% { transform: scale(1); } }
 @keyframes spin { to { transform: rotate(360deg); } }
-@keyframes pulse-dot { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.5; transform: scale(0.8); } }
+@keyframes pulse-dot { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.45; transform: scale(0.85); } }
 @keyframes art-in { from { opacity: 0; } to { opacity: 1; } }
 @keyframes addon-in-right { from { opacity: 0; transform: translateX(32px); } to { opacity: 1; transform: none; } }
 @keyframes addon-in-left { from { opacity: 0; transform: translateX(-32px); } to { opacity: 1; transform: none; } }
-@keyframes tile-in { from { opacity: 0; transform: translateY(10px) scale(0.94); } to { opacity: 1; transform: none; } }
+@keyframes tile-in { from { opacity: 0; transform: translateY(10px) scale(0.96); } to { opacity: 1; transform: none; } }
 @keyframes draw { from { stroke-dashoffset: 24; } to { stroke-dashoffset: 0; } }
 @keyframes fade-only { from { opacity: 0; } to { opacity: 1; } }
 @keyframes fade-out { from { opacity: 1; } to { opacity: 0; } }
 @keyframes sink { to { opacity: 0; transform: translateY(18px) scale(0.98); } }
 @keyframes pop-out { to { opacity: 0; transform: scale(0.92); } }
-@keyframes toast-out { to { opacity: 0; transform: translate(-50%, 10px) scale(0.96); } }
 @keyframes dock-out { to { opacity: 0; transform: translateY(24px); } }
 @keyframes float-soft { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-5px); } }
-@keyframes swap-in { from { opacity: 0; transform: scale(0.92) translateY(8px); } to { opacity: 1; transform: none; } }
+@keyframes swap-in { from { opacity: 0; transform: scale(0.94) translateY(8px); } to { opacity: 1; transform: none; } }
 @keyframes delta-float { 0% { opacity: 0; transform: translate(-50%, 6px) scale(0.8); } 18% { opacity: 1; transform: translate(-50%, 0) scale(1); } 70% { opacity: 1; transform: translate(-50%, -6px); } 100% { opacity: 0; transform: translate(-50%, -12px); } }
-@keyframes empty-art { 0% { opacity: 0; transform: translateY(18px) scale(0.6) rotate(-8deg); } 60% { opacity: 1; } 100% { opacity: 1; transform: none; } }
+@keyframes empty-art { 0% { opacity: 0; transform: translateY(20px) scale(0.7) rotate(-6deg); } 60% { opacity: 1; } 100% { opacity: 1; transform: none; } }
 @keyframes spin-in { from { opacity: 0; transform: rotate(-90deg) scale(0.6); } to { opacity: 1; transform: none; } }
 
-/* ---------- Screen transitions ---------- */
-/* Screens slide up on entry (sheet-up) and drop away when left: AnimatedOutlet
-   keeps a left screen rendered with [data-leaving] for its exit. The product
-   art flies between thumbnail and cup in utils/morph.ts. Same motion in every
-   browser — no View Transitions API. */
+/* Kinetic typography subtle breathe on screen entry */
+@keyframes title-breathe {
+  0% { font-weight: 300; opacity: 0; transform: translateY(4px); }
+  60% { font-weight: 800; }
+  100% { font-weight: 700; opacity: 1; transform: none; }
+}
 
+/* Toast Dynamic Island top animations */
+@keyframes toast-island-in {
+  0% { opacity: 0; transform: translate(-50%, -24px) scale(0.75); }
+  65% { transform: translate(-50%, 2px) scale(1.02); }
+  100% { opacity: 1; transform: translate(-50%, 0) scale(1); }
+}
+@keyframes toast-island-out {
+  0% { opacity: 1; transform: translate(-50%, 0) scale(1); }
+  100% { opacity: 0; transform: translate(-50%, -20px) scale(0.85); }
+}
+
+/* Neon glow for ready orders */
+@keyframes ready-neon-pulse {
+  0%, 100% { box-shadow: 0 0 20px rgba(63, 191, 127, 0.35), inset 0 0 10px rgba(63, 191, 127, 0.15); }
+  50% { box-shadow: 0 0 38px rgba(63, 191, 127, 0.65), inset 0 0 18px rgba(63, 191, 127, 0.3); }
+}
+
+/* Stamp stamp-down effect */
+@keyframes stamp-press {
+  0% { transform: scale(1.6) rotate(-15deg); opacity: 0; filter: blur(4px); }
+  60% { transform: scale(0.92) rotate(2deg); opacity: 1; filter: blur(0); }
+  100% { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+
+/* Coupon stick animation */
+@keyframes coupon-snap {
+  0% { transform: scale(0.85) rotate(-3deg); opacity: 0; }
+  60% { transform: scale(1.04) rotate(1deg); opacity: 1; }
+  100% { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+
+/* Soft error shake */
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-6px); }
+  40%, 80% { transform: translateX(6px); }
+}
+
+/* ---------- Screen transitions ---------- */
 [data-leaving] > * {
   pointer-events: none;
   animation: sheet-down 0.32s cubic-bezier(0.4, 0, 1, 1) both !important;
@@ -247,6 +326,50 @@
   }
 }
 
+/* 2026 Liquid Glass utility */
+@utility liquid-glass {
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+}
+
+/* 2026 Liquid Glass floating panel */
+@utility liquid-glass-panel {
+  backdrop-filter: blur(28px) saturate(190%);
+  -webkit-backdrop-filter: blur(28px) saturate(190%);
+  background: var(--glass-panel);
+  border: 1px solid var(--glass-border);
+  box-shadow: var(--glass-shadow);
+}
+
+/* Press feedback for 2026 controls: scale(.96) + flash/reflection */
+@utility press-feedback {
+  transition: transform 140ms var(--ease-soft), filter 140ms var(--ease-soft);
+  &:active {
+    transform: scale(0.96);
+    filter: brightness(1.08);
+  }
+}
+
+/* SVG noise grain overlay */
+@utility mesh-grain {
+  position: relative;
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.08'/%3E%3C/svg%3E");
+    background-repeat: repeat;
+    mix-blend-mode: overlay;
+    opacity: 0.35;
+    border-radius: inherit;
+    z-index: 1;
+  }
+}
+
 /* ---------- Base ---------- */
 
 @layer base {
@@ -257,32 +380,30 @@
     -webkit-font-smoothing: antialiased;
     -webkit-tap-highlight-color: transparent;
     font-feature-settings: 'tnum' 1;
+    font-variant-numeric: tabular-nums;
   }
-  /* Preflight's 1.5 would loosen every block that never set its own line-height. */
   html {
     line-height: normal;
-    /* MenuScreen compensates sticky-bar height changes itself; Chrome's scroll
-       anchoring would do it a second time (Safari has none), so switch it off. */
     overflow-anchor: none;
   }
   body {
     background: var(--bg);
+    color: var(--ink);
     transition: background-color 0.3s ease;
   }
   button {
     cursor: pointer;
+    font-variant-numeric: tabular-nums;
   }
   button:disabled {
     cursor: default;
   }
   button:focus-visible {
-    outline: 2px solid var(--accent-soft);
+    outline: 2px solid var(--accent);
     outline-offset: 2px;
   }
-  h1,
-  h2 {
-    font-weight: 700;
-    letter-spacing: -0.03em;
+  h1, h2, h3 {
+    text-wrap: balance;
   }
   #root {
     max-width: 480px;
@@ -296,8 +417,9 @@
     *,
     *::before,
     *::after {
-      animation: none !important;
-      transition: none !important;
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
       scroll-behavior: auto !important;
     }
   }

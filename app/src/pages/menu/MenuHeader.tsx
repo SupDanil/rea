@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { avatar, openDot, roundBtn } from '../../components/ui'
 import { BagIcon, ChevronDownIcon, PersonIcon, RabbitIcon } from '../../components/icons'
 import { shopStatus } from '../../domain'
@@ -8,84 +8,126 @@ import { useShop } from '../../queries/useShop'
 import { useApp } from '../../state/AppContext'
 import { countOf } from '../../state/cart'
 import { ShopPickerSheet } from '../../components/ShopPickerSheet'
+import { cx } from '../../utils/cx'
 
+/**
+ * 2026 Liquid Glass MenuHeader:
+ * Transparent at the top, turns into a sleek frosted liquid glass bar when scrolled.
+ * Selected coffee shop rendered as an elegant capsule button.
+ */
 export function MenuHeader() {
   const { cart, profile, loyalty, theme, toggleTheme } = useApp()
   const { go } = useAppNavigate()
   const [showShopPicker, setShowShopPicker] = useState(false)
+  const [scrolled, setScrolled] = useState(false)
   const cartCount = countOf(cart.lines)
   const gifts = loyalty.giftsAvailable
   const shop = useShop()
   const now = useNow(60_000)
   const status = shop ? shopStatus(shop, now) : null
 
+  useEffect(() => {
+    const onScroll = () => {
+      setScrolled(window.scrollY > 16)
+    }
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [])
+
   return (
     <>
-      <header className="flex items-center justify-between gap-1.5 sm:gap-2 px-2.5 sm:px-4 pt-[calc(12px+env(safe-area-inset-top))] pb-2.5">
+      <header
+        className={cx(
+          'sticky top-0 z-20 flex items-center justify-between gap-2 px-3 sm:px-4 pt-[calc(10px+env(safe-area-inset-top))] pb-2.5 transition-all duration-300',
+          scrolled
+            ? 'bg-bg/85 backdrop-blur-xl border-b border-line/60 shadow-[0_4px_20px_rgba(0,0,0,0.03)]'
+            : 'bg-transparent',
+        )}
+      >
+        {/* Coffee Shop Capsule Button */}
         <button
           onClick={() => setShowShopPicker(true)}
-          className="flex min-w-0 items-center gap-2 sm:gap-2.5 text-left cursor-pointer hover:opacity-90 active:scale-98 transition-all"
+          className="flex min-w-0 items-center gap-2.5 rounded-full bg-surface/90 border border-line py-1.5 pl-1.5 pr-3.5 shadow-sm backdrop-blur-md text-left cursor-pointer hover:bg-surface active:scale-98 transition-all"
           aria-label={shop && status ? `shit кофе: ${shop.address}, ${status.text}` : 'shit кофе'}
         >
-          <div className="grid size-9 sm:size-10 place-items-center rounded-[12px] sm:rounded-[13px] bg-[#3d2c55] text-[#c5c7d7] shadow-card overflow-hidden">
-            <RabbitIcon size={24} className="size-6 sm:size-7 text-[#c5c7d7]" />
+          <div className="grid size-9 place-items-center rounded-full bg-ink text-surface dark:bg-surface-2 dark:text-crema shadow-xs flex-none">
+            <RabbitIcon size={20} className="size-5" />
           </div>
-          <div>
-            <div className="flex items-center gap-[5px] text-[14px] sm:text-[15px] font-bold tracking-[-0.01em]">
-              shit кофе
-              <ChevronDownIcon className="text-muted" />
+          <div className="min-w-0">
+            <div className="flex items-center gap-1 font-display text-[13px] sm:text-[14px] font-bold text-ink tracking-tight">
+              <span>shit кофе</span>
+              <ChevronDownIcon className="text-muted size-3" />
             </div>
             {shop && status && (
-              <div className="mt-px flex items-center gap-1.5 text-[11px] sm:text-[12px] text-muted" data-shop-status={status.kind}>
+              <div
+                className="flex items-center gap-1.5 text-[11px] text-muted font-medium truncate"
+                data-shop-status={status.kind}
+              >
                 <span className={status.kind === 'open' ? openDot : 'size-1.5 rounded-full bg-danger'} aria-hidden="true" />
                 {shop.address} · {status.text}
               </div>
             )}
           </div>
         </button>
-      <div className="flex gap-1.5 sm:gap-2">
-        <button className={roundBtn} onClick={toggleTheme} aria-label={theme === 'dark' ? 'Включить светлую тему' : 'Включить тёмную тему'}>
-          <ThemeIcon dark={theme === 'dark'} />
-        </button>
-        <button className={roundBtn} onClick={() => go('/profile')} aria-label={profile ? `Профиль${gifts ? `, подарков: ${gifts}` : ''}` : 'Войти'}>
-          {profile ? (
-            <span className={avatar(true)} aria-hidden="true">
-              {profile.name.slice(0, 1).toUpperCase()}
-            </span>
-          ) : (
-            <PersonIcon />
-          )}
-          {gifts > 0 && (
-            <span
-              className="absolute -top-1 -right-1 grid size-5 place-items-center rounded-full bg-surface text-[11px] shadow-card animate-[pop_0.35s_var(--ease-soft)]"
-              aria-hidden="true"
-            >
-              🎁
-            </span>
-          )}
-        </button>
-        <button className={roundBtn} onClick={() => go('/cart')} aria-label={`Корзина, товаров: ${cartCount}`}>
-          <BagIcon />
-          {cartCount > 0 && (
-            <span
-              key={cartCount}
-              className="absolute -top-[3px] -right-[3px] grid h-5 min-w-5 place-items-center rounded-[10px] border-2 border-bg bg-accent px-[5px] text-[11px] font-extrabold text-accent-ink animate-[pop_0.35s_var(--ease-soft)]"
-            >
-              {cartCount}
-            </span>
-          )}
-        </button>
-      </div>
-    </header>
-    {showShopPicker && <ShopPickerSheet onClose={() => setShowShopPicker(false)} />}
-  </>
+
+        {/* Action Controls */}
+        <div className="flex gap-2 items-center">
+          <button
+            className={roundBtn}
+            onClick={toggleTheme}
+            aria-label={theme === 'dark' ? 'Включить светлую тему' : 'Включить тёмную тему'}
+          >
+            <ThemeIcon dark={theme === 'dark'} />
+          </button>
+
+          <button
+            className={roundBtn}
+            onClick={() => go('/profile')}
+            aria-label={profile ? `Профиль${gifts ? `, подарков: ${gifts}` : ''}` : 'Войти'}
+          >
+            {profile ? (
+              <span className={avatar(true)} aria-hidden="true">
+                {profile.name.slice(0, 1).toUpperCase()}
+              </span>
+            ) : (
+              <PersonIcon />
+            )}
+            {gifts > 0 && (
+              <span
+                className="absolute -top-1 -right-1 grid size-5 place-items-center rounded-full bg-surface text-[11px] shadow-card animate-[pop_0.35s_var(--spring)]"
+                aria-hidden="true"
+              >
+                🎁
+              </span>
+            )}
+          </button>
+
+          <button
+            className={roundBtn}
+            onClick={() => go('/cart')}
+            aria-label={`Корзина, товаров: ${cartCount}`}
+          >
+            <BagIcon />
+            {cartCount > 0 && (
+              <span
+                key={cartCount}
+                className="absolute -top-[3px] -right-[3px] grid h-5 min-w-5 place-items-center rounded-full border-2 border-bg bg-accent px-1 text-[11px] font-display font-extrabold text-accent-ink animate-[pop_0.35s_var(--spring)]"
+              >
+                {cartCount}
+              </span>
+            )}
+          </button>
+        </div>
+      </header>
+
+      {showShopPicker && <ShopPickerSheet onClose={() => setShowShopPicker(false)} />}
+    </>
   )
 }
 
-/** Sun in dark mode, moon in light; spins in on every switch. */
 function ThemeIcon({ dark }: { dark: boolean }) {
   return (
-    <svg key={String(dark)} className="animate-spin-in" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+    <svg key={String(dark)} className="animate-spin-in" viewBox="0 0 24 24" width="19" height="19" aria-hidden="true">
       {dark ? (
         <g fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
           <circle cx="12" cy="12" r="4" />

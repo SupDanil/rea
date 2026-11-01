@@ -1,5 +1,5 @@
-export const stepBox = 'flex flex-1 flex-col gap-3.5 px-2 pt-[12vh] pb-6 text-center animate-[fade-in_0.3s_var(--ease-soft)]'
-export const stepTitle = 'text-[28px]'
-export const stepLead = '-mt-1 mb-2 text-[15px] leading-[1.4] text-ink-2'
+export const stepBox = 'flex flex-1 flex-col gap-4 px-3 sm:px-6 pt-[8vh] pb-8 text-center animate-[fade-in_0.35s_var(--ease-soft)]'
+export const stepTitle = 'font-display text-[26px] sm:text-[30px] font-bold text-ink tracking-tight'
+export const stepLead = '-mt-1 mb-3 text-[15px] leading-relaxed text-muted font-medium'
 
 export const RESEND_AFTER = 30

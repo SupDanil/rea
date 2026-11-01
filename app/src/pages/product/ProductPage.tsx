@@ -98,14 +98,18 @@ function ProductView({ item }: { item: MenuItem }) {
 
   return (
     <div
-      ref={sheetRef}
-      className={cx(
-        // One column on every screen. Unfolded/tablet: the same card, wider, centred
-        // over the dimmed menu.
-        'tinted fixed inset-0 z-20 mx-auto grid max-w-[480px] grid-cols-[minmax(0,1fr)] grid-rows-[auto_auto_minmax(0,1fr)_auto] overflow-x-hidden overflow-y-auto overscroll-contain text-pd-ink',
-        'wide:max-w-[560px] wide:shadow-[0_0_0_100vmax_rgba(0,0,0,0.55)]',
-        'animate-[sheet-up_0.38s_var(--ease-soft)_both]',
-      )}
+      className="fixed inset-0 z-30 flex items-center justify-center bg-black/50 backdrop-blur-sm overflow-hidden"
+      onClick={(e) => {
+        if (e.target === e.currentTarget) back()
+      }}
+    >
+      <div
+        ref={sheetRef}
+        className={cx(
+          'tinted mesh-grain relative grid w-full h-full max-w-[480px] grid-cols-[minmax(0,1fr)] grid-rows-[auto_auto_minmax(0,1fr)_auto] overflow-x-hidden overflow-y-auto overscroll-contain text-pd-ink',
+          'wide:max-w-[560px] wide:h-[min(92dvh,840px)] wide:rounded-[32px] wide:border wide:border-glass-border wide:shadow-lift',
+          'animate-[sheet-up_0.34s_var(--spring)_both]',
+        )}
       style={{
         '--tint': item.art.bg,
         // Studio light around the cup, tinted by the drink; light/dark comes from the --pd-* tokens.
@@ -119,11 +123,11 @@ function ProductView({ item }: { item: MenuItem }) {
       {/* Above the add-on backdrop: the macros stay readable while add-ons are picked. */}
       <div ref={topRef} className="relative z-[31]">
       <header className="grid grid-cols-[40px_1fr_40px] items-center px-3 pt-[calc(10px+env(safe-area-inset-top))] pb-0.5">
-        <h1 key={item.id} className="col-start-2 text-center text-[19px] xs:text-[20px] sm:text-[22px] font-bold text-pd-ink tracking-tight truncate px-1 animate-fade-in">
+        <h1 key={item.id} className="col-start-2 text-center font-display text-[19px] xs:text-[20px] sm:text-[22px] font-bold text-pd-ink tracking-tight truncate px-1 animate-fade-in">
           {item.name}
         </h1>
         <button
-          className="col-start-3 justify-self-end size-10 grid place-items-center [&>svg]:block rounded-full bg-pd-glass hover:bg-pd-glass-hover text-pd-ink backdrop-blur-md border border-pd-line transition-[background-color,color,border-color,scale] active:scale-95"
+          className="col-start-3 justify-self-end size-10 grid place-items-center [&>svg]:block rounded-full bg-pd-glass hover:bg-pd-glass-hover text-pd-ink backdrop-blur-md border border-pd-line transition-[background-color,color,border-color,scale] active:scale-95 cursor-pointer shadow-sm"
           onClick={back}
           aria-label="Закрыть"
         >
@@ -199,6 +203,7 @@ function ProductView({ item }: { item: MenuItem }) {
           <AddToCartButton price={config.price} soldOut={config.soldOut} added={added} onAdd={add} />
         </footer>
       </div>
+    </div>
     </div>
   )
 }

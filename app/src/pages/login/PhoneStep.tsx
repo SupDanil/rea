@@ -12,6 +12,10 @@ type Props = {
   onSubmit: () => void
 }
 
+/**
+ * 2026 Liquid Glass PhoneStep:
+ * Clean, focused single-question phone entry with warm gift card lead.
+ */
 export function PhoneStep({ digits, sending, inputRef, onChange, onSubmit }: Props) {
   return (
     <form
@@ -21,26 +25,32 @@ export function PhoneStep({ digits, sending, inputRef, onChange, onSubmit }: Pro
         if (digits.length === 10 && !sending) onSubmit()
       }}
     >
-      <div className="text-[48px] leading-none" aria-hidden="true">
-        🎁
+      <div className="relative mx-auto size-20 rounded-full bg-accent/15 border border-accent/25 grid place-items-center mb-1">
+        <span className="text-[36px] leading-none" aria-hidden="true">
+          🎁
+        </span>
       </div>
+
       <h1 className={stepTitle}>Вход по номеру</h1>
       <p className={stepLead}>Напиток в подарок за регистрацию, скидка уровня и штампы за каждый заказ.</p>
+
       <label className="sr-only" htmlFor="phone">
         Телефон
       </label>
       <input
         id="phone"
         ref={inputRef}
-        className={field(false, 'xl')}
+        className={cx(field(false, 'xl'), 'tracking-wider')}
         inputMode="tel"
         autoComplete="tel"
         value={formatPhone(digits)}
         onChange={(e) => onChange(phoneDigits(e.target.value))}
       />
-      <button className={btn('primary', 'lg')} type="submit" disabled={digits.length !== 10 || sending} aria-busy={sending}>
+
+      <button className={cx(btn('primary', 'lg'), 'mt-1')} type="submit" disabled={digits.length !== 10 || sending} aria-busy={sending}>
         {sending ? 'Отправляем…' : 'Получить код'}
       </button>
+
       <p className={cx(hint(), 'text-center')}>Продолжая, вы соглашаетесь с условиями программы лояльности</p>
     </form>
   )

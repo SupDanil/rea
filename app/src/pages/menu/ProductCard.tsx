@@ -9,13 +9,11 @@ import { ART_ATTR } from '../../utils/morph'
 import { formatPrice } from '../../utils/format'
 import { bounce, flyTo } from '../../utils/motion'
 
-/** Where a quick-added item lands: always the bottom cart dock's badge. */
 function getCartTarget(): Element | DOMRect {
   const badge = document.querySelector('[data-cart-badge]')
   if (badge) return badge
   const dock = document.querySelector('[data-cart-target="dock"]')
   if (dock) return dock
-  // Fallback to the bottom position where the dock appears, never the top header
   const isDesktop = typeof window !== 'undefined' && window.innerWidth >= 600
   if (isDesktop) {
     const left = (typeof window !== 'undefined' ? window.innerWidth : 1000) - 240
@@ -28,13 +26,23 @@ function getCartTarget(): Element | DOMRect {
   return new DOMRect(left, top, 44, 44)
 }
 
-export function ProductCard({ item, onOpen }: { item: MenuItem; onOpen: () => void }) {
+interface ProductCardProps {
+  item: MenuItem
+  onOpen: () => void
+  isWide?: boolean
+}
+
+/**
+ * 2026 Bento ProductCard:
+ * Hits and featured items expand to 2 bento cells with horizontal layout.
+ * Standard cards feature soft tinted drink spots, Unbounded typography, and a liquid glass quick-add "+".
+ */
+export function ProductCard({ item, onOpen, isWide = false }: ProductCardProps) {
   const { cart } = useApp()
   const soldOut = isSoldOut(item)
   const artRef = useRef<SVGSVGElement>(null)
   const [justAdded, setJustAdded] = useState(false)
 
-  // "+" adds the default size with no add-ons; the card itself opens the full configurator.
   const quickAdd = () => {
     const variant = item.variants.find((v) => !v.stopped)
     if (!variant) return
@@ -43,8 +51,6 @@ export function ProductCard({ item, onOpen }: { item: MenuItem; onOpen: () => vo
 
     const isFirstItem = cart.lines.length === 0
     if (isFirstItem) {
-      // First item: mount the bottom dock immediately so it rises up to meet the incoming cup,
-      // and the cup flies down into the newly revealed bottom dock.
       flushSync(() => {
         cart.add(item.id, variant.id, [])
       })
@@ -55,11 +61,9 @@ export function ProductCard({ item, onOpen }: { item: MenuItem; onOpen: () => vo
         )
       }
     } else {
-      // Subsequent items: dock is already up at the bottom, fly down to the badge and bump count on impact.
       const target = getCartTarget()
       const land = () => {
         cart.add(item.id, variant.id, [])
-        // The badge remounts on the new count (and pops itself); nudge the whole bar.
         bounce(document.querySelector('[data-cart-target="dock"]'), 0.5)
       }
       if (artRef.current && target) {
@@ -70,49 +74,133 @@ export function ProductCard({ item, onOpen }: { item: MenuItem; onOpen: () => vo
     }
   }
 
+  // Bento: 2-column wide card
+  if (isWide) {
+    return (
+      <div
+        className={cx(
+          'group relative col-span-2 flex items-center justify-between overflow-hidden rounded-[26px] p-4 text-left transition-all duration-200',
+          'bg-surface/90 border border-line shadow-card hover:shadow-lift has-[[data-open]:active]:scale-98',
+          soldOut && 'opacity-60 grayscale-50',
+        )}
+      >
+        <button
+          data-open
+          className="absolute inset-0 rounded-[26px] cursor-pointer"
+          onClick={onOpen}
+          aria-label={`${item.name}, от ${formatPrice(minPrice(item))}${soldOut ? ', закончилось' : ''}`}
+        />
+
+        <div className="pointer-events-none flex-1 pr-3 z-1 min-w-0">
+          {item.badge && (
+            <span className="inline-block rounded-full bg-accent/10 border border-accent/30 px-2.5 py-0.5 text-[10px] font-display font-bold tracking-wider text-accent uppercase mb-1.5">
+              {item.badge}
+            </span>
+          )}
+          <div className="font-display text-[17px] sm:text-[18px] font-bold text-ink truncate">
+            {item.name}
+          </div>
+          <div className="line-clamp-2 text-[12px] sm:text-[13px] text-muted mt-1 leading-relaxed">
+            {item.description}
+          </div>
+          <div className="mt-3 flex items-center gap-3">
+            <span className="font-display text-[15px] sm:text-[16px] font-bold text-ink">
+              {soldOut ? 'Закончилось' : `${item.variants.length > 1 ? 'от ' : ''}${formatPrice(minPrice(item))}`}
+            </span>
+            {!soldOut && (
+              <button
+                className={cx(
+                  'pointer-events-auto relative z-2 grid size-8 sm:size-9 place-items-center rounded-full cursor-pointer shadow-sm transition-all duration-150 active:scale-90',
+                  justAdded
+                    ? 'bg-accent text-accent-ink'
+                    : 'bg-surface border border-glass-border text-ink hover:bg-accent hover:text-accent-ink hover:border-transparent',
+                )}
+                onClick={quickAdd}
+                aria-label={`Добавить «${item.name}» в корзину`}
+              >
+                {justAdded ? (
+                  <svg key="done" className="animate-pop" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+                    <path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                ) : (
+                  <PlusIcon />
+                )}
+              </button>
+            )}
+          </div>
+        </div>
+
+        <div
+          className="art-glow pointer-events-none relative grid size-28 sm:size-32 flex-none place-items-center overflow-hidden rounded-[20px]"
+          style={{ '--tint': item.art.bg } as CSSProperties}
+        >
+          <ItemArt
+            ref={artRef}
+            art={item.art}
+            className="h-[88%] w-auto transition-transform duration-300 ease-soft group-hover:scale-105"
+            {...{ [ART_ATTR]: item.id }}
+          />
+        </div>
+      </div>
+    )
+  }
+
+  // Bento: 1-column standard card
   return (
     <div
       className={cx(
-        'group relative flex flex-col rounded-[24px] sm:rounded-[28px] p-1.5 sm:p-2.5 pb-3 sm:pb-4 text-left [transition:transform_0.2s_var(--ease-soft),scale_0.2s_var(--ease-soft),box-shadow_0.2s,background-color_0.3s_ease] has-[[data-open]:active]:scale-97 sm:hover:-translate-y-1 sm:hover:shadow-lift',
-        soldOut ? 'bg-[color-mix(in_oklab,var(--surface)_55%,transparent)]' : 'bg-surface shadow-card hover:shadow-lift',
+        'group relative flex flex-col rounded-[24px] sm:rounded-[26px] p-2.5 pb-3.5 text-left transition-all duration-200 has-[[data-open]:active]:scale-97 hover:shadow-lift',
+        soldOut
+          ? 'bg-surface/50 border border-line/40 opacity-60'
+          : 'bg-surface/90 border border-line shadow-card hover:border-line-strong',
       )}
     >
-      {/* The whole card opens the product; the "+" sits above this layer. */}
       <button
         data-open
-        className="absolute inset-0 rounded-[24px] sm:rounded-[28px] cursor-pointer"
+        className="absolute inset-0 rounded-[24px] sm:rounded-[26px] cursor-pointer"
         onClick={onOpen}
         aria-label={`${item.name}, от ${formatPrice(minPrice(item))}${soldOut ? ', закончилось' : ''}`}
       />
+
       <div
-        className={cx('art-glow pointer-events-none relative grid aspect-square place-items-center overflow-hidden rounded-[19px] sm:rounded-[22px]', soldOut && 'opacity-55 grayscale-70')}
+        className={cx(
+          'art-glow pointer-events-none relative grid aspect-square place-items-center overflow-hidden rounded-[18px] sm:rounded-[20px]',
+          soldOut && 'opacity-60 grayscale-50',
+        )}
         style={{ '--tint': item.art.bg } as CSSProperties}
       >
         <ItemArt
           ref={artRef}
           art={item.art}
-          className="h-[84%] w-auto aspect-[200/220] transition-transform duration-300 ease-soft group-hover:-translate-y-[3px] group-hover:scale-103"
+          className="h-[84%] w-auto aspect-[200/220] transition-transform duration-300 ease-soft group-hover:-translate-y-1 group-hover:scale-105"
           {...{ [ART_ATTR]: item.id }}
         />
         {item.badge && (
-          <span className="absolute top-2 left-2 rounded-full bg-accent px-2 py-1 text-[10px] font-extrabold tracking-[0.04em] text-accent-ink uppercase">
+          <span className="absolute top-2 left-2 rounded-full bg-accent px-2 py-0.5 text-[10px] font-display font-bold tracking-wider text-accent-ink uppercase shadow-sm">
             {item.badge}
           </span>
         )}
       </div>
-      <div className={cx('pointer-events-none mx-2 mt-2.5 text-[15px] sm:text-[16.5px] leading-[1.25] font-bold tracking-[-0.015em]', soldOut && 'opacity-55')}>{item.name}</div>
-      <div className={cx('pointer-events-none mx-2 mt-1 line-clamp-2 flex-1 text-[12px] sm:text-[13px] leading-[1.4] text-muted', soldOut && 'opacity-55')}>
+
+      <div className={cx('pointer-events-none mx-1.5 mt-2.5 font-display text-[15px] sm:text-[16px] leading-[1.2] font-bold text-ink truncate', soldOut && 'opacity-60')}>
+        {item.name}
+      </div>
+
+      <div className={cx('pointer-events-none mx-1.5 mt-1 line-clamp-2 flex-1 text-[12px] sm:text-[13px] leading-[1.4] text-muted', soldOut && 'opacity-60')}>
         {item.description}
       </div>
-      <div className="mt-2.5 sm:mt-3 mr-1 ml-1.5 sm:ml-2 flex items-center justify-between">
-        <span className={cx('pointer-events-none text-[14px] sm:text-[16px] font-bold', soldOut && 'text-[12px] sm:text-[13px] font-semibold text-muted')}>
+
+      <div className="mt-2.5 mr-1 ml-1.5 flex items-center justify-between">
+        <span className={cx('pointer-events-none font-display text-[14px] sm:text-[15px] font-bold text-ink', soldOut && 'text-[12px] font-normal text-muted')}>
           {soldOut ? 'Закончилось' : `${item.variants.length > 1 ? 'от ' : ''}${formatPrice(minPrice(item))}`}
         </span>
         {!soldOut && (
           <button
             className={cx(
-              'relative z-1 grid size-7 sm:size-9 place-items-center rounded-full cursor-pointer shadow-sm transition-[background,color,scale,transform] duration-200 ease-[ease] active:scale-88 sm:hover:scale-105',
-              justAdded ? 'bg-accent text-accent-ink' : 'bg-surface-2 text-ink hover:bg-accent hover:text-accent-ink',
+              'relative z-1 grid size-8 sm:size-9 place-items-center rounded-full cursor-pointer shadow-sm transition-all duration-150 active:scale-90',
+              justAdded
+                ? 'bg-accent text-accent-ink'
+                : 'bg-surface border border-glass-border text-ink hover:bg-accent hover:text-accent-ink hover:border-transparent',
             )}
             onClick={quickAdd}
             aria-label={`Добавить «${item.name}» в корзину`}
