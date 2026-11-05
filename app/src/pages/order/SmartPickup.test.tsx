@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest'
-import { render, screen, fireEvent, waitFor } from '@testing-library/react'
+import { render, screen, fireEvent, waitFor, within } from '@testing-library/react'
 import { OrderStatusCard } from './OrderStatusCard'
 import { ShopPickerSheet } from '../../components/ShopPickerSheet'
 import { AppProvider } from '../../state/AppProvider'
@@ -63,6 +63,41 @@ describe('Smart Pickup & QR flow (Luckin Coffee logic)', () => {
     expect(screen.getByText(/Заказ выдан. Приятного кофепития!/i)).toBeInTheDocument()
     // QR code is hidden once completed
     expect(screen.queryByText('Покажите QR-код сканеру на стойке')).not.toBeInTheDocument()
+  })
+
+  it('marks a ready order with the lasting glow, not a repainted shadow loop', async () => {
+    const { container } = render(<OrderStatusCard order={mockOrder} status="ready" now={Date.now()} onRate={vi.fn()} />)
+    await screen.findByRole('img', { name: 'QR-код для выдачи заказа' })
+
+    const card = container.querySelector('section')!
+    expect(card).toHaveClass('ready-glow')
+    expect(card.className).not.toContain('infinite')
+  })
+
+  it('keeps both pickup QR sizes unobstructed and preserves the encoded pattern when enlarged', async () => {
+    render(<OrderStatusCard order={mockOrder} status="ready" now={Date.now()} onRate={vi.fn()} />)
+    const compact = await screen.findByRole('img', { name: 'QR-код для выдачи заказа' })
+    expect(compact).toHaveStyle({ width: '160px' })
+    expect(compact.textContent?.trim()).toBe('')
+    const pattern = compact.querySelector('svg')?.innerHTML
+    expect(pattern).toBeTruthy()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Увеличить QR-код' }))
+    const enlarged = await within(screen.getByRole('dialog')).findByRole('img', { name: 'QR-код для выдачи заказа' })
+    expect(enlarged).toHaveStyle({ width: '280px', maxWidth: '100%' })
+    expect(enlarged.textContent?.trim()).toBe('')
+    expect(enlarged.querySelector('svg')?.innerHTML).toBe(pattern)
+    expect(screen.queryByText('🐰')).not.toBeInTheDocument()
+  })
+
+  it('hides the previous order QR while generating the next order QR', async () => {
+    const { rerender } = render(<OrderStatusCard order={mockOrder} status="ready" now={Date.now()} onRate={vi.fn()} />)
+    const oldQr = await screen.findByRole('img', { name: 'QR-код для выдачи заказа' })
+    const oldPattern = oldQr.querySelector('svg')?.innerHTML
+    rerender(<OrderStatusCard order={{ ...mockOrder, id: 'ord-next-456' }} status="ready" now={Date.now()} onRate={vi.fn()} />)
+    expect(screen.queryByRole('img', { name: 'QR-код для выдачи заказа' })).not.toBeInTheDocument()
+    const newQr = await screen.findByRole('img', { name: 'QR-код для выдачи заказа' })
+    expect(newQr.querySelector('svg')?.innerHTML).not.toBe(oldPattern)
   })
 
   it('ShopPickerSheet lists coffee shops and allows selection', async () => {

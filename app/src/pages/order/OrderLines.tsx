@@ -22,7 +22,13 @@ export function OrderLines({ order, status }: { order: Order; status: OrderStatu
             </span>
             <span className="font-semibold">
               {l.item.name}
-              {l.variant.size !== 'ONE' && <span className="font-medium text-muted"> {l.variant.size}</span>}
+              {l.variant.size !== 'ONE' && (
+                <span className="font-medium text-muted">
+                  {' '}
+                  {l.variant.size}
+                  {l.variant.volume ? ` · ${l.variant.volume}` : ''}
+                </span>
+              )}
               {l.ingredients.length > 0 && (
                 <span className="mt-0.5 block text-[12px] font-medium text-muted">{countAddons(l.ingredients).map((a) => `+ ${addonLabel(a)}`).join(', ')}</span>
               )}

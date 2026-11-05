@@ -73,6 +73,34 @@ describe('2026 Interactive UI Patterns', () => {
       expect(onConfirm).toHaveBeenCalledTimes(1)
       expect(vibrateSpy).toHaveBeenCalledWith([30, 50, 40])
     })
+
+    it('renders centered with backdrop when modal={true} and dismisses on Escape or backdrop click', () => {
+      const onConfirm = vi.fn()
+      const onCancel = vi.fn()
+
+      const { container } = render(
+        <ConfirmBox
+          modal
+          title="Выйти из профиля?"
+          text="Точно выйти?"
+          confirmLabel="Выйти"
+          cancelLabel="Отмена"
+          onConfirm={onConfirm}
+          onCancel={onCancel}
+        />,
+      )
+
+      const backdrop = container.querySelector('.fixed.inset-0.z-50')
+      expect(backdrop).toBeInTheDocument()
+
+      // Escape key cancels
+      fireEvent.keyDown(window, { key: 'Escape' })
+      expect(onCancel).toHaveBeenCalledTimes(1)
+
+      // Backdrop click cancels
+      fireEvent.click(backdrop!)
+      expect(onCancel).toHaveBeenCalledTimes(2)
+    })
   })
 
   describe('Toast (Dynamic Island with Undo Action)', () => {
@@ -120,8 +148,9 @@ describe('2026 Interactive UI Patterns', () => {
       )
 
       act(() => {
-        vi.advanceTimersByTime(60)
+        vi.advanceTimersByTime(500)
       })
+      expect(document.activeElement).toHaveAccessibleName('Назад')
 
       const grabber = document.querySelector('.cursor-grab')
       expect(grabber).toBeInTheDocument()

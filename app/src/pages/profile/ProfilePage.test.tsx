@@ -87,4 +87,28 @@ describe('ProfilePage', () => {
     await waitFor(() => expect(signOut).toHaveBeenCalled())
     expect(await screen.findByText('Вы вышли из профиля')).toBeInTheDocument()
   })
+
+  it('cancelling sign out closes the confirmation modal without signing out', async () => {
+    const signOut = vi.fn().mockResolvedValue(undefined)
+    renderApp('/profile', { getProfile: async () => profile, signOut })
+    fireEvent.click(await screen.findByRole('button', { name: 'Выйти из профиля' }))
+    expect(screen.getByRole('alertdialog', { name: 'Выйти из профиля?' })).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'Остаться' }))
+    expect(screen.queryByRole('alertdialog', { name: 'Выйти из профиля?' })).not.toBeInTheDocument()
+    expect(signOut).not.toHaveBeenCalled()
+  })
+
+  it('renders long order lines with word wrap without truncation', async () => {
+    const longOrder = order('o_long', 99, {
+      lines: [
+        { key: 'latte|m', itemId: 'latte', variantId: 'm', ingredientIds: [], qty: 2 },
+        { key: 'cappuccino|m', itemId: 'cappuccino', variantId: 'm', ingredientIds: [], qty: 1 },
+      ],
+    })
+    renderApp('/profile', { getProfile: async () => profile, getOrders: async () => [longOrder] })
+    const lineSpan = await screen.findByText(/Латте.*×2.*Капучино/)
+    expect(lineSpan).toBeInTheDocument()
+    expect(lineSpan.className).toContain('break-words')
+    expect(lineSpan.className).not.toContain('truncate')
+  })
 })

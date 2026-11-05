@@ -16,19 +16,12 @@ export const avatar = (small = false) =>
 /** Close/back button: frosted on tinted screens, solid on sheets. */
 export const iconBtn = (side: 'left' | 'right') =>
   cx(
-    'grid size-10 place-items-center rounded-full backdrop-blur-xl border border-glass-border transition-all duration-150 active:scale-96 cursor-pointer',
+    'grid size-10 place-items-center rounded-full border border-glass-border transition-all duration-150 active:scale-96 cursor-pointer',
     side === 'left' ? 'col-start-1 bg-surface/90 shadow-card text-ink' : 'col-start-3 bg-glass-strong text-ink',
   )
 
-// Unfolded: a wider centred sheet with the menu dimmed around it.
-export const sheet = cx(
-  'fixed inset-0 z-20 mx-auto flex max-w-[480px] flex-col overflow-y-auto overscroll-contain bg-bg wide:max-w-[640px] wide:shadow-[0_0_0_100vmax_rgba(0,0,0,0.5)]',
-  'animate-[sheet-up_0.34s_var(--spring)_both]',
-)
-export const sheetHead =
-  'grid min-h-14 grid-cols-[44px_1fr_auto] items-center gap-2 px-3 sm:px-6 pt-[calc(8px+env(safe-area-inset-top))] pb-1'
 export const sheetTitle = 'text-[20px] sm:text-[22px] font-display font-bold tracking-tight text-ink'
-export const sheetBody = 'min-h-0 flex-1 overflow-y-auto overscroll-contain px-3 sm:px-6 pt-1 pb-6'
+export const sheetBody = 'min-h-0 flex-1 overflow-y-auto overflow-x-hidden overscroll-contain px-3 sm:px-6 pt-1 pb-6'
 export const sheetDock = 'px-3 sm:px-6 pt-2 pb-[calc(10px+env(safe-area-inset-bottom))]'
 
 export const textBtn = (danger = false) =>
@@ -54,11 +47,10 @@ export const addPrice = 'text-[18px] font-display font-bold tracking-tight'
 /** `xl` is the big centered login input; `code` spreads the SMS digits. */
 export const field = (error = false, size: 'md' | 'xl' | 'code' = 'md') =>
   cx(
-    'w-full border rounded-[16px] bg-surface text-ink shadow-sm transition-all duration-200 placeholder:text-faint focus:outline-none',
-    size === 'md' && 'h-[50px] px-4 text-[15px]',
-    size !== 'md' && 'h-15 pr-4 text-center font-bold',
-    size === 'xl' && 'pl-4 text-[22px] font-display tracking-[0.02em]',
-    size === 'code' && 'pl-[calc(16px+0.6em)] text-[28px] font-display tracking-[0.6em]',
+    'w-full border bg-surface text-ink shadow-sm transition-all duration-200 placeholder:text-faint focus:outline-none',
+    size === 'md' && 'h-[50px] px-4 text-[15px] rounded-[16px]',
+    size === 'xl' && 'h-[54px] sm:h-[60px] px-2.5 sm:px-4 text-center font-bold font-display rounded-[18px] text-[18px] sm:text-[22px] tracking-normal sm:tracking-[0.02em]',
+    size === 'code' && 'h-15 pr-4 pl-[calc(16px+0.6em)] text-center font-bold font-display rounded-[16px] text-[28px] tracking-[0.6em]',
     error ? 'border-danger focus:ring-2 focus:ring-danger/20' : 'border-line focus:border-accent focus:ring-2 focus:ring-accent/15',
   )
 
@@ -90,7 +82,7 @@ export const radio =
 export const toggle =
   "relative h-7 w-12 flex-none rounded-full bg-faint/60 transition-all duration-200 after:absolute after:top-[3px] after:left-[3px] after:size-[22px] after:rounded-full after:bg-white after:shadow-sm after:transition-transform after:duration-250 after:ease-soft after:content-[''] group-aria-checked:bg-accent group-aria-checked:after:translate-x-5"
 
-export const confirmBox = 'rounded-[24px] bg-surface/95 border border-line p-5 shadow-lift backdrop-blur-xl animate-[fade-in_0.2s_var(--ease-soft)]'
+export const confirmBox = 'rounded-[24px] bg-surface border border-line p-5 shadow-lift animate-[fade-in_0.2s_var(--ease-soft)]'
 export const confirmTitle = 'text-[17px] font-display font-bold text-ink'
 export const buttonRow = 'flex justify-center gap-2.5'
 export const openDot = 'size-2 rounded-full bg-open shadow-[0_0_0_3px_rgba(63,191,127,0.22)]'

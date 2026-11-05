@@ -9,7 +9,7 @@ export const SELECTED_SHOP_KEY = 'zerno_selected_shop_id'
 
 export function AppProvider({ children }: { children: ReactNode }) {
   const cart = useCart()
-  const { profile, signIn, update: updateProfile, signOut } = useProfile()
+  const { profile, isAuthLoading, signIn, update: updateProfile, signOut } = useProfile()
   const orders = useOrders(profile?.phone ?? null)
   const { theme, toggle: toggleTheme } = useTheme()
   const [toast, setToast] = useState<Toast | null>(null)
@@ -41,6 +41,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     cart,
     orders,
     profile,
+    isAuthLoading,
     loyalty: loyaltyOf(orders.orders, profile),
     signIn,
     updateProfile,

@@ -40,6 +40,7 @@ export const catalogData: CatalogData = {
       description: 'Эспрессо и густая молочная пена',
       composition: 'Эспрессо, молоко',
       categoryId: 'milk-coffee',
+      temperatureMode: 'both',
       art: { kind: 'cup', fill: '#c8a27a', top: '#f4e9dc', bg: '#efe3d3' },
       variants: [
         { id: 'm', size: 'M', volume: '300 мл', price: 210, nutrition: n(120, 6, 9, 6) },
@@ -53,6 +54,7 @@ export const catalogData: CatalogData = {
       description: 'Мягкий кофе с молоком',
       composition: 'Эспрессо, молоко',
       categoryId: 'milk-coffee',
+      temperatureMode: 'both',
       art: { kind: 'cup', fill: '#d8b894', bg: '#f1e6d8' },
       variants: [
         { id: 'm', size: 'M', volume: '300 мл', price: 230, nutrition: n(150, 7, 11, 7) },

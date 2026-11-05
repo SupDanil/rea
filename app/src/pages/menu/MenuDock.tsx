@@ -18,7 +18,7 @@ const short: Record<OrderStatus, string> = {
 
 /**
  * 2026 Liquid Glass MenuDock:
- * Floating glass capsule with glowing status indicator, bubble-popping droplet count badge,
+ * Floating glass capsule with status-colored badge, bubble-popping droplet count badge,
  * and adaptive scroll compression.
  */
 export function MenuDock() {
@@ -32,13 +32,15 @@ export function MenuDock() {
 
   if (!count && !activeOrder) return null
   const status = activeOrder && statusOf(activeOrder, now)
+  const hasActiveOrder = Boolean(activeOrder && status)
 
   return (
     <div
       className={cx(
-        'pointer-events-none fixed z-20 flex gap-3 items-center *:pointer-events-auto',
+        'pointer-events-none fixed z-20 flex gap-2.5 sm:gap-3 items-center *:pointer-events-auto',
+        hasActiveOrder ? 'justify-center' : '',
         // Mobile: centered floating dock separated from screen edges
-        'right-0 bottom-0 left-0 mx-auto max-w-[460px] px-3.5 pb-[calc(14px+env(safe-area-inset-bottom))]',
+        'right-0 bottom-0 left-0 mx-auto max-w-[460px] px-3 sm:px-3.5 pb-[calc(14px+env(safe-area-inset-bottom))]',
         // Desktop: bottom-right corner with elegant float
         'wide:right-8 wide:bottom-8 wide:left-auto wide:mx-0 wide:max-w-none wide:w-auto wide:p-0',
         'transition-transform duration-300 ease-soft',
@@ -48,37 +50,19 @@ export function MenuDock() {
       {activeOrder && status && (
         <button
           className={cx(
-            'flex h-14 sm:h-15 items-center gap-2.5 rounded-full pl-2 pr-4 sm:pr-5 whitespace-nowrap text-white text-[14px] shadow-lift backdrop-blur-2xl cursor-pointer transition-transform duration-200 active:scale-96 shrink-0',
+            'flex h-14 sm:h-15 items-center justify-center gap-1.5 sm:gap-2 rounded-full px-5 sm:px-6 whitespace-nowrap text-[14px] sm:text-[15px] shadow-lift backdrop-blur-2xl cursor-pointer transition-transform duration-200 active:scale-96 shrink-0',
             status === 'ready'
-              ? 'bg-[#15291C]/92 border border-open/50 animate-[ready-neon-pulse_2s_infinite]'
-              : 'bg-ink/90 dark:bg-surface-2/90 border border-white/15',
+              ? 'bg-[#15291C]/92 border border-open/50 text-white ready-glow'
+              : status === 'cancelled'
+                ? 'bg-danger/20 border border-danger/40 text-white'
+                : 'bg-[#261A13]/92 dark:bg-[#20140D]/92 border border-pending/50 text-white shadow-[0_8px_24px_rgba(212,147,42,0.2)]',
           )}
           onClick={() => go(`/order/${activeOrder.id}`)}
           aria-label={`Заказ № ${activeOrder.number}: ${short[status]}`}
         >
-          {/* Symmetrical round badge with glowing status dot */}
-          <span
-            className={cx(
-              'grid size-10 sm:size-11 shrink-0 place-items-center rounded-full shadow-sm',
-              status === 'ready'
-                ? 'bg-open/25 border border-open/40'
-                : 'bg-white/10 dark:bg-white/15 border border-white/10',
-            )}
-          >
-            <span
-              className={cx(
-                'size-3 rounded-full',
-                status === 'ready'
-                  ? 'bg-open shadow-[0_0_10px_#3fbf7f] animate-pulse'
-                  : 'bg-pending shadow-[0_0_8px_#e6b450] animate-pulse-dot',
-              )}
-              aria-hidden="true"
-            />
-          </span>
-
-          <span className="font-medium text-[14px] flex items-center gap-1.5 pr-0.5">
-            <b className="font-display font-bold text-white">№ {activeOrder.number}</b>
-            <span className="text-white/80">{short[status]}</span>
+          <b className="font-display font-bold text-white">№ {activeOrder.number}</b>
+          <span className={status === 'ready' ? 'text-white/90 font-medium' : 'text-white/80 font-medium'}>
+            {short[status]}
           </span>
         </button>
       )}
@@ -89,9 +73,12 @@ export function MenuDock() {
           data-cart-target="dock"
           onClick={() => go('/cart')}
           className={cx(
-            'flex flex-1 wide:flex-none wide:min-w-[270px] h-14 sm:h-15 items-center gap-3 rounded-full pl-2 pr-5 sm:pr-6',
+            'flex h-14 sm:h-15 items-center gap-2.5 sm:gap-3 rounded-full pl-2',
+            hasActiveOrder
+              ? 'shrink-0 pr-4 sm:pr-5'
+              : 'flex-1 wide:flex-none wide:min-w-[270px] pr-5 sm:pr-6',
             'bg-accent text-accent-ink hover:bg-accent-2 shadow-[0_8px_28px_rgba(196,91,36,0.32)] dark:shadow-[0_8px_28px_rgba(224,125,62,0.28)]',
-            'border border-white/25 backdrop-blur-2xl transition-transform duration-200 active:scale-96 cursor-pointer shrink-0',
+            'border border-white/25 backdrop-blur-2xl transition-transform duration-200 active:scale-96 cursor-pointer',
           )}
         >
           {/* Bubbling Droplet Count Badge with high-contrast dark espresso text */}
@@ -103,13 +90,20 @@ export function MenuDock() {
             {count}
           </span>
 
-          <span className="flex-1 text-left font-display font-semibold text-[15px] tracking-tight whitespace-nowrap">
+          <span
+            className={cx(
+              'font-display font-semibold text-[15px] tracking-tight whitespace-nowrap',
+              hasActiveOrder ? 'pr-0.5' : 'flex-1 text-left truncate min-w-0',
+            )}
+          >
             Корзина
           </span>
 
-          <span className="font-display font-bold text-[16px] tracking-tight text-right whitespace-nowrap shrink-0 animate-pop" key={total}>
-            {formatPrice(total)}
-          </span>
+          {!hasActiveOrder && (
+            <span className="font-display font-bold text-[16px] tracking-tight text-right whitespace-nowrap shrink-0 animate-pop" key={total}>
+              {formatPrice(total)}
+            </span>
+          )}
         </button>
       )}
     </div>

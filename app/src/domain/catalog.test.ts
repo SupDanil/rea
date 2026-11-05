@@ -115,4 +115,49 @@ describe('Domain: catalog', () => {
     expect(catalog.itemById.get('cappuccino')).toBe(dummyDrink)
     expect(catalog.groupById.get('syrup')?.name).toBe('Сиропы')
   })
+
+  it('createCatalog indexes promotions, mainPromo and category bindings', () => {
+    const data: CatalogData = {
+      categories: [{ id: 'classic', name: 'Классика' }],
+      items: [dummyDrink],
+      ingredientGroups: [],
+      promos: [
+        {
+          id: 'p-season',
+          title: 'Осень',
+          placement: 'category',
+          categoryId: 'classic',
+          targetType: 'product',
+          targetProductId: 'cappuccino',
+          sort: 2,
+          isActive: true,
+        },
+        {
+          id: 'p-main',
+          title: 'Главное промо',
+          placement: 'main',
+          targetType: 'article',
+          content: 'Текст акции',
+          sort: 1,
+          isActive: true,
+        },
+        {
+          id: 'p-disabled',
+          title: 'Выключенная акция',
+          placement: 'main',
+          targetType: 'article',
+          sort: 0,
+          isActive: false,
+        },
+      ],
+    }
+
+    const catalog = createCatalog(data)
+    expect(catalog.promos.length).toBe(2)
+    expect(catalog.promos.map((p) => p.id)).toEqual(['p-main', 'p-season'])
+    expect(catalog.mainPromo?.id).toBe('p-main')
+    expect(catalog.promoByCategory.get('classic')?.id).toBe('p-season')
+    expect(catalog.promoById.get('p-season')?.title).toBe('Осень')
+    expect(catalog.promoById.get('p-disabled')).toBeUndefined()
+  })
 })

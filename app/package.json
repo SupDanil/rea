@@ -8,7 +8,9 @@
     "build": "tsc -b && vite build",
     "lint": "oxlint",
     "test": "vitest run",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "test:flights": "node scripts/flight-check.mjs",
+    "test:sheets": "node scripts/sheet-check.mjs"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.105.0",

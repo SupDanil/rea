@@ -5,6 +5,45 @@ export const SPRING = 'cubic-bezier(0.34, 1.56, 0.64, 1)'
 export const SOFT = 'cubic-bezier(0.2, 0.8, 0.2, 1)'
 
 /**
+ * A copy of `source` on a fixed layer over everything, for flying around. It sits
+ * in a plain box because browsers won't run a transform on an `<svg>` root off the
+ * main thread, and sheds whatever `source` looks like in place: size limits,
+ * shadows and loops would be repainted on every frame of the flight.
+ */
+export function floatingCopy(source: Element, { width, height }: { width: number; height: number }, zIndex: number) {
+  const copy = source.cloneNode(true) as SVGElement | HTMLElement
+  Object.assign(copy.style, {
+    display: 'block',
+    width: '100%',
+    height: '100%',
+    maxWidth: 'none',
+    maxHeight: 'none',
+    margin: '0',
+    filter: 'none',
+    transform: 'none',
+    animation: 'none',
+    transition: 'none',
+    visibility: 'visible',
+  })
+  const box = document.createElement('div')
+  box.dataset.flight = ''
+  Object.assign(box.style, {
+    position: 'fixed',
+    left: '0',
+    top: '0',
+    width: `${width}px`,
+    height: `${height}px`,
+    zIndex: `${zIndex}`,
+    pointerEvents: 'none',
+    transformOrigin: '0 0',
+    willChange: 'transform',
+  })
+  box.appendChild(copy)
+  document.body.appendChild(box)
+  return box
+}
+
+/**
  * Throws a copy of `source` along an arc to the centre of `target`, shrinking
  * as it goes — the add-on dropping into the cup. Resolves when it lands.
  */
@@ -13,18 +52,8 @@ export function flyTo(source: Element, target: Element | DOMRect, opts: { durati
   const { duration = 560, endScale = 0.35 } = opts
   const from = source.getBoundingClientRect()
   const to = target instanceof Element ? target.getBoundingClientRect() : target
-  const clone = source.cloneNode(true) as HTMLElement
-  Object.assign(clone.style, {
-    position: 'fixed',
-    left: `${from.left}px`,
-    top: `${from.top}px`,
-    width: `${from.width}px`,
-    height: `${from.height}px`,
-    margin: '0',
-    zIndex: '60',
-    pointerEvents: 'none',
-  })
-  document.body.appendChild(clone)
+  const clone = floatingCopy(source, from, 60)
+  Object.assign(clone.style, { left: `${from.left}px`, top: `${from.top}px`, transformOrigin: '50% 50%' })
   const dx = to.left + to.width / 2 - (from.left + from.width / 2)
   const dy = to.top + to.height / 2 - (from.top + from.height / 2)
   // Lift above the straight line first, then drop in: reads as a toss, not a slide.

@@ -89,6 +89,19 @@ export function useProductConfig(item: MenuItem, providedCatalog?: Catalog) {
       return at < 0 ? prev : { ...prev, [group.id]: [...now.slice(0, at), ...now.slice(at + 1)] }
     })
 
+  const removeAll = (group: IngredientGroup, ingredientId: string) =>
+    setSelection((prev) => {
+      const now = prev[group.id] ?? []
+      if (!now.includes(ingredientId)) return prev
+      const next = now.filter((id) => id !== ingredientId)
+      if (next.length === 0) {
+        const copy = { ...prev }
+        delete copy[group.id]
+        return copy
+      }
+      return { ...prev, [group.id]: next }
+    })
+
   return {
     variant,
     variantIdx,
@@ -97,6 +110,7 @@ export function useProductConfig(item: MenuItem, providedCatalog?: Catalog) {
     toggle,
     addOne,
     removeOne,
+    removeAll,
     canAdd,
     qtyOf,
     totalOf,

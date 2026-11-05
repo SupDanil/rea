@@ -31,8 +31,24 @@ describe('MenuPage (API-driven menu)', () => {
     expect(screen.getByRole('button', { name: 'Добавить «Круассан» в корзину' })).toBeInTheDocument()
   })
 
-  it('shows the hero banner of the category in view', async () => {
-    renderApp('/')
+  it('shows the main promo banner when provided by the API', async () => {
+    const promoCatalog: typeof catalogData = {
+      ...catalogData,
+      promos: [
+        {
+          id: 'promo-1',
+          title: 'Капучино',
+          subtitle: 'шелковистая текстура',
+          badge: 'Рекомендуем',
+          placement: 'main',
+          targetType: 'product',
+          targetProductId: 'cappuccino',
+          sort: 1,
+          isActive: true,
+        },
+      ],
+    }
+    renderApp('/', { getCatalog: async () => promoCatalog })
     await screen.findByRole('navigation', { name: 'Категории меню' })
     expect(screen.getByText('Рекомендуем')).toBeInTheDocument()
   })

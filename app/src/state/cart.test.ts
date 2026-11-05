@@ -125,4 +125,38 @@ describe('useCart hook and state', () => {
     expect(all.length).toBe(1)
     expect(subtotalOf([line], testCatalog)).toBe(resolved!.unitPrice * 2)
   })
+
+  it('separates items with different temperature into distinct cart lines and collapses same temperature', () => {
+    const { result } = renderHook(() => useCart())
+
+    act(() => {
+      // Add Latte M Hot
+      result.current.add('latte', 'm', [], 1, 'hot')
+      // Add Latte M Cold
+      result.current.add('latte', 'm', [], 1, 'cold')
+    })
+
+    expect(result.current.lines.length).toBe(2)
+    expect(result.current.lines[0]).toMatchObject({
+      itemId: 'latte',
+      variantId: 'm',
+      temperature: 'hot',
+      qty: 1,
+    })
+    expect(result.current.lines[1]).toMatchObject({
+      itemId: 'latte',
+      variantId: 'm',
+      temperature: 'cold',
+      qty: 1,
+    })
+
+    // Add another Latte M Hot -> increments qty of hot line
+    act(() => {
+      result.current.add('latte', 'm', [], 2, 'hot')
+    })
+
+    expect(result.current.lines.length).toBe(2)
+    expect(result.current.lines[0].qty).toBe(3)
+    expect(result.current.lines[1].qty).toBe(1)
+  })
 })

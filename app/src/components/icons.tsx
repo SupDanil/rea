@@ -52,3 +52,17 @@ export const RabbitIcon = ({ className, size = 24 }: { className?: string; size?
     <circle cx="30" cy="30" r="2.5" fill="var(--bg, #f4f6f8)" />
   </svg>
 )
+
+export const InfoIcon = ({ size = 20, className }: { size?: number; className?: string }) => (
+  <svg className={className} viewBox="0 0 24 24" width={size} height={size} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <circle cx="12" cy="12" r="10" />
+    <line x1="12" y1="16" x2="12" y2="12" />
+    <line x1="12" y1="8" x2="12.01" y2="8" />
+  </svg>
+)
+
+export const SnowflakeIcon = ({ size = 16, className }: { size?: number; className?: string }) => (
+  <svg className={className} viewBox="0 0 24 24" width={size} height={size} fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <path d="M2 12h20M12 2v20M20 16l-4-4 4-4M4 8l4 4-4 4M16 4l-4 4-4-4M8 20l4-4 4 4" />
+  </svg>
+)

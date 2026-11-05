@@ -51,10 +51,11 @@ describe('OrderPage real-time order tracking', () => {
     status: 'accepted',
   }
 
-  const mockApp = (orders: Order[]) =>
+  const mockApp = (orders: Order[], profile: any = { phone: sampleOrder.phone, name: sampleOrder.name }) =>
     vi.spyOn(AppContextModule, 'useApp').mockReturnValue({
       orders: { orders, update: mockUpdate, merge: mockMerge, upsert: mockUpsert },
       showToast: mockShowToast,
+      profile,
     } as any)
 
   const renderPage = (orderId = 'ord-test-456') => {
@@ -172,5 +173,18 @@ describe('OrderPage real-time order tracking', () => {
     vi.spyOn(api, 'getOrder').mockRejectedValue(new Error('offline'))
     renderPage()
     expect(await screen.findByRole('heading', { level: 2, name: 'Не удалось загрузить заказ' })).toBeInTheDocument()
+  })
+
+  it('signed out, the order route shows the login', async () => {
+    mockApp([sampleOrder], null)
+    renderPage()
+    expect(await screen.findByText('Вход по номеру')).toBeInTheDocument()
+  })
+
+  it('shows not found when order belongs to a different phone', async () => {
+    const orderWithPhone = { ...sampleOrder, phone: '+79991112233' }
+    mockApp([orderWithPhone], { phone: '+79998887766', name: 'Чужой' })
+    renderPage()
+    expect(await screen.findByText('Этот заказ был сделан другим пользователем')).toBeInTheDocument()
   })
 })

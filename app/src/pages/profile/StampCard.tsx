@@ -54,7 +54,7 @@ export function StampCard({ loyalty }: { loyalty: Loyalty }) {
         transition: 'transform 0.2s cubic-bezier(0.2, 0.8, 0.2, 1)',
       }}
       className={cx(
-        'mt-3 rounded-[26px] p-5 bg-surface/90 border border-line shadow-lift backdrop-blur-xl',
+        'mt-3 rounded-[26px] p-5 bg-surface/90 border border-line shadow-lift ',
         'will-change-transform',
       )}
       aria-label="Штампы"

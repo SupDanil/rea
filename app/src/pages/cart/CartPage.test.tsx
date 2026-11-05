@@ -23,6 +23,32 @@ const createdOrder: Order = {
   status: 'accepted',
 }
 
+const testProfile = { phone: '+79990001122', name: '', email: '', notifications: true, joinedAt: 1 }
+
+const usedGiftOrder: Order = {
+  id: 'ord-gift-used',
+  number: 1,
+  createdAt: 1000,
+  readyAt: 2000,
+  lines: [],
+  subtotal: 300,
+  discount: 200,
+  total: 100,
+  name: 'Аня',
+  pickup: { kind: 'asap' },
+  payment: 'card',
+  status: 'ready',
+  phone: testProfile.phone,
+  rewardDiscount: 200,
+}
+
+const renderCart = (overrides: Record<string, unknown> = {}) =>
+  renderApp('/cart', {
+    getProfile: async () => testProfile,
+    getOrders: async () => [usedGiftOrder],
+    ...overrides,
+  })
+
 describe('CartPage', () => {
   beforeEach(() => localStorage.clear())
   afterEach(() => {
@@ -31,14 +57,47 @@ describe('CartPage', () => {
     localStorage.clear()
   })
 
-  it('shows the empty state when nothing is in the cart', async () => {
+  it('signed out, the cart route shows the login', async () => {
     renderApp('/cart')
+    expect(await screen.findByText('Вход по номеру')).toBeInTheDocument()
+  })
+
+  it('with cached profile, renders the cart immediately without flashing the login screen', () => {
+    localStorage.setItem('shit_coffee_profile_cache', JSON.stringify(testProfile))
+    renderApp('/cart')
+    // Synchronously renders empty cart without login screen
+    expect(screen.queryByText('Вход по номеру')).not.toBeInTheDocument()
+    expect(screen.getByText('Пока пусто')).toBeInTheDocument()
+  })
+
+  it('while checking auth with token, shows skeleton and never flashes login', async () => {
+    localStorage.setItem('shit_coffee_access_token', 'mock_jwt_token')
+    let resolveProfile: (p: typeof testProfile) => void = () => {}
+    const profilePromise = new Promise<typeof testProfile>((res) => {
+      resolveProfile = res
+    })
+    renderApp('/cart', {
+      getProfile: () => profilePromise,
+    })
+
+    // Shows skeleton loading state, NOT login page
+    expect(screen.getByLabelText('Проверяем авторизацию')).toBeInTheDocument()
+    expect(screen.queryByText('Вход по номеру')).not.toBeInTheDocument()
+
+    // When profile finishes loading, transitions smoothly to cart
+    resolveProfile(testProfile)
+    expect(await screen.findByText('Пока пусто')).toBeInTheDocument()
+    expect(screen.queryByText('Вход по номеру')).not.toBeInTheDocument()
+  })
+
+  it('shows the empty state when nothing is in the cart', async () => {
+    renderCart()
     expect(await screen.findByText('Пока пусто')).toBeInTheDocument()
   })
 
   it('prices cart lines with the server menu (variant + add-ons)', async () => {
     seedCart([latteLine])
-    renderApp('/cart')
+    renderCart()
     // (230 + 50) × 2 = 560
     expect(await screen.findByText('Итого')).toBeInTheDocument()
     expect(summary()).toHaveTextContent(/560/)
@@ -46,13 +105,13 @@ describe('CartPage', () => {
 
   it('drops lines whose product disappeared from the server menu', async () => {
     seedCart([{ key: 'ghost|m', itemId: 'ghost', variantId: 'm', ingredientIds: [], qty: 1 }])
-    renderApp('/cart')
+    renderCart()
     expect(await screen.findByText('Пока пусто')).toBeInTheDocument()
   })
 
   it('suggests available food only (no drinks, no stop-listed items)', async () => {
     seedCart([latteLine])
-    renderApp('/cart')
+    renderCart()
     const upsell = (await screen.findByRole('heading', { name: 'Добавить к заказу' })).closest('section')!
     expect(within(upsell).getByText('Круассан')).toBeInTheDocument()
     expect(within(upsell).queryByText('Печенье')).toBeNull()
@@ -62,7 +121,7 @@ describe('CartPage', () => {
   it('applies a promo code only after the server confirms it', async () => {
     seedCart([latteLine])
     const checkPromo = vi.fn().mockResolvedValue({ code: 'ЗЕРНО10', valid: true, percent: 10, label: '−10% на заказ' })
-    renderApp('/cart', { checkPromo })
+    renderCart({ checkPromo })
     fireEvent.change(await screen.findByLabelText('Промокод'), { target: { value: 'зерно10' } })
     fireEvent.click(screen.getByRole('button', { name: 'Применить' }))
 
@@ -74,7 +133,7 @@ describe('CartPage', () => {
 
   it('rejects a code the server does not know', async () => {
     seedCart([latteLine])
-    renderApp('/cart', { checkPromo: async () => ({ code: 'NOPE', valid: false }) })
+    renderCart({ checkPromo: async () => ({ code: 'NOPE', valid: false }) })
     fireEvent.change(await screen.findByLabelText('Промокод'), { target: { value: 'nope' } })
     fireEvent.keyDown(screen.getByLabelText('Промокод'), { key: 'Enter' })
     expect(await screen.findByText('Такого промокода нет')).toBeInTheDocument()
@@ -82,7 +141,7 @@ describe('CartPage', () => {
 
   it('says so when the promo check cannot reach the server', async () => {
     seedCart([latteLine])
-    renderApp('/cart', { checkPromo: () => Promise.reject(new Error('offline')) })
+    renderCart({ checkPromo: () => Promise.reject(new Error('offline')) })
     fireEvent.change(await screen.findByLabelText('Промокод'), { target: { value: 'x' } })
     fireEvent.click(screen.getByRole('button', { name: 'Применить' }))
     expect(await screen.findByText('Не удалось проверить промокод — попробуйте ещё раз')).toBeInTheDocument()
@@ -91,7 +150,7 @@ describe('CartPage', () => {
   it('asks for a name before paying', async () => {
     seedCart([latteLine])
     const createOrder = vi.fn()
-    renderApp('/cart', { createOrder })
+    renderCart({ createOrder })
     fireEvent.click(await screen.findByRole('button', { name: /Оплатить/ }))
     expect(createOrder).not.toHaveBeenCalled()
   })
@@ -99,7 +158,7 @@ describe('CartPage', () => {
   it('places the order on the server with the promo and opens its status screen', async () => {
     seedCart([latteLine])
     const createOrder = vi.fn().mockResolvedValue(createdOrder)
-    const { router } = renderApp('/cart', {
+    const { router } = renderCart({
       createOrder,
       checkPromo: async () => ({ code: 'ЗЕРНО10', valid: true, percent: 10, label: '−10%' }),
       getOrder: async () => createdOrder,
@@ -130,7 +189,7 @@ describe('CartPage', () => {
 
   it('keeps the cart and shows an error when the order is rejected', async () => {
     seedCart([latteLine])
-    renderApp('/cart', { createOrder: () => Promise.reject(new Error('500')) })
+    renderCart({ createOrder: () => Promise.reject(new Error('500')) })
     fireEvent.click(await screen.findByRole('radio', { name: /Наличными|наличн/i }))
     fireEvent.change(screen.getByLabelText('Как вас назвать?'), { target: { value: 'Аня' } })
     fireEvent.click(screen.getByRole('button', { name: /Заказать/ }))
@@ -140,7 +199,7 @@ describe('CartPage', () => {
 
   it('changes quantity of a line', async () => {
     seedCart([latteLine])
-    renderApp('/cart')
+    renderCart()
     fireEvent.click(await screen.findByRole('button', { name: 'Больше' }))
     await waitFor(() => expect(JSON.parse(localStorage.getItem('zerno-cart')!)[0].qty).toBe(3))
     expect(summary()).toHaveTextContent(/840/)
@@ -149,7 +208,7 @@ describe('CartPage', () => {
   it('shows the prep time from the shop and sends its id with the order', async () => {
     seedCart([latteLine])
     const createOrder = vi.fn().mockResolvedValue(createdOrder)
-    renderApp('/cart', { getShops: async () => [{ ...testShop, basePrepMinutes: 9 }], createOrder, getOrder: async () => createdOrder, orderEventsUrl: () => 'x' })
+    renderCart({ getShops: async () => [{ ...testShop, basePrepMinutes: 9 }], createOrder, getOrder: async () => createdOrder, orderEventsUrl: () => 'x' })
     expect(await screen.findByText('Невский проспект, 12 · приготовим за 9–11 минут')).toBeInTheDocument()
     fireEvent.click(screen.getByRole('radio', { name: /При получении/ }))
     fireEvent.change(screen.getByLabelText('Как вас назвать?'), { target: { value: 'Аня' } })
@@ -161,8 +220,32 @@ describe('CartPage', () => {
   it('blocks paying while the shop has paused orders and shows why', async () => {
     seedCart([latteLine])
     const createOrder = vi.fn()
-    renderApp('/cart', { getShops: async () => [{ ...testShop, isAccepting: false, pauseReason: 'санитарный час' }], createOrder })
+    renderCart({ getShops: async () => [{ ...testShop, isAccepting: false, pauseReason: 'санитарный час' }], createOrder })
     expect(await screen.findByRole('alert')).toHaveTextContent('Кофейня временно не принимает заказы: санитарный час')
     expect(screen.getByRole('button', { name: /Оплатить/ })).toBeDisabled()
+  })
+
+  it('renders temperature badge in item meta when temperature is specified', async () => {
+    const coldLine = {
+      key: 'latte|m||temp:cold',
+      itemId: 'latte',
+      variantId: 'm',
+      ingredientIds: [],
+      temperature: 'cold' as const,
+      qty: 1,
+    }
+    const hotLine = {
+      key: 'latte|m||temp:hot',
+      itemId: 'latte',
+      variantId: 'm',
+      ingredientIds: [],
+      temperature: 'hot' as const,
+      qty: 1,
+    }
+    seedCart([coldLine, hotLine])
+    renderCart()
+
+    expect(await screen.findByText('🧊 Холодный, M · 300 мл')).toBeInTheDocument()
+    expect(screen.getByText('☕ Горячий, M · 300 мл')).toBeInTheDocument()
   })
 })

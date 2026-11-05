@@ -85,4 +85,137 @@ describe('ProductPage Component', () => {
     fireEvent.click(tile)
     expect(await screen.findByRole('button', { name: /Добавить в корзину за 300/ })).toBeInTheDocument()
   })
+
+  it('displays vertical builder list of chosen addons on the right without horizontal chips', async () => {
+    vi.spyOn(api, 'getCatalog').mockResolvedValue(catalogData)
+    renderAt('/product/latte')
+
+    // Initially State A: no addons chosen, right list absent
+    await screen.findByText('Латте')
+    expect(screen.queryByRole('region', { name: 'Выбранные добавки' })).not.toBeInTheDocument()
+
+    // Add Oat milk
+    fireEvent.click(screen.getByRole('button', { name: /Молоко/ }))
+    fireEvent.click(await screen.findByRole('button', { name: /Овсяное/ }))
+
+    // Now transitions to State B: vertical addons list appears with Oat milk
+    const addonsList = await screen.findByRole('region', { name: 'Выбранные добавки' })
+    expect(within(addonsList).getByText('Овсяное')).toBeInTheDocument()
+
+    // Switch to syrups and add Vanilla
+    fireEvent.click(screen.getByRole('button', { name: /Сиропы/ }))
+    fireEvent.click(screen.getByRole('button', { name: 'Ваниль: добавить порцию' }))
+
+    // List now displays both toppings
+    expect(within(addonsList).getByText('Овсяное')).toBeInTheDocument()
+    expect(within(addonsList).getByText('Ваниль')).toBeInTheDocument()
+
+    // Deleting via ✕ button in right list removes the topping completely
+    const removeVanillaBtn = within(addonsList).getByRole('button', { name: 'Удалить Ваниль' })
+    fireEvent.click(removeVanillaBtn)
+    expect(within(addonsList).queryByText('Ваниль')).not.toBeInTheDocument()
+    expect(within(addonsList).getByText('Овсяное')).toBeInTheDocument()
+
+    // Deleting last topping returns to State A
+    const removeOatBtn = within(addonsList).getByRole('button', { name: 'Удалить Овсяное' })
+    fireEvent.click(removeOatBtn)
+    await waitFor(() => {
+      expect(screen.queryByRole('region', { name: 'Выбранные добавки' })).not.toBeInTheDocument()
+    })
+  })
+
+  it('allows adding multiple distinct toppings in succession without resetting and saves to cart', async () => {
+    vi.spyOn(api, 'getCatalog').mockResolvedValue(catalogData)
+    renderAt('/product/latte')
+
+    // Add Oat milk
+    fireEvent.click(await screen.findByRole('button', { name: /Молоко/ }))
+    fireEvent.click(await screen.findByRole('button', { name: /Овсяное/ }))
+
+    // Switch to syrups and add Vanilla
+    fireEvent.click(screen.getByRole('button', { name: /Сиропы/ }))
+    const panel = await screen.findByRole('dialog', { name: 'Сиропы' })
+    fireEvent.click(within(panel).getByRole('button', { name: 'Ваниль: добавить порцию' }))
+
+    const addonsList = screen.getByRole('region', { name: 'Выбранные добавки' })
+    expect(within(addonsList).getByText('Овсяное')).toBeInTheDocument()
+    expect(within(addonsList).getByText('Ваниль')).toBeInTheDocument()
+
+    // Add to cart confirms both ingredients are persisted
+    fireEvent.click(screen.getByRole('button', { name: /Добавить в корзину/ }))
+    await waitFor(() => expect(JSON.parse(localStorage.getItem('zerno-cart') ?? '[]')).toHaveLength(1))
+    const item = JSON.parse(localStorage.getItem('zerno-cart')!)[0]
+    expect(item.ingredientIds).toContain('oat')
+    expect(item.ingredientIds).toContain('vanilla')
+  })
+
+  it('switches temperature between hot and cold and persists chosen temperature to cart', async () => {
+    vi.spyOn(api, 'getCatalog').mockResolvedValue(catalogData)
+    renderAt('/product/latte')
+
+    const hotBtn = await screen.findByRole('radio', { name: 'Горячий' })
+    const coldBtn = screen.getByRole('radio', { name: 'Холодный' })
+
+    expect(hotBtn).toBeInTheDocument()
+    expect(coldBtn).toBeInTheDocument()
+    expect(hotBtn).toHaveAttribute('aria-checked', 'true')
+    expect(coldBtn).toHaveAttribute('aria-checked', 'false')
+
+    // Switch to cold
+    fireEvent.click(coldBtn)
+    expect(coldBtn).toHaveAttribute('aria-checked', 'true')
+    expect(hotBtn).toHaveAttribute('aria-checked', 'false')
+
+    // Add to cart
+    fireEvent.click(screen.getByRole('button', { name: /Добавить в корзину/ }))
+    await waitFor(() => expect(JSON.parse(localStorage.getItem('zerno-cart') ?? '[]')).toHaveLength(1))
+    const item = JSON.parse(localStorage.getItem('zerno-cart')!)[0]
+    expect(item.temperature).toBe('cold')
+  })
+
+  it('displays snowflake indicator when item has temperatureMode="cold" and nothing when temperatureMode="hot"', async () => {
+    const coldOnlyCatalog = {
+      ...catalogData,
+      items: [
+        {
+          ...catalogData.items[0],
+          id: 'cold-brew',
+          name: 'Колд Брю',
+          temperatureMode: 'cold' as const,
+        },
+      ],
+    }
+    vi.spyOn(api, 'getCatalog').mockResolvedValue(coldOnlyCatalog)
+    renderAt('/product/cold-brew')
+
+    expect(await screen.findByLabelText('Холодный напиток')).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Горячий' })).not.toBeInTheDocument()
+
+    // Add to cart saves cold
+    fireEvent.click(screen.getByRole('button', { name: /Добавить в корзину/ }))
+    await waitFor(() => expect(JSON.parse(localStorage.getItem('zerno-cart') ?? '[]')).toHaveLength(1))
+    const item = JSON.parse(localStorage.getItem('zerno-cart')!)[0]
+    expect(item.temperature).toBe('cold')
+  })
+
+  it('shows no temperature indicator when item is only hot (temperatureMode="hot")', async () => {
+    const hotOnlyCatalog = {
+      ...catalogData,
+      items: [
+        {
+          ...catalogData.items[0],
+          id: 'espresso',
+          name: 'Эспрессо',
+          temperatureMode: 'hot' as const,
+        },
+      ],
+    }
+    vi.spyOn(api, 'getCatalog').mockResolvedValue(hotOnlyCatalog)
+    renderAt('/product/espresso')
+
+    await screen.findByText('Эспрессо')
+    expect(screen.queryByLabelText('Холодный напиток')).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Горячий' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Холодный' })).not.toBeInTheDocument()
+  })
 })

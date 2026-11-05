@@ -1,6 +1,6 @@
-import { useEffect, useRef, useState, type ReactNode, type Ref } from 'react'
-import { useEscape } from '../hooks/useEscape'
+import type { ReactNode, Ref } from 'react'
 import { BackIcon, CloseIcon } from './icons'
+import { Modal } from './Modal'
 import { iconBtn, sheetBody, sheetDock, sheetTitle } from './ui'
 import { cx } from '../utils/cx'
 
@@ -19,118 +19,10 @@ type Props = {
   children: ReactNode
 }
 
-/** 
- * 2026 Liquid Glass Sheet:
- * On mobile, a true iOS-style bottom sheet with drag handle, swipe-down gesture,
- * glass edge, and rubber-band elasticity. On desktop/wide, a floating glass panel with focus trap.
- */
+/** A titled bottom sheet: the app's standard modal, on phones and as a floating card on wide screens. */
 export function Sheet({ label, title, onBack, backLabel = 'Назад', locked = false, action, maxWidth, className, children }: Props) {
-  useEscape(onBack, !locked)
-
-  // Focus trap & return focus on close
-  const sheetRef = useRef<HTMLDivElement>(null)
-  const prevActiveEl = useRef<HTMLElement | null>(null)
-
-  useEffect(() => {
-    prevActiveEl.current = document.activeElement as HTMLElement | null
-    const timer = setTimeout(() => {
-      // Find first focusable element inside sheet if not already focused
-      if (sheetRef.current && !sheetRef.current.contains(document.activeElement)) {
-        const focusable = sheetRef.current.querySelector<HTMLElement>(
-          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
-        )
-        focusable?.focus()
-      }
-    }, 50)
-    return () => {
-      clearTimeout(timer)
-      prevActiveEl.current?.focus()
-    }
-  }, [])
-
-  // Mobile swipe-to-dismiss gesture handling
-  const [dragY, setDragY] = useState(0)
-  const [isDragging, setIsDragging] = useState(false)
-  const touchStartY = useRef(0)
-  const currentY = useRef(0)
-
-  const handleTouchStart = (e: React.TouchEvent) => {
-    if (locked) return
-    touchStartY.current = e.touches[0].clientY
-    currentY.current = touchStartY.current
-    setIsDragging(true)
-  }
-
-  const handleTouchMove = (e: React.TouchEvent) => {
-    if (!isDragging || locked) return
-    currentY.current = e.touches[0].clientY
-    const diff = currentY.current - touchStartY.current
-    if (diff > 0) {
-      // Dragging down: direct feel with slight dampening
-      setDragY(diff)
-    } else {
-      // Dragging up: rubber-band resistance
-      setDragY(diff * 0.25)
-    }
-  }
-
-  const handleTouchEnd = () => {
-    if (!isDragging || locked) return
-    setIsDragging(false)
-    const diff = currentY.current - touchStartY.current
-    if (diff > 120) {
-      // Dismiss threshold reached
-      setDragY(400)
-      setTimeout(onBack, 150)
-    } else {
-      // Snap back with spring
-      setDragY(0)
-    }
-  }
-
   return (
-    <div
-      className="fixed inset-0 z-30 flex flex-col justify-end wide:justify-center items-center overscroll-contain bg-black/40 backdrop-blur-sm transition-all duration-300 wide:p-4 md:wide:p-6"
-      role="dialog"
-      aria-modal="true"
-      aria-label={label}
-      onClick={(e) => {
-        if (e.target === e.currentTarget && !locked) {
-          onBack()
-        }
-      }}
-    >
-      <div
-        ref={sheetRef}
-        style={{
-          transform: dragY !== 0 ? `translateY(${Math.max(0, dragY)}px)` : undefined,
-          transition: isDragging ? 'none' : 'transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1)',
-        }}
-        className={cx(
-          // Mobile: Liquid Glass bottom sheet with rounded top corners
-          'relative flex max-h-[94dvh] w-full max-w-[480px] flex-col overflow-hidden',
-          'rounded-t-[32px] wide:rounded-[32px]',
-          'bg-surface/95 dark:bg-surface/95 backdrop-blur-2xl',
-          'border-t border-glass-border wide:border wide:border-glass-border',
-          'shadow-lift shadow-black/25',
-          // Desktop: floating centered card
-          maxWidth ?? 'wide:max-w-[560px]',
-          'wide:h-[min(90dvh,820px)] wide:max-h-[min(90dvh,840px)]',
-          'animate-[sheet-up_0.34s_var(--spring)_both]',
-          className,
-        )}
-      >
-        {/* Mobile Grabber Bar */}
-        <div
-          className="wide:hidden flex flex-col items-center pt-2.5 pb-1 cursor-grab active:cursor-grabbing touch-none select-none"
-          onTouchStart={handleTouchStart}
-          onTouchMove={handleTouchMove}
-          onTouchEnd={handleTouchEnd}
-          aria-hidden="true"
-        >
-          <div className="w-11 h-1.5 rounded-full bg-ink/15 dark:bg-white/20 transition-transform active:scale-110" />
-        </div>
-
+    <Modal label={label} onClose={onBack} locked={locked} className={cx(maxWidth ?? 'wide:max-w-[560px]', className)}>
         <header
           className={cx(
             'flex-none min-h-14 items-center px-4 sm:px-6 pt-1 pb-2',
@@ -176,8 +68,7 @@ export function Sheet({ label, title, onBack, backLabel = 'Назад', locked =
         </header>
 
         {children}
-      </div>
-    </div>
+    </Modal>
   )
 }
 
@@ -191,7 +82,7 @@ export function SheetBody({ className, children, ref }: { className?: string; ch
 
 export function SheetDock({ className, children, ref }: { className?: string; children: ReactNode; ref?: Ref<HTMLElement> }) {
   return (
-    <footer ref={ref} className={cx(sheetDock, 'flex-none border-t border-line/60 bg-surface/90 backdrop-blur-xl shadow-[0_-4px_20px_rgba(0,0,0,0.04)]', className)}>
+    <footer ref={ref} className={cx(sheetDock, 'flex-none border-t border-line/60 bg-surface shadow-[0_-4px_20px_rgba(0,0,0,0.04)]', className)}>
       {children}
     </footer>
   )

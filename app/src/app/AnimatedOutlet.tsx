@@ -1,10 +1,6 @@
-import { useEffect, useState, type ReactElement } from 'react'
+import { useCallback, useState, type ReactElement } from 'react'
 import { useLocation, useOutlet } from 'react-router'
-import { prefersReducedMotion } from '../utils/motion'
-import { LeavingContext } from './leaving'
-
-/** How long a screen keeps rendering after you leave it, for its exit animation. */
-const EXIT_MS = 320
+import { ScreenEntry } from './ScreenEntry'
 
 type Entry = {
   id: number
@@ -37,11 +33,16 @@ export function AnimatedOutlet() {
     return [{ id: nextEntryId(), kind, element: outlet, leaving: false }]
   })
   const [prevRoute, setPrevRoute] = useState({ kind, outlet })
+  // Screens done leaving. Kept apart from `entries`: writing there when an exit ends can land on
+  // the list from before a route change (close, then tap another card) and lose the new screen.
+  const [gone, setGone] = useState<number[]>([])
 
   // Sync the list with the route while rendering (no effect → no blank frame).
   if (prevRoute.kind !== kind || prevRoute.outlet !== outlet) {
     setPrevRoute({ kind, outlet })
-    setEntries((prev) => {
+    setEntries((all) => {
+      const prev = all.filter((e) => !gone.includes(e.id))
+
       // If we're swapping within the same screen kind (e.g. hot ↔ iced twin)
       // and that screen is currently active (not leaving), update it in place!
       const activeIdx = prev.findIndex((e) => e.kind === kind && !e.leaving)
@@ -61,22 +62,14 @@ export function AnimatedOutlet() {
     })
   }
 
-  useEffect(() => {
-    const hasLeaving = entries.some((e) => e.leaving)
-    if (!hasLeaving) return
-    const t = window.setTimeout(
-      () => setEntries((prev) => prev.filter((e) => !e.leaving)),
-      prefersReducedMotion() ? 0 : EXIT_MS,
-    )
-    return () => window.clearTimeout(t)
-  }, [entries])
+  const markGone = useCallback((id: number) => setGone((prev) => [...prev, id]), [])
 
   return (
     <>
-      {entries.map((e) => (
-        <div key={e.id} className="contents" data-leaving={e.leaving || undefined}>
-          <LeavingContext.Provider value={e.leaving}>{e.element}</LeavingContext.Provider>
-        </div>
+      {entries.filter((e) => !gone.includes(e.id)).map((e) => (
+        <ScreenEntry key={e.id} id={e.id} leaving={e.leaving} onLeft={markGone}>
+          {e.element}
+        </ScreenEntry>
       ))}
     </>
   )

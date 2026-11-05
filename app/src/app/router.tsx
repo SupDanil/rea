@@ -3,6 +3,7 @@ import { CartPage } from '../pages/cart/CartPage'
 import { LoginPage } from '../pages/login/LoginPage'
 import { OrderPage } from '../pages/order/OrderPage'
 import { ProductPage } from '../pages/product/ProductPage'
+import { PromoArticlePage } from '../pages/promo/PromoArticlePage'
 import { ProfilePage } from '../pages/profile/ProfilePage'
 import { RootLayout } from './RootLayout'
 
@@ -16,6 +17,7 @@ export const routes: RouteObject[] = [
       { index: true, element: null },
       { path: 'menu', element: null },
       { path: 'product/:id', element: <ProductPage /> },
+      { path: 'promo/:id', element: <PromoArticlePage /> },
       { path: 'cart', element: <CartPage /> },
       { path: 'order/:id', element: <OrderPage /> },
       { path: 'profile', element: <ProfilePage /> },

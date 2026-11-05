@@ -45,6 +45,10 @@ export type MenuItem = {
   allergens?: string
   categoryId: string
   art: Art
+  imageUrl?: string
+  hotImageUrl?: string
+  coldImageUrl?: string
+  temperatureMode?: 'both' | 'hot' | 'cold'
   variants: Variant[]
   groupIds: string[]
   related?: { itemId: string; label: string }
@@ -58,10 +62,28 @@ export type Category = {
   heroItemId?: string
 }
 
+export type Promotion = {
+  id: string
+  title: string
+  subtitle?: string
+  badge?: string
+  placement: 'main' | 'category'
+  categoryId?: string
+  targetType: 'product' | 'article'
+  targetProductId?: string
+  content?: string
+  imageUrl?: string
+  bgColor?: string
+  productIds?: string[]
+  sort: number
+  isActive?: boolean
+}
+
 export type CatalogData = {
   items: MenuItem[]
   categories: Category[]
   ingredientGroups: IngredientGroup[]
+  promos?: Promotion[]
 }
 
 export const minPrice = (item: MenuItem): number => Math.min(...item.variants.map((v) => v.price))
@@ -86,6 +108,11 @@ export type Catalog = {
   items: MenuItem[]
   categories: Category[]
   ingredientGroups: IngredientGroup[]
+  promos: Promotion[]
+  mainPromos: Promotion[]
+  mainPromo?: Promotion
+  promoByCategory: Map<string, Promotion>
+  promoById: Map<string, Promotion>
   itemById: Map<string, MenuItem>
   groupById: Map<string, IngredientGroup>
   topCategories: Category[]
@@ -102,6 +129,19 @@ export function createCatalog(data: CatalogData): Catalog {
   const itemById = new Map(data.items.map((i) => [i.id, i]))
   const groupById = new Map(data.ingredientGroups.map((g) => [g.id, g]))
   const topCategories = data.categories.filter((c) => !c.parentId)
+
+  const rawPromos = data.promos ?? []
+  const activePromos = rawPromos.filter((p) => p.isActive !== false).sort((a, b) => a.sort - b.sort)
+  const promoById = new Map(activePromos.map((p) => [p.id, p]))
+  const mainPromos = activePromos.filter((p) => p.placement === 'main')
+  const mainPromo = mainPromos[0]
+
+  const promoByCategory = new Map<string, Promotion>()
+  for (const promo of activePromos) {
+    if (promo.placement === 'category' && promo.categoryId && !promoByCategory.has(promo.categoryId)) {
+      promoByCategory.set(promo.categoryId, promo)
+    }
+  }
 
   const itemsBySub = new Map<string, MenuItem[]>()
   for (const item of data.items) {
@@ -123,6 +163,11 @@ export function createCatalog(data: CatalogData): Catalog {
     items: data.items,
     categories: data.categories,
     ingredientGroups: data.ingredientGroups,
+    promos: activePromos,
+    mainPromos,
+    mainPromo,
+    promoByCategory,
+    promoById,
     itemById,
     groupById,
     topCategories,
@@ -135,3 +180,14 @@ export function createCatalog(data: CatalogData): Catalog {
     addonLabel,
   }
 }
+
+export type Temperature = 'hot' | 'cold'
+
+/** What a drink is served as until someone picks otherwise. */
+export const defaultTemperature = (item: MenuItem): Temperature => (item.temperatureMode === 'cold' ? 'cold' : 'hot')
+
+/** The photo of `item` at a temperature, or whichever photo it has. */
+export const itemImage = (item: MenuItem, temperature: Temperature = defaultTemperature(item)) =>
+  temperature === 'cold'
+    ? item.coldImageUrl || item.imageUrl || item.hotImageUrl
+    : item.hotImageUrl || item.imageUrl || item.coldImageUrl

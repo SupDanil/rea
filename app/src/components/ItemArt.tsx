@@ -1,15 +1,40 @@
-import { useId, type Ref, type SVGProps } from 'react'
+import { useId, useState, type Ref, type SVGProps } from 'react'
 import type { Art } from '../domain'
+import { optimizedImageUrl, originalImageUrl } from '../utils/imageUrl'
 
-type Props = { art: Art; ref?: Ref<SVGSVGElement> } & Omit<SVGProps<SVGSVGElement>, 'viewBox'>
+type Props = { art: Art; imageUrl?: string; ref?: Ref<SVGSVGElement> } & Omit<SVGProps<SVGSVGElement>, 'viewBox'>
 
-/** Hand-drawn product illustrations, so the app ships no third-party photos. */
-export function ItemArt({ art, ...svgProps }: Props) {
-  const { kind, fill, top = '#fff6ea' } = art
-  // Unique per instance: several illustrations share the page.
+/** Hand-drawn product illustrations, or custom product images when provided. */
+export function ItemArt({ art, imageUrl, ...svgProps }: Props) {
   const uid = useId().replace(/:/g, '')
+  const [failedUrl, setFailedUrl] = useState<string>()
   const id = (name: string) => `${name}-${uid}`
   const url = (name: string) => `url(#${id(name)})`
+
+  if (imageUrl) {
+    return (
+      <svg viewBox="0 0 200 220" role="img" aria-hidden="true" {...svgProps}>
+        <defs>
+          <radialGradient id={id('floor')}>
+            <stop offset="0" stopColor="#000" stopOpacity="0.3" />
+            <stop offset="1" stopColor="#000" stopOpacity="0" />
+          </radialGradient>
+        </defs>
+        <ellipse cx="100" cy="206" rx="60" ry="8" fill={url('floor')} />
+        <image
+          href={failedUrl === imageUrl ? originalImageUrl(imageUrl) : optimizedImageUrl(imageUrl)}
+          onError={() => setFailedUrl(imageUrl)}
+          x="15"
+          y="6"
+          width="170"
+          height="200"
+          preserveAspectRatio="xMidYMid meet"
+        />
+      </svg>
+    )
+  }
+
+  const { kind, fill, top = '#fff6ea' } = art
 
   return (
     <svg viewBox="0 0 200 220" role="img" aria-hidden="true" {...svgProps}>

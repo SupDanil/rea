@@ -1,4 +1,4 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { QrCodeView } from '../../components/QrCodeView'
 import type { Order, OrderStatus } from '../../state/orders'
 import { cx } from '../../utils/cx'
@@ -8,7 +8,7 @@ const inProgressBg =
   'bg-surface/90 border border-line shadow-card [background-image:radial-gradient(120%_85%_at_50%_0%,var(--glow),transparent_70%)]'
 
 const readyBg =
-  'bg-surface/95 border-2 border-open/70 shadow-[0_8px_32px_-4px_rgba(45,158,94,0.3)] dark:shadow-[0_8px_36px_-4px_rgba(63,191,127,0.35)] ring-1 ring-open/40 animate-[ready-neon-pulse_2.5s_infinite] [background-image:radial-gradient(120%_90%_at_50%_0%,rgba(45,158,94,0.2)_0%,rgba(45,158,94,0.05)_55%,transparent_80%)]'
+  'bg-surface/95 border-2 border-open/70 shadow-[0_8px_32px_-4px_rgba(45,158,94,0.3)] dark:shadow-[0_8px_36px_-4px_rgba(63,191,127,0.35)] ring-1 ring-open/40 ready-glow [background-image:radial-gradient(120%_90%_at_50%_0%,rgba(45,158,94,0.2)_0%,rgba(45,158,94,0.05)_55%,transparent_80%)]'
 
 const completedBg =
   'bg-surface/90 border-2 border-open/40 shadow-card [background-image:radial-gradient(120%_90%_at_50%_0%,rgba(45,158,94,0.12)_0%,transparent_70%)]'
@@ -34,11 +34,11 @@ type Props = {
 }
 
 /**
- * 2026 Liquid Glass OrderStatusCard:
- * Giant Unbounded order number, animated step-track, glowing neon ready pulse,
- * and high-contrast QR platter.
+ * Ready orders keep an unobstructed QR beside the order identity, with a larger
+ * view for scanning. Other states show the progress track.
  */
 export function OrderStatusCard({ order, status, now, onRate }: Props) {
+  const [zoomQr, setZoomQr] = useState(false)
   const step = stepIndex[status]
   const isReady = status === 'ready'
   const isCompleted = status === 'completed'
@@ -52,13 +52,120 @@ export function OrderStatusCard({ order, status, now, onRate }: Props) {
     }
   }, [isReady])
 
+  // Ready State: Compact horizontal layout to leave maximum room for scrolling below
+  if (isReady) {
+    return (
+      <>
+        <section
+          className={cx(
+            'mt-1 rounded-[26px] p-3.5 xs:p-4 transition-all duration-300',
+            readyBg,
+          )}
+          aria-live="polite"
+        >
+          <div className="flex items-center gap-3 xs:gap-3.5 max-[380px]:flex-col-reverse max-[380px]:gap-4">
+            {/* Left: Compact QR Code Platter with tap to expand */}
+            <div className="shrink-0 flex flex-col items-center">
+              <button
+                type="button"
+                onClick={() => setZoomQr(true)}
+                className="cursor-pointer rounded-[16px] overflow-hidden bg-white shadow-sm ring-1 ring-black/10 hover:ring-open/60 focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-open"
+                title="Нажмите, чтобы увеличить QR-код"
+                aria-label="Увеличить QR-код"
+              >
+                <QrCodeView
+                  value={`ORD:${order.id}`}
+                  size={160}
+                />
+              </button>
+              <span className="mt-2 text-[11px] font-medium text-open select-none">
+                Нажмите для увеличения
+              </span>
+            </div>
+
+            {/* Right: Order Identity & Status */}
+            <div className="flex-1 min-w-0 flex flex-col justify-center max-[380px]:w-full max-[380px]:items-center max-[380px]:text-center">
+              {/* Top row: Number and name */}
+              <div className="flex items-baseline gap-1.5 flex-wrap">
+                <span className="font-display text-[18px] font-bold text-open/80">№</span>
+                <span className="font-display text-[38px] xs:text-[42px] leading-none font-black tracking-tight text-open">
+                  {order.number}
+                </span>
+                {order.name && (
+                  <span className="ml-1 text-[13.5px] font-bold text-ink-2 truncate max-w-full">
+                    · {order.name}
+                  </span>
+                )}
+              </div>
+
+              {/* Ready Status badge with pulsating dot */}
+              <div className="mt-1 flex items-center gap-1.5">
+                <span className="relative flex size-2 shrink-0">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-open opacity-75" />
+                  <span className="relative inline-flex rounded-full size-2 bg-open" />
+                </span>
+                <h1 className="font-display text-[16px] xs:text-[17px] font-extrabold tracking-tight text-open leading-none">
+                  {statusTitles[status]}
+                </h1>
+              </div>
+
+              <p className="mt-1 text-[12px] text-open/90 font-medium leading-tight">
+                {statusSubtitle(order, status, now)}
+              </p>
+
+              {/* Counter scanner instructions */}
+              <div className="mt-2 text-[11px] text-muted leading-tight">
+                <span>Покажите QR-код сканеру на стойке</span>
+                <span className="block mt-0.5 text-[10.5px] text-faint">
+                  или назовите номер заказа
+                </span>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Floating Zoom QR Modal */}
+        {zoomQr && (
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 animate-[fade-only_0.2s_ease_both]"
+            onClick={() => setZoomQr(false)}
+            role="dialog"
+            aria-label="Увеличенный QR-код"
+          >
+            <div
+              className="flex flex-col items-center p-5 sm:p-6 rounded-[28px] bg-surface text-ink shadow-lift max-w-[360px] w-full max-h-[calc(100dvh-32px)] overflow-y-auto text-center"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="font-display text-[26px] font-black text-open mb-0.5">
+                № {order.number}
+              </div>
+              <div className="text-[13px] font-bold text-ink-2 mb-3.5">
+                {order.name ? `${order.name} · ` : ''}Покажите сканеру
+              </div>
+              <div className="w-full max-w-[280px] shrink-0 overflow-hidden rounded-[16px] bg-white">
+                <QrCodeView value={`ORD:${order.id}`} size={280} />
+              </div>
+              <button
+                type="button"
+                onClick={() => setZoomQr(false)}
+                className="mt-5 w-full h-11 rounded-full bg-surface-2 hover:bg-surface-3 text-[14px] font-bold text-ink transition-colors cursor-pointer"
+              >
+                Закрыть
+              </button>
+            </div>
+          </div>
+        )}
+      </>
+    )
+  }
+
   return (
-    <section className={cx('mt-1 rounded-[30px] p-5 sm:p-6 text-center transition-all duration-300', statusBg[status])} aria-live="polite">
+    <section className={cx('mt-1 rounded-[26px] p-4 sm:p-5 text-center transition-all duration-300', statusBg[status])} aria-live="polite">
       {/* Big Unbounded Order Number */}
       <div
         className={cx(
-          'font-display text-[64px] sm:text-[72px] leading-none font-black tracking-tight transition-colors',
-          isReady || isCompleted
+          'font-display text-[52px] sm:text-[60px] leading-none font-black tracking-tight transition-colors',
+          isCompleted
             ? 'text-open'
             : isCancelled
               ? 'text-faint line-through decoration-[3px]'
@@ -67,8 +174,8 @@ export function OrderStatusCard({ order, status, now, onRate }: Props) {
       >
         <span
           className={cx(
-            'mr-1 align-[0.55em] font-display text-[26px] sm:text-[30px] font-bold transition-colors',
-            isReady || isCompleted ? 'text-open/80' : 'text-muted',
+            'mr-1 align-[0.55em] font-display text-[22px] sm:text-[26px] font-bold transition-colors',
+            isCompleted ? 'text-open/80' : 'text-muted',
           )}
         >
           №
@@ -77,23 +184,17 @@ export function OrderStatusCard({ order, status, now, onRate }: Props) {
       </div>
 
       {order.name && (
-        <div className="mt-1 font-display text-[15px] font-bold text-ink-2">
+        <div className="mt-1 font-display text-[14px] font-bold text-ink-2">
           {order.name}
         </div>
       )}
 
       {/* Main Title Badge */}
-      <div className="mt-3 flex items-center justify-center gap-2">
-        {isReady && (
-          <span className="relative flex size-2.5">
-            <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-open opacity-75" />
-            <span className="relative inline-flex rounded-full size-2.5 bg-open" />
-          </span>
-        )}
+      <div className="mt-2.5 flex items-center justify-center gap-2">
         <h1
           className={cx(
-            'font-display text-[21px] font-extrabold tracking-tight transition-colors',
-            isReady || isCompleted
+            'font-display text-[20px] font-extrabold tracking-tight transition-colors',
+            isCompleted
               ? 'text-open'
               : isCancelled
                 ? 'text-muted font-bold'
@@ -107,7 +208,7 @@ export function OrderStatusCard({ order, status, now, onRate }: Props) {
       <p
         className={cx(
           'mt-1 text-[13px] leading-relaxed transition-colors',
-          isReady || isCompleted ? 'text-open/90 font-medium' : 'text-muted',
+          isCompleted ? 'text-open/90 font-medium' : 'text-muted',
         )}
       >
         {statusSubtitle(order, status, now)}
@@ -115,7 +216,7 @@ export function OrderStatusCard({ order, status, now, onRate }: Props) {
 
       {/* 3-Step Progress Bar: Готовим -> Готов -> Выдан */}
       {!isCancelled && (
-        <ol className="mt-6 grid grid-cols-3 gap-2" aria-label="Этапы заказа">
+        <ol className="mt-4 grid grid-cols-3 gap-2" aria-label="Этапы заказа">
           {['Готовим', 'Готов', 'Выдан'].map((label, i) => {
             const stepNum = i + 1
             const isFinished = (i === 0 && step >= 2) || (i === 1 && step >= 3) || (i === 2 && step >= 3)
@@ -134,7 +235,7 @@ export function OrderStatusCard({ order, status, now, onRate }: Props) {
                 <span
                   className={cx(
                     'h-2 overflow-hidden rounded-full transition-colors',
-                    isReady || isCompleted
+                    isCompleted
                       ? 'bg-open/20 border border-open/30'
                       : 'bg-surface-2 border border-line/60',
                   )}
@@ -142,7 +243,7 @@ export function OrderStatusCard({ order, status, now, onRate }: Props) {
                   <span
                     className={cx(
                       'block h-full origin-left transition-transform duration-1000 ease-linear',
-                      isReady || isCompleted
+                      isCompleted
                         ? 'bg-open shadow-[0_0_10px_rgba(45,158,94,0.6)]'
                         : isCurrent
                           ? 'bg-accent shadow-[0_0_8px_rgba(196,91,36,0.5)]'
@@ -156,7 +257,7 @@ export function OrderStatusCard({ order, status, now, onRate }: Props) {
                 <span
                   className={cx(
                     'text-[12px] font-semibold transition-colors',
-                    isReady || isCompleted
+                    isCompleted
                       ? isFinished || isCurrent
                         ? 'text-open font-extrabold'
                         : 'text-muted'
@@ -173,21 +274,6 @@ export function OrderStatusCard({ order, status, now, onRate }: Props) {
             )
           })}
         </ol>
-      )}
-
-      {/* QR Code platter once order is ready */}
-      {isReady && (
-        <div className="mt-5 flex flex-col items-center gap-2.5 p-4 rounded-[22px] bg-open/10 border border-open/20">
-          <QrCodeView value={`ORD:${order.id}`} size={160} />
-          <div className="text-center">
-            <div className="text-[13px] font-bold text-ink">
-              Покажите QR-код сканеру на стойке
-            </div>
-            <div className="text-[12px] text-muted mt-0.5">
-              Или назовите номер заказа <span className="font-display font-bold text-ink">№ {order.number}</span>
-            </div>
-          </div>
-        </div>
       )}
 
       {/* Completed state badge and rating */}

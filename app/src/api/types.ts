@@ -1,4 +1,4 @@
-import type { CartLine, CatalogData, Order, PaymentMethod, Pickup, UserProfile } from '../domain'
+import type { CartLine, CatalogData, Order, PaymentMethod, Pickup, Promotion, UserProfile } from '../domain'
 
 export type CreateOrderDto = {
   lines: CartLine[]
@@ -28,16 +28,19 @@ export type CheckPromoDto = {
 export type SendSmsDto = {
   phone: string
   success: boolean
-  /** Returned by the server outside production while no SMS provider is connected */
   devCode?: string
+  ticket?: string
+  telegramUrl?: string
+  expiresAt?: number
 }
 
 export type VerifySmsDto = {
   phone: string
   code: string
-  /** The phone had no customer yet and one was just created */
   isNew?: boolean
   profile: UserProfile
+  accessToken?: string
+  refreshToken?: string
 }
 
-export type { CatalogData }
+export type { CatalogData, Promotion }

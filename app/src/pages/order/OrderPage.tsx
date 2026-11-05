@@ -10,12 +10,40 @@ import { useNow } from '../../hooks/useNow'
 import { useShop } from '../../queries/useShop'
 import { useApp } from '../../state/AppContext'
 import { canCancel, statusOf, type Order } from '../../state/orders'
+import type { Profile } from '../../state/loyalty'
+import { LoginPage } from '../login/LoginPage'
 import { cx } from '../../utils/cx'
 import { clockTime } from '../../utils/format'
 import { OrderLines } from './OrderLines'
 import { OrderStatusCard } from './OrderStatusCard'
 
 export function OrderPage() {
+  const { profile, isAuthLoading } = useApp()
+  if (isAuthLoading) {
+    return <OrderLoadingSkeleton />
+  }
+  return profile ? <OrderPageView profile={profile} /> : <LoginPage />
+}
+
+function OrderLoadingSkeleton() {
+  const { back } = useAppNavigate()
+  return (
+    <Sheet label="Заказ" title="Заказ" onBack={back} backLabel="Назад">
+      <SheetBody>
+        <div className="space-y-4 pt-1" role="status" aria-label="Загружаем заказ">
+          <div className="h-32 rounded-[22px] bg-surface-2 animate-pulse" />
+          <div className="space-y-2.5">
+            {[1, 2].map((i) => (
+              <div key={i} className="h-14 rounded-[18px] bg-surface-2 animate-pulse" />
+            ))}
+          </div>
+        </div>
+      </SheetBody>
+    </Sheet>
+  )
+}
+
+function OrderPageView({ profile }: { profile: Profile }) {
   const { id } = useParams()
   const { orders } = useApp()
   const { back } = useAppNavigate()
@@ -60,6 +88,13 @@ export function OrderPage() {
         ) : (
           <EmptyState title="Заказ не найден" text="Возможно, он был сделан на другом устройстве" actionLabel="В меню" onAction={back} />
         )}
+      </Sheet>
+    )
+  }
+  if (order.phone && order.phone !== profile.phone) {
+    return (
+      <Sheet label="Заказ не найден" onBack={back} backLabel="В меню">
+        <EmptyState title="Заказ не найден" text="Этот заказ был сделан другим пользователем" actionLabel="В меню" onAction={back} />
       </Sheet>
     )
   }
@@ -125,14 +160,18 @@ function OrderView({ order }: { order: Order }) {
 
   return (
     <Sheet label={`Заказ № ${order.number}`} title="Заказ" onBack={back} backLabel="В меню">
-      <SheetBody>
+      {/* Fixed top status card: does not scroll with the lines below */}
+      <div className="flex-none px-3 sm:px-6 pb-2">
         <OrderStatusCard
           order={order}
           status={status}
           now={now}
           onRate={(rating) => act({ rating }, 'Не удалось отправить оценку')}
         />
+      </div>
 
+      {/* Scrollable details: only content beneath the card scrolls */}
+      <SheetBody className="pt-1">
         <section className={block}>
           <h2 className={blockTitle}>Забрать</h2>
           <div className={cx('flex items-center gap-3 rounded-[18px] px-4 py-3.5', panel)}>

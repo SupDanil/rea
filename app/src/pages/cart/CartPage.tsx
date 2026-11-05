@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react'
 import { EmptyState } from '../../components/EmptyState'
 import { Sheet, SheetBody, SheetDock } from '../../components/Sheet'
+import { Presence } from '../../components/Presence'
 import { ShopPickerSheet } from '../../components/ShopPickerSheet'
 import { Summary, SummaryRow, SummaryTotal } from '../../components/Summary'
 import { addBtn, addPrice, textBtn } from '../../components/ui'
@@ -17,6 +18,8 @@ import { cx } from '../../utils/cx'
 import { formatPrice } from '../../utils/format'
 import { collapseOut, fadeAway } from '../../utils/motion'
 import { readSavedName } from '../../utils/storage'
+import type { Profile } from '../../state/loyalty'
+import { LoginPage } from '../login/LoginPage'
 import { CartLineItem } from './CartLineItem'
 import { cartPricing, type AppliedPromo, type CartLoyalty } from './cartPricing'
 import { LoyaltyOffer } from './LoyaltyOffer'
@@ -27,10 +30,51 @@ import { PromoField } from './PromoField'
 import { UpsellRow } from './UpsellRow'
 import { useCheckout } from './useCheckout'
 
+/** Signed out, the cart route asks to sign in and then turns into the cart. */
 export function CartPage() {
-  const { cart, profile, loyalty, showToast } = useApp()
+  const { profile, isAuthLoading } = useApp()
+  if (isAuthLoading) {
+    return <CartLoadingSkeleton />
+  }
+  return profile ? <CartView profile={profile} /> : <LoginPage />
+}
+
+function CartLoadingSkeleton() {
+  const { back } = useAppNavigate()
+  return (
+    <Sheet label="Корзина" title="Корзина" onBack={back} backLabel="В меню">
+      <SheetBody>
+        <div className="space-y-4 pt-1" role="status" aria-label="Проверяем авторизацию">
+          <div className="rounded-[22px] bg-surface-2 p-4 animate-pulse">
+            <div className="h-4 w-32 rounded-lg bg-surface-3 mb-2.5" />
+            <div className="h-3 w-48 rounded bg-surface-3" />
+          </div>
+          <div className="space-y-2.5">
+            {[1, 2].map((i) => (
+              <div key={i} className="h-16 rounded-[20px] bg-surface-2 p-3 flex items-center gap-3 animate-pulse">
+                <div className="size-10 rounded-xl bg-surface-3" />
+                <div className="flex-1 space-y-2">
+                  <div className="h-4 w-28 rounded bg-surface-3" />
+                  <div className="h-3 w-16 rounded bg-surface-3" />
+                </div>
+                <div className="h-4 w-12 rounded bg-surface-3" />
+              </div>
+            ))}
+          </div>
+          <div className="rounded-[22px] bg-surface-2 p-4 space-y-3 animate-pulse">
+            <div className="h-3.5 w-24 rounded bg-surface-3" />
+            <div className="h-10 rounded-xl bg-surface-3" />
+          </div>
+        </div>
+      </SheetBody>
+    </Sheet>
+  )
+}
+
+function CartView({ profile }: { profile: Profile }) {
+  const { cart, loyalty, showToast } = useApp()
   const { go, back } = useAppNavigate()
-  const [name, setName] = useState(() => profile?.name || readSavedName())
+  const [name, setName] = useState(() => profile.name || readSavedName())
   const [nameError, setNameError] = useState(false)
   const [pickup, setPickup] = useState<Pickup>({ kind: 'asap' })
   const [payment, setPayment] = useState<PaymentMethod>('card')
@@ -44,9 +88,12 @@ export function CartPage() {
   const now = useNow(30_000)
   const paused = !!shop && isPaused(shop, now)
   const lines = resolveLines(cart.lines, catalog)
-  const cartLoyalty: CartLoyalty = profile
-    ? { levelName: loyalty.level.name, levelPercent: loyalty.level.percent, giftValue: giftValue(cart.lines, catalog), giftsAvailable: loyalty.giftsAvailable }
-    : null
+  const cartLoyalty: CartLoyalty = {
+    levelName: loyalty.level.name,
+    levelPercent: loyalty.level.percent,
+    giftValue: giftValue(cart.lines, catalog),
+    giftsAvailable: loyalty.giftsAvailable,
+  }
   const price = cartPricing(cart.lines, cartLoyalty, promo, useGift, catalog)
   const inCart = new Set(cart.lines.map((l) => l.itemId))
   const upsell = catalog.items.filter((i) => !isDrink(i) && !inCart.has(i.id) && !i.variants[0]?.stopped).slice(0, 6)
@@ -115,7 +162,7 @@ export function CartPage() {
                 key={line.key}
                 line={line}
                 disabled={paying}
-                onOpen={() => go(`/product/${line.item.id}`)}
+                onOpen={() => go(`/product/${line.item.id}`, { artSlot: line.key })}
                 onQty={(qty) => cart.setQty(line.key, qty)}
                 onRemove={(row) => void remove(line, row)}
               />
@@ -171,7 +218,7 @@ export function CartPage() {
           </button>
         </SheetDock>
       )}
-      {showShopPicker && <ShopPickerSheet onClose={() => setShowShopPicker(false)} />}
+      <Presence>{showShopPicker && <ShopPickerSheet onClose={() => setShowShopPicker(false)} />}</Presence>
     </Sheet>
   )
 }

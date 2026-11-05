@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { ApiError, AUTH_PHONE_KEY, GUEST_ORDERS_KEY, HttpApiClient, createHttpClient } from './httpClient'
+import { ApiError, AUTH_PHONE_KEY, AUTH_ACCESS_TOKEN_KEY, AUTH_REFRESH_TOKEN_KEY, GUEST_ORDERS_KEY, HttpApiClient, createHttpClient } from './httpClient'
 import type { Order } from '../domain'
 
 const baseUrl = 'https://api.test.rea.local/api/v1'
@@ -175,6 +175,110 @@ describe('HttpApiClient', () => {
     })
   })
 
+  describe('JWT Bearer tokens and automatic refresh', () => {
+    const testProfile = { phone: '+79990001122', name: 'Аня', email: '', notifications: true, joinedAt: 1 }
+
+    it('attaches Authorization: Bearer <token> when access token is present', async () => {
+      localStorage.setItem(AUTH_PHONE_KEY, '+79990001122')
+      localStorage.setItem(AUTH_ACCESS_TOKEN_KEY, 'valid.jwt.token')
+      fetchMock.mockResolvedValue(json([{ id: 'p1', title: 'Акция' }]))
+
+      await client.getPromos()
+
+      const [, init] = lastCall()
+      expect((init.headers as Record<string, string>)['Authorization']).toBe('Bearer valid.jwt.token')
+    })
+
+    it('on 401 response, automatically calls /auth/refresh, updates tokens, and retries the request', async () => {
+      localStorage.setItem(AUTH_PHONE_KEY, '+79990001122')
+      localStorage.setItem(AUTH_ACCESS_TOKEN_KEY, 'expired.jwt.token')
+      localStorage.setItem(AUTH_REFRESH_TOKEN_KEY, 'old.refresh.token')
+
+      // Call 1: Original request fails with 401
+      fetchMock.mockResolvedValueOnce(json({ error: 'Token expired', reason: 'token_expired' }, 401))
+      // Call 2: Refresh token request succeeds with rotated tokens
+      fetchMock.mockResolvedValueOnce(json({ accessToken: 'new.jwt.token', refreshToken: 'new.refresh.token' }, 200))
+      // Call 3: Retried request succeeds
+      fetchMock.mockResolvedValueOnce(json({ ...testProfile, name: 'Анна' }, 200))
+
+      const res = await client.updateProfile({ name: 'Анна' })
+      expect(res.name).toBe('Анна')
+
+      // Assert storage updated with rotated tokens
+      expect(localStorage.getItem(AUTH_ACCESS_TOKEN_KEY)).toBe('new.jwt.token')
+      expect(localStorage.getItem(AUTH_REFRESH_TOKEN_KEY)).toBe('new.refresh.token')
+
+      // Assert call history
+      expect(fetchMock).toHaveBeenCalledTimes(3)
+      expect(fetchMock.mock.calls[0][0]).toBe(`${baseUrl}/profile`)
+      expect((fetchMock.mock.calls[0][1].headers as Record<string, string>)['Authorization']).toBe('Bearer expired.jwt.token')
+
+      expect(fetchMock.mock.calls[1][0]).toBe(`${baseUrl}/auth/refresh`)
+      expect(JSON.parse(fetchMock.mock.calls[1][1].body as string)).toEqual({ refreshToken: 'old.refresh.token' })
+
+      expect(fetchMock.mock.calls[2][0]).toBe(`${baseUrl}/profile`)
+      expect((fetchMock.mock.calls[2][1].headers as Record<string, string>)['Authorization']).toBe('Bearer new.jwt.token')
+    })
+
+    it('on 401 when refresh also fails, clears auth tokens and getProfile returns null', async () => {
+      localStorage.setItem(AUTH_PHONE_KEY, '+79990001122')
+      localStorage.setItem(AUTH_ACCESS_TOKEN_KEY, 'expired.jwt.token')
+      localStorage.setItem(AUTH_REFRESH_TOKEN_KEY, 'revoked.refresh.token')
+
+      // Call 1: Original request returns 401
+      fetchMock.mockResolvedValueOnce(json({ error: 'Token expired' }, 401))
+      // Call 2: Refresh call returns 401 (invalid/expired refresh token)
+      fetchMock.mockResolvedValueOnce(json({ error: 'Invalid refresh token' }, 401))
+
+      const res = await client.getProfile()
+      expect(res).toBeNull()
+
+      // Auth storage should be wiped clean
+      expect(localStorage.getItem(AUTH_ACCESS_TOKEN_KEY)).toBeNull()
+      expect(localStorage.getItem(AUTH_REFRESH_TOKEN_KEY)).toBeNull()
+      expect(localStorage.getItem(AUTH_PHONE_KEY)).toBeNull()
+    })
+
+    it('deduplicates concurrent refresh requests using the same in-flight promise', async () => {
+      localStorage.setItem(AUTH_PHONE_KEY, '+79990001122')
+      localStorage.setItem(AUTH_ACCESS_TOKEN_KEY, 'expired.jwt.token')
+      localStorage.setItem(AUTH_REFRESH_TOKEN_KEY, 'active.refresh.token')
+
+      // Both requests fail with 401
+      fetchMock.mockResolvedValueOnce(json({ error: 'expired' }, 401))
+      fetchMock.mockResolvedValueOnce(json({ error: 'expired' }, 401))
+
+      // Exactly ONE refresh call happens
+      fetchMock.mockResolvedValueOnce(json({ accessToken: 'rotated.access', refreshToken: 'rotated.refresh' }, 200))
+
+      // Both replayed requests succeed
+      fetchMock.mockResolvedValueOnce(json(testProfile, 200))
+      fetchMock.mockResolvedValueOnce(json([{ id: 'p1', title: 'Акция' }], 200))
+
+      const [prof, promos] = await Promise.all([client.updateProfile({ name: 'Аня' }), client.getPromos()])
+
+      expect(prof).toBeDefined()
+      expect(promos).toHaveLength(1)
+
+      // Total fetch calls = 2 (initial fails) + 1 (refresh) + 2 (replays) = 5 calls
+      const refreshCalls = fetchMock.mock.calls.filter((c) => c[0] === `${baseUrl}/auth/refresh`)
+      expect(refreshCalls).toHaveLength(1)
+    })
+
+    it('signOut clears all auth keys from localStorage', async () => {
+      localStorage.setItem(AUTH_PHONE_KEY, '+79990001122')
+      localStorage.setItem(AUTH_ACCESS_TOKEN_KEY, 'some.token')
+      localStorage.setItem(AUTH_REFRESH_TOKEN_KEY, 'some.refresh')
+
+      fetchMock.mockResolvedValue(json({ success: true }))
+      await client.signOut()
+
+      expect(localStorage.getItem(AUTH_PHONE_KEY)).toBeNull()
+      expect(localStorage.getItem(AUTH_ACCESS_TOKEN_KEY)).toBeNull()
+      expect(localStorage.getItem(AUTH_REFRESH_TOKEN_KEY)).toBeNull()
+    })
+  })
+
   describe('orders', () => {
     it('getOrders returns [] for a fresh guest without asking the server for everyone’s orders', async () => {
       expect(await client.getOrders()).toEqual([])
@@ -254,6 +358,13 @@ describe('HttpApiClient', () => {
       const res = await client.checkPromo('ЗЕРНО10')
       expect(res).toEqual({ code: 'ЗЕРНО10', valid: true, percent: 10, label: '−10%' })
       expect(lastCall()[0]).toBe(`${baseUrl}/promo/check?code=${encodeURIComponent('ЗЕРНО10')}`)
+    })
+
+    it('getPromos fetches /promos', async () => {
+      fetchMock.mockResolvedValue(json([{ id: 'p1', title: 'Акция' }]))
+      const res = await client.getPromos()
+      expect(res).toEqual([{ id: 'p1', title: 'Акция' }])
+      expect(lastCall()[0]).toBe(`${baseUrl}/promos`)
     })
   })
 })

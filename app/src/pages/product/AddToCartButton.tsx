@@ -14,7 +14,7 @@ export function AddToCartButton({ price, soldOut, added, onAdd }: Props) {
   return (
     <button
       className={cx(
-        'flex h-[48px] sm:h-[54px] flex-1 items-center justify-center gap-2 sm:gap-2.5 rounded-full px-4 sm:px-7 font-display font-bold text-white transition-all duration-200 ease-soft active:scale-96 min-w-0 cursor-pointer',
+        'flex w-full h-[50px] sm:h-[54px] flex-1 items-center justify-center gap-2 sm:gap-2.5 rounded-full px-5 sm:px-7 font-display font-bold text-white transition-all duration-200 ease-soft active:scale-97 cursor-pointer',
         soldOut
           ? 'cursor-not-allowed bg-pd-glass text-pd-faint shadow-none border border-pd-line'
           : added

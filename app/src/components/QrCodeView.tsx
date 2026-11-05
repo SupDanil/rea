@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import QRCode from 'qrcode'
+import { cx } from '../utils/cx'
 
 interface QrCodeViewProps {
   value: string
@@ -8,26 +9,25 @@ interface QrCodeViewProps {
 }
 
 /**
- * 2026 QrCodeView:
- * Always rendered on a pure white elevated platter with high optical scan contrast
- * in both light and dark themes.
+ * Keep the QR modules unobstructed, with a four-module white quiet zone.
  */
 export function QrCodeView({ value, size = 180, className = '' }: QrCodeViewProps) {
-  const [svg, setSvg] = useState<string>('')
+  const [generated, setGenerated] = useState<{ value: string; svg: string } | null>(null)
 
   useEffect(() => {
     let cancelled = false
     QRCode.toString(value, {
       type: 'svg',
-      margin: 1,
+      margin: 4,
       width: size,
+      errorCorrectionLevel: 'M',
       color: {
-        dark: '#120E0C',
+        dark: '#000000', // 100% optical contrast
         light: '#FFFFFF',
       },
     })
       .then((svgString) => {
-        if (!cancelled) setSvg(svgString)
+        if (!cancelled) setGenerated({ value, svg: svgString })
       })
       .catch((err) => {
         console.error('Failed to generate QR code', err)
@@ -38,11 +38,11 @@ export function QrCodeView({ value, size = 180, className = '' }: QrCodeViewProp
     }
   }, [value, size])
 
-  if (!svg) {
+  if (!generated || generated.value !== value) {
     return (
       <div
-        className={`grid place-items-center bg-white rounded-[24px] p-4 shadow-lift ${className}`}
-        style={{ width: size, height: size }}
+        className={cx('grid aspect-square place-items-center bg-white', className)}
+        style={{ width: size, maxWidth: '100%' }}
         aria-label="Загрузка QR-кода"
       >
         <div className="size-6 border-2 border-muted border-t-accent rounded-full animate-spin" />
@@ -52,9 +52,14 @@ export function QrCodeView({ value, size = 180, className = '' }: QrCodeViewProp
 
   return (
     <div
-      className={`relative inline-block bg-white p-4 rounded-[24px] shadow-lift overflow-hidden border border-black/10 ${className}`}
-      dangerouslySetInnerHTML={{ __html: svg }}
+      className={cx(
+        'block bg-white leading-none [&>svg]:block [&>svg]:w-full [&>svg]:h-auto',
+        className,
+      )}
+      style={{ width: size, maxWidth: '100%' }}
+      role="img"
       aria-label="QR-код для выдачи заказа"
+      dangerouslySetInnerHTML={{ __html: generated.svg }}
     />
   )
 }

@@ -22,7 +22,7 @@ export function LevelCard({ loyalty }: { loyalty: Loyalty }) {
   return (
     <section
       className={cx(
-        'mesh-grain relative overflow-hidden rounded-[28px] p-5 text-white shadow-lift border border-white/20 backdrop-blur-xl',
+        'mesh-grain relative overflow-hidden rounded-[28px] p-5 text-white shadow-lift border border-white/20 ',
         levelBg[level.level],
       )}
       aria-label="Уровень лояльности"
@@ -42,7 +42,7 @@ export function LevelCard({ loyalty }: { loyalty: Loyalty }) {
       </div>
 
       <div
-        className="mt-4 h-2.5 overflow-hidden rounded-full bg-black/25 backdrop-blur-sm border border-white/10"
+        className="mt-4 h-2.5 overflow-hidden rounded-full bg-black/25  border border-white/10"
         role="progressbar"
         aria-valuemin={0}
         aria-valuemax={100}
@@ -67,7 +67,7 @@ export function LevelCard({ loyalty }: { loyalty: Loyalty }) {
             <li
               key={l.level}
               className={cx(
-                'flex flex-col items-center gap-0.5 rounded-[14px] px-1 py-2 text-[11px] backdrop-blur-md transition-all',
+                'flex flex-col items-center gap-0.5 rounded-[14px] px-1 py-2 text-[11px] transition-all',
                 reached
                   ? 'bg-white/25 border border-white/30 text-white font-bold shadow-xs'
                   : 'bg-black/15 border border-white/5 opacity-55 text-white/80',

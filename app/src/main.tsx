@@ -15,6 +15,10 @@ const queryClient = new QueryClient({
   },
 })
 
+// The menu stays mounted under every other screen, so it never needs its scroll back.
+// The browser's restore on Back works from a stale position and jumps the page mid-flight.
+history.scrollRestoration = 'manual'
+
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <QueryClientProvider client={queryClient}>

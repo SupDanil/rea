@@ -1,9 +1,9 @@
 import { useRef, useState, type CSSProperties } from 'react'
 import { TrashIcon } from '../../components/icons'
 import { ItemArt } from '../../components/ItemArt'
-import { addonLabel, countAddons } from '../../domain'
+import { addonLabel, countAddons, itemImage } from '../../domain'
 import type { ResolvedLine } from '../../state/cart'
-import { ART_ATTR } from '../../utils/morph'
+import { artProps } from '../../utils/morph'
 import { cx } from '../../utils/cx'
 import { formatPrice } from '../../utils/format'
 
@@ -28,9 +28,17 @@ export function CartLineItem({ line, disabled, onOpen, onQty, onRemove }: Props)
   const [isSwiping, setIsSwiping] = useState(false)
   const touchStartX = useRef(0)
 
-  const meta = [line.variant.size !== 'ONE' && `${sizeText[line.variant.size]} · ${line.variant.volume}`, ...countAddons(line.ingredients).map((a) => `+ ${addonLabel(a)}`)]
+  const tempLabel = line.temperature ? (line.temperature === 'hot' ? '☕ Горячий' : '🧊 Холодный') : null
+  const meta = [tempLabel, line.variant.size !== 'ONE' && `${sizeText[line.variant.size]} · ${line.variant.volume}`, ...countAddons(line.ingredients).map((a) => `+ ${addonLabel(a)}`)]
     .filter(Boolean)
     .join(', ')
+
+  const cartImage = itemImage(line.item, line.temperature)
+
+  const cartArt =
+    line.temperature === 'cold' && line.item.art.kind === 'cup' && !cartImage
+      ? { ...line.item.art, kind: 'iced' as const }
+      : line.item.art
 
   const handleTouchStart = (e: React.TouchEvent) => {
     if (disabled) return
@@ -89,7 +97,7 @@ export function CartLineItem({ line, disabled, onOpen, onQty, onRemove }: Props)
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
-        className="relative z-1 w-full rounded-[22px] grid grid-cols-[76px_1fr] gap-3 p-2.5 bg-surface/95 dark:bg-surface/95 backdrop-blur-xl"
+        className="relative z-1 w-full rounded-[22px] grid grid-cols-[76px_1fr] gap-3 p-2.5 bg-surface/95 dark:bg-surface/95 "
       >
         <button
           className="art-glow grid size-[76px] place-items-center rounded-[18px] cursor-pointer hover:opacity-90 active:scale-96 transition-all"
@@ -97,7 +105,7 @@ export function CartLineItem({ line, disabled, onOpen, onQty, onRemove }: Props)
           onClick={onOpen}
           aria-label={`Открыть ${line.item.name}`}
         >
-          <ItemArt art={line.item.art} className="size-[86%]" {...{ [ART_ATTR]: line.item.id }} />
+          <ItemArt art={cartArt} imageUrl={cartImage} className="size-[86%]" {...artProps(line.item.id, line.key)} />
         </button>
 
         <div className="flex min-w-0 flex-col pt-0.5 pr-1">

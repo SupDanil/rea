@@ -25,6 +25,10 @@ export function useCheckout({ pricing, promo, shopId, pickup, payment, onMissing
   const [paying, setPaying] = useState(false)
 
   const pay = async (name: string) => {
+    if (!profile) {
+      showToast({ text: 'Для оформления заказа необходимо войти в профиль' })
+      return
+    }
     const trimmed = name.trim()
     if (!trimmed) return onMissingName()
     writeString(SAVED_NAME_KEY, trimmed)
@@ -39,7 +43,7 @@ export function useCheckout({ pricing, promo, shopId, pickup, payment, onMissing
         name: trimmed,
         pickup,
         payment,
-        phone: profile?.phone,
+        phone: profile.phone,
         shopId,
         levelDiscount: pricing.levelDiscount || undefined,
         promoCode: promo?.code,

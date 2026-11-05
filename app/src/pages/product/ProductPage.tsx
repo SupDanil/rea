@@ -1,22 +1,21 @@
-import { useLayoutEffect, useRef, useState, type CSSProperties, type RefObject } from 'react'
+import { useLayoutEffect, useRef, useState, type CSSProperties } from 'react'
 import { Navigate, useParams } from 'react-router'
-import { CloseIcon } from '../../components/icons'
-import { ItemArt } from '../../components/ItemArt'
-import type { Ingredient, IngredientGroup, MenuItem } from '../../domain'
+import { CloseIcon, InfoIcon, SnowflakeIcon } from '../../components/icons'
+import { Modal } from '../../components/Modal'
+import { defaultTemperature, itemImage, type Ingredient, type IngredientGroup, type MenuItem } from '../../domain'
 import { useCatalog, useCatalogQuery } from '../../queries/useCatalog'
+import { useAfterFirstPaint } from '../../hooks/useAfterFirstPaint'
 import { useAppNavigate } from '../../hooks/useAppNavigate'
-import { useEscape } from '../../hooks/useEscape'
-import { useExitTransition } from '../../hooks/useExitTransition'
 import { useApp } from '../../state/AppContext'
 import { cx } from '../../utils/cx'
 import { bounce, pop } from '../../utils/motion'
-import { ART_ATTR, findThumb, flyArt, MORPH, settledRect, TO_CART } from '../../utils/morph'
+import { findThumb, flyArt, MORPH, settledRect, TO_CART } from '../../utils/morph'
 import { useIsLeaving } from '../../app/leaving'
-import { AddonChips } from './AddonChips'
-import { AddonPanel } from './AddonPanel'
 import { AddToCartButton } from './AddToCartButton'
+import { CraftDeck, CraftDeckSlot } from './CraftDeck'
+import { CraftTabBar } from './CraftTabBar'
+import { HeroBuilderArea } from './HeroBuilderArea'
 import { NutritionBar } from './NutritionBar'
-import { ProductDetails } from './ProductDetails'
 import { SizePicker } from './SizePicker'
 import { useProductConfig } from './useProductConfig'
 
@@ -36,29 +35,38 @@ export function ProductPage() {
 
 function ProductView({ item }: { item: MenuItem }) {
   const { cart } = useApp()
-  const { back, replace } = useAppNavigate()
+  const { back, artSlot } = useAppNavigate()
   const config = useProductConfig(item)
   const { variant, openGroupId, setOpenGroupId } = config
   const [showDetails, setShowDetails] = useState(false)
   const [added, setAdded] = useState(false)
   const [openedWith] = useState(item.id)
+  // Remembered, not read live: on its way out the screen already sees the next route's state.
+  const [slot] = useState(artSlot)
+
+  const isOnlyCold = item.temperatureMode === 'cold'
+  const isBoth = item.temperatureMode === 'both'
+
+  const [temperature, setTemperature] = useState(() => defaultTemperature(item))
+  const effectiveHeroImage = itemImage(item, temperature)
+
   const cupRef = useRef<HTMLDivElement>(null)
   const sheetRef = useRef<HTMLDivElement>(null)
   const artRef = useRef<SVGSVGElement>(null)
   const toCart = useRef(false)
   const leaving = useIsLeaving()
-  const topRef = useRef<HTMLDivElement>(null)
-  const bottomRef = useRef<HTMLDivElement>(null)
-  const panelMax = usePanelRoom(topRef, bottomRef)
-  // The panel lingers for its exit animation after the group is closed.
-  const { rendered: panelGroup, leaving: panelLeaving } = useExitTransition(config.groups.find((g) => g.id === openGroupId), 220)
 
-  useEscape(() => (openGroupId ? setOpenGroupId(null) : back()))
+  // The heaviest part of the screen: built once the flight is already in the air.
+  const deckReady = useAfterFirstPaint()
+
+  const activeGroupId = openGroupId ?? config.groups[0]?.id ?? null
+  const activeGroup = config.groups.find((g) => g.id === activeGroupId)
+
 
   const pick = (group: IngredientGroup, ingredient: Ingredient) => {
     const landed = group.counter ? config.addOne(group, ingredient) : config.toggle(group, ingredient.id)
     if (landed && cupRef.current) {
-      bounce(cupRef.current, 0.6)
+      bounce(cupRef.current, 0.5)
     }
   }
 
@@ -66,15 +74,14 @@ function ProductView({ item }: { item: MenuItem }) {
   useLayoutEffect(() => {
     const art = artRef.current
     const sheet = sheetRef.current
-    const thumb = findThumb(openedWith, sheet)
+    const thumb = findThumb(openedWith, { exclude: sheet, slot, leaving: true })
     if (!art || !sheet || !thumb) return
-    art.style.visibility = 'hidden'
-    void flyArt(thumb, settledRect(art, sheet), MORPH).then(() => (art.style.visibility = ''))
-    // Only on first open; swapping hot ↔ iced animates the cup in place.
-  }, [openedWith])
+    // After the commit: the hero sizes itself right behind this effect, and a flight planned
+    // before that would head for the wrong size for as long as a slow phone stalls.
+    queueMicrotask(() => void flyArt(thumb, art, { ...MORPH, rect: (el) => settledRect(el, sheet) }))
+  }, [openedWith, slot])
 
-  // Closing (button, Escape or the system back gesture): the cup flies back to its
-  // thumbnail — or, after "Add", down into the cart counter.
+  // Closing: cup flies back to menu or into cart dock.
   useLayoutEffect(() => {
     const art = artRef.current
     if (!leaving || !art) return
@@ -83,12 +90,13 @@ function ProductView({ item }: { item: MenuItem }) {
       if (badge) void flyArt(art, badge, { ...TO_CART, landFade: true }).then(() => pop(badge))
       return
     }
-    const thumb = findThumb(item.id, sheetRef.current) ?? findThumb(openedWith, sheetRef.current)
+    const exclude = sheetRef.current
+    const thumb = findThumb(item.id, { exclude, slot }) ?? findThumb(openedWith, { exclude, slot })
     if (thumb) void flyArt(art, thumb, MORPH)
-  }, [leaving, item.id, openedWith])
+  }, [leaving, item.id, openedWith, slot])
 
   const add = () => {
-    cart.add(item.id, variant.id, config.chosen.map((i) => i.id))
+    cart.add(item.id, variant.id, config.chosen.map((i) => i.id), 1, temperature)
     setAdded(true)
     window.setTimeout(() => {
       toCart.current = true
@@ -97,138 +105,213 @@ function ProductView({ item }: { item: MenuItem }) {
   }
 
   return (
-    <div
-      className="fixed inset-0 z-30 flex items-center justify-center bg-black/50 backdrop-blur-sm overflow-hidden"
-      onClick={(e) => {
-        if (e.target === e.currentTarget) back()
-      }}
-    >
-      <div
-        ref={sheetRef}
-        className={cx(
-          'tinted mesh-grain relative grid w-full h-full max-w-[480px] grid-cols-[minmax(0,1fr)] grid-rows-[auto_auto_minmax(0,1fr)_auto] overflow-x-hidden overflow-y-auto overscroll-contain text-pd-ink',
-          'wide:max-w-[560px] wide:h-[min(92dvh,840px)] wide:rounded-[32px] wide:border wide:border-glass-border wide:shadow-lift',
-          'animate-[sheet-up_0.34s_var(--spring)_both]',
-        )}
+    <Modal
+      label={item.name}
+      onClose={back}
+      kind="screen"
+      panelRef={sheetRef}
+      className="tinted mesh-grain text-pd-ink"
       style={{
         '--tint': item.art.bg,
-        // Studio light around the cup, tinted by the drink; light/dark comes from the --pd-* tokens.
-        background: `radial-gradient(ellipse 80% 55% at 50% 42%, color-mix(in srgb, var(--tint, #c5c7d7) var(--pd-spot-mix), var(--pd-spot-base)) 0%, transparent 80%),
+        background: `radial-gradient(ellipse 90% 55% at 50% 25%, color-mix(in srgb, var(--tint, #c5c7d7) var(--pd-spot-mix), var(--pd-spot-base)) 0%, transparent 75%),
                      linear-gradient(180deg, var(--pd-bg-from) 0%, var(--pd-bg-to) 100%)`,
       } as CSSProperties}
-      role="dialog"
-      aria-modal="true"
-      aria-label={item.name}
     >
-      {/* Above the add-on backdrop: the macros stay readable while add-ons are picked. */}
-      <div ref={topRef} className="relative z-[31]">
-      <header className="grid grid-cols-[40px_1fr_40px] items-center px-3 pt-[calc(10px+env(safe-area-inset-top))] pb-0.5">
-        <h1 key={item.id} className="col-start-2 text-center font-display text-[19px] xs:text-[20px] sm:text-[22px] font-bold text-pd-ink tracking-tight truncate px-1 animate-fade-in">
-          {item.name}
-        </h1>
-        <button
-          className="col-start-3 justify-self-end size-10 grid place-items-center [&>svg]:block rounded-full bg-pd-glass hover:bg-pd-glass-hover text-pd-ink backdrop-blur-md border border-pd-line transition-[background-color,color,border-color,scale] active:scale-95 cursor-pointer shadow-sm"
-          onClick={back}
-          aria-label="Закрыть"
-        >
-          <CloseIcon />
-        </button>
-      </header>
-
-      <NutritionBar nutrition={config.nutrition} />
-      </div>
-      <div>
-        <ProductDetails item={item} open={showDetails} onToggle={() => setShowDetails((v) => !v)} hidden={!!openGroupId} />
-      </div>
-
-      <div
-        className="relative grid min-h-0 place-items-center py-1 sm:py-2"
-        onClick={() => {
-          setOpenGroupId(null)
-          setShowDetails(false)
-        }}
-      >
-        <div
-          className="relative grid h-full max-h-[300px] sm:max-h-[360px] wide:max-h-[min(56dvh,460px)] place-items-center transition-transform duration-[420ms] ease-[cubic-bezier(0.34,1.4,0.64,1)]"
-          style={{ transform: `scale(${variant.size === 'L' ? 1.08 : variant.size === 'S' ? 0.88 : 1})` }}
-        >
-          {/* The shadow lives on this wrapper, not on the art: a filter on the
-              view-transition element widens its snapshot, so on real GPUs the
-              cup flew in at one size and snapped to another when it landed. */}
-          <div
-            ref={cupRef}
-            className="grid h-full origin-bottom place-items-center drop-shadow-[0_16px_28px_var(--pd-cup-shadow)] animate-[float-soft_6s_ease-in-out_0.5s_infinite]"
+        {/* ================= 1. ШАПКА ================= */}
+        <header className="flex-none z-30 grid grid-cols-[44px_1fr_44px] items-center px-4 pt-[calc(10px+env(safe-area-inset-top))] pb-0.5 bg-transparent wide:px-6 wide:pt-4">
+          <button
+            className="size-10 grid place-items-center rounded-full bg-pd-glass hover:bg-pd-glass-hover text-pd-ink border border-pd-line transition-all active:scale-95 cursor-pointer shadow-xs"
+            onClick={back}
+            aria-label="Закрыть"
           >
-            <ItemArt
-              key={item.id}
-              art={item.art}
+            <CloseIcon />
+          </button>
+
+          <h1
+            key={item.id}
+            className="text-center font-display text-[18px] xs:text-[20px] wide:text-[22px] font-bold text-pd-ink tracking-tight truncate px-2"
+          >
+            {item.name}
+          </h1>
+
+          <button
+            className={cx(
+              'size-10 grid place-items-center rounded-full bg-pd-glass hover:bg-pd-glass-hover text-pd-ink border border-pd-line transition-all active:scale-95 cursor-pointer shadow-xs justify-self-end',
+              showDetails && 'bg-accent text-white border-transparent shadow-sm',
+            )}
+            onClick={() => setShowDetails((v) => !v)}
+            aria-label="О напитке"
+          >
+            <InfoIcon size={18} />
+          </button>
+        </header>
+
+        {/* Floating Info Popover */}
+        {showDetails && (
+          <>
+            <div
+              className="fixed inset-0 z-40 bg-black/40 animate-[fade-only_0.2s_ease_both]"
+              onClick={() => setShowDetails(false)}
+              aria-hidden="true"
+            />
+            <div
               className={cx(
-                'h-full max-h-[260px] sm:max-h-[320px] wide:max-h-[min(50dvh,420px)] w-auto aspect-[200/220] select-none pointer-events-none',
-                // Hot ↔ iced swap: the new cup settles in place (on open it flies in instead).
-                item.id !== openedWith && 'animate-[swap-in_0.4s_var(--ease-soft)_both]',
+                'absolute top-[calc(56px+env(safe-area-inset-top))] right-3 left-3 sm:right-4 sm:left-4 z-50',
+                'p-4 rounded-[24px] bg-pd-panel text-pd-ink border border-pd-line shadow-lift',
+                'animate-[rise_0.22s_var(--ease-soft)_both] text-[13px] leading-relaxed',
               )}
-              ref={artRef}
-              {...{ [ART_ATTR]: item.id }}
+            >
+              <div className="flex items-center justify-between pb-2 mb-2 border-b border-pd-line">
+                <span className="font-display font-bold text-[14px]">О напитке</span>
+                <button
+                  onClick={() => setShowDetails(false)}
+                  className="grid size-7 place-items-center rounded-full bg-pd-glass hover:bg-pd-glass-hover text-[12px] font-bold text-pd-muted hover:text-pd-ink transition-colors cursor-pointer"
+                  aria-label="Закрыть описание"
+                >
+                  ✕
+                </button>
+              </div>
+              <p className="font-medium text-pd-ink">{item.description}</p>
+              <p className="mt-2 text-pd-ink-2">
+                <b className="font-bold text-pd-ink">Состав:</b> {item.composition}
+              </p>
+              {item.allergens && (
+                <p className="mt-1 text-pd-ink-2">
+                  <b className="font-bold text-pd-ink">Аллергены:</b> {item.allergens}
+                </p>
+              )}
+            </div>
+          </>
+        )}
+
+        {/* ================= 2. СКРОЛЛИРУЕМОЕ ТЕЛО (МЕЖДУ ШАПКОЙ И ФИКСИРОВАННЫМ ФУТЕРОМ) ================= */}
+        <div className="flex-1 min-h-0 flex flex-col overflow-x-hidden overflow-y-auto overscroll-contain no-scrollbar">
+          {/* Top Cockpit Bar: Size Selector + Nutrition Bar + Temperature selector */}
+          <div className="flex-none flex flex-wrap items-center justify-center gap-2 wide:gap-3 w-full pt-1 pb-1 px-4 wide:pt-2 wide:pb-1 z-30">
+            {isBoth && (
+              <div
+                className="relative flex items-center h-8 rounded-full bg-pd-glass border border-pd-line p-0.5 shadow-xs select-none box-border"
+                role="radiogroup"
+                aria-label="Температура"
+              >
+                <button
+                  type="button"
+                  role="radio"
+                  aria-checked={temperature === 'hot'}
+                  onClick={() => {
+                    setTemperature('hot')
+                    if (cupRef.current) bounce(cupRef.current, 0.4)
+                  }}
+                  className={cx(
+                    'relative z-1 flex items-center justify-center gap-1 h-full rounded-full px-2.5 text-[12px] font-bold transition-all duration-150 leading-none cursor-pointer active:scale-95',
+                    temperature === 'hot'
+                      ? 'bg-accent text-white shadow-xs'
+                      : 'text-pd-muted hover:text-pd-ink',
+                  )}
+                  aria-label="Горячий"
+                >
+                  <span className="text-[12px] leading-none" aria-hidden="true">☕</span>
+                  <span className="leading-none">Горячий</span>
+                </button>
+                <button
+                  type="button"
+                  role="radio"
+                  aria-checked={temperature === 'cold'}
+                  onClick={() => {
+                    setTemperature('cold')
+                    if (cupRef.current) bounce(cupRef.current, 0.4)
+                  }}
+                  className={cx(
+                    'relative z-1 flex items-center justify-center gap-1 h-full rounded-full px-2.5 text-[12px] font-bold transition-all duration-150 leading-none cursor-pointer active:scale-95',
+                    temperature === 'cold'
+                      ? 'bg-accent text-white shadow-xs'
+                      : 'text-pd-muted hover:text-pd-ink',
+                  )}
+                  aria-label="Холодный"
+                >
+                  <span className="text-[12px] leading-none" aria-hidden="true">🧊</span>
+                  <span className="leading-none">Холодный</span>
+                </button>
+              </div>
+            )}
+            {isOnlyCold && (
+              <div
+                className="flex items-center justify-center size-8 rounded-full bg-pd-glass border border-pd-line shadow-xs text-blue-500 dark:text-blue-400 shrink-0 select-none"
+                title="Холодный напиток"
+                aria-label="Холодный напиток"
+              >
+                <SnowflakeIcon size={16} />
+              </div>
+            )}
+            {item.variants.length > 1 && variant.size !== 'ONE' && (
+              <SizePicker
+                variants={item.variants}
+                selected={config.variantIdx}
+                onSelect={(idx) => {
+                  config.setVariantIdx(idx)
+                  if (cupRef.current) bounce(cupRef.current, 0.4)
+                }}
+              />
+            )}
+            <NutritionBar nutrition={config.nutrition} />
+          </div>
+
+          {/* Hero Stage: Cup + Addons List, absorbs the central space */}
+          <div className="flex-1 min-h-[200px] flex flex-col items-center justify-center w-full py-1 self-stretch">
+            <HeroBuilderArea
+              item={item}
+              variant={variant}
+              groups={config.groups}
+              selection={config.selection}
+              onRemoveAll={(group, ingredientId) => config.removeAll(group, ingredientId)}
+              cupRef={cupRef}
+              artRef={artRef}
+              openedWith={openedWith}
+              imageUrl={effectiveHeroImage}
+              temperature={temperature}
             />
           </div>
+
+          {/* Controls: Group Tabs + CoverFlow Carousel */}
+          <div className="flex-none flex flex-col items-center w-full pt-1 pb-2 wide:pt-2 wide:pb-3">
+            {/* Category Tabs */}
+            {config.groups.length > 0 && (
+              <div className="w-full flex justify-center mb-1">
+                <CraftTabBar
+                  groups={config.groups}
+                  selection={config.selection}
+                  activeGroupId={activeGroupId}
+                  onSelectGroup={(id) => setOpenGroupId(id)}
+                />
+              </div>
+            )}
+
+            {/* Centered CoverFlow Carousel with scale-110 active card brought forward */}
+            {activeGroup && !deckReady && <CraftDeckSlot group={activeGroup} />}
+            {activeGroup && deckReady && (
+              <CraftDeck
+                key={activeGroup.id}
+                group={activeGroup}
+                groupIndex={config.groups.indexOf(activeGroup)}
+                qtyOf={(id) => config.qtyOf(activeGroup, id)}
+                total={config.totalOf(activeGroup)}
+                canAdd={(ing) => config.canAdd(activeGroup, ing)}
+                onPick={(ing) => pick(activeGroup, ing)}
+                onRemove={(ing) => config.removeOne(activeGroup, ing.id)}
+              />
+            )}
+          </div>
         </div>
-      </div>
 
-      <div ref={bottomRef} className="relative z-30">
-        {panelGroup && (
-          <AddonPanel
-            group={panelGroup}
-            groupIndex={config.groups.indexOf(panelGroup)}
-            qtyOf={(id) => config.qtyOf(panelGroup, id)}
-            total={config.totalOf(panelGroup)}
-            canAdd={(ing) => config.canAdd(panelGroup, ing)}
-            onPick={(ing) => pick(panelGroup, ing)}
-            onRemove={(ing) => config.removeOne(panelGroup, ing.id)}
-            onClose={() => setOpenGroupId(null)}
-            leaving={panelLeaving}
-            maxHeight={panelMax}
+        {/* ================= 3. ЖЕЛЕЗНО ЗАКРЕПЛЕННЫЙ ФУТЕР (ВНЕ СКРОЛЛА) ================= */}
+        <footer className="flex-none z-30 w-full p-3 sm:p-4 wide:p-5 pb-[calc(14px+env(safe-area-inset-bottom))] wide:pb-5 bg-pd-panel/95 dark:bg-surface/95 border-t border-pd-line/40 shadow-lift">
+          <AddToCartButton
+            price={config.price}
+            soldOut={config.soldOut}
+            added={added}
+            onAdd={add}
           />
-        )}
-        <AddonChips
-          item={item}
-          related={config.related}
-          groups={config.groups}
-          selection={config.selection}
-          openGroupId={openGroupId}
-          onOpenGroup={setOpenGroupId}
-          onOpenRelated={(next) => replace(`/product/${next.id}`)}
-        />
-        <footer className="relative z-[25] mx-2.5 sm:mx-4 mb-[calc(12px+env(safe-area-inset-bottom))] flex items-center gap-2 sm:gap-2.5">
-          {variant.size !== 'ONE' && <SizePicker variants={item.variants} selected={config.variantIdx} onSelect={config.setVariantIdx} />}
-          <AddToCartButton price={config.price} soldOut={config.soldOut} added={added} onAdd={add} />
         </footer>
-      </div>
-    </div>
-    </div>
+    </Modal>
   )
-}
-
-/**
- * Height the add-on panel may take: the gap between the macros and the chips
- * row, minus breathing room — so on a short screen (Fold cover display, landscape)
- * the panel scrolls inside instead of covering the macros.
- */
-function usePanelRoom(topRef: RefObject<HTMLElement | null>, bottomRef: RefObject<HTMLElement | null>) {
-  const [room, setRoom] = useState<number>()
-  useLayoutEffect(() => {
-    const top = topRef.current
-    const bottom = bottomRef.current
-    if (!top || !bottom) return
-    const measure = () => setRoom(Math.max(160, bottom.getBoundingClientRect().top - top.getBoundingClientRect().bottom - 18))
-    measure()
-    const ro = new ResizeObserver(measure)
-    ro.observe(top)
-    ro.observe(bottom)
-    window.addEventListener('resize', measure)
-    return () => {
-      ro.disconnect()
-      window.removeEventListener('resize', measure)
-    }
-  }, [topRef, bottomRef])
-  return room
 }

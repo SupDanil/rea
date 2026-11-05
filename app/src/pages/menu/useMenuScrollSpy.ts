@@ -1,6 +1,6 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import type { Catalog } from '../../domain'
-import { useCatalog } from '../../queries/useCatalog'
+import { useCatalog } from '../../queries'
 import { animateWindowScroll } from '../../utils/scrollTo'
 
 /** Must match the sections' `scroll-mt-(--tabs-h)` (--tabs-h in index.css). */
@@ -71,7 +71,10 @@ export function useMenuScrollSpy(providedCatalog?: Catalog) {
     scrollLock.current = true
     // Park the section right under the sticky bar, measured live: the bar can
     // gain or lose its subcategory row while we travel.
-    const target = () => el.getBoundingClientRect().top + window.scrollY - (navRef.current?.offsetHeight ?? SECTION_SCROLL_MARGIN)
+    const headerH = typeof window !== 'undefined'
+      ? (parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--header-h')) || 68)
+      : 68
+    const target = () => el.getBoundingClientRect().top + window.scrollY - (navRef.current?.offsetHeight ?? SECTION_SCROLL_MARGIN) - headerH
     void animateWindowScroll(target).then(() => {
       scrollLock.current = false
       // Settle on whatever is really under the bar (the user may have taken over).

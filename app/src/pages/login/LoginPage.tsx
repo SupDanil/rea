@@ -27,6 +27,7 @@ export function LoginPage() {
   const [code, setCode] = useState('')
   const [codeError, setCodeError] = useState<string | null>(null)
   const [devCode, setDevCode] = useState<string | null>(null)
+  const [telegramUrl, setTelegramUrl] = useState<string | null>(null)
   const [name, setName] = useState(knownName)
   const [resendIn, setResendIn] = useState(0)
   const [sending, setSending] = useState(false)
@@ -34,7 +35,12 @@ export function LoginPage() {
   const [verified, setVerified] = useState<Profile | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
+  // Each next step takes the keyboard straight away; the first one leaves it to the Modal,
+  // which waits until the sheet has finished rising.
+  const focusedStep = useRef(step)
   useEffect(() => {
+    if (focusedStep.current === step) return
+    focusedStep.current = step
     inputRef.current?.focus()
   }, [step])
 
@@ -51,6 +57,7 @@ export function LoginPage() {
     try {
       const res = await api.sendSmsCode(phone)
       setDevCode(res.devCode ?? null)
+      setTelegramUrl(res.telegramUrl ?? null)
       setCode('')
       setCodeError(null)
       setResendIn(RESEND_AFTER)
@@ -105,7 +112,7 @@ export function LoginPage() {
 
   return (
     <Sheet label="Вход" onBack={stepBack} backLabel={step === 'phone' ? 'Закрыть' : 'Назад'}>
-      <SheetBody className="flex">
+      <SheetBody className="flex flex-col">
         {step === 'phone' && <PhoneStep digits={digits} sending={sending} inputRef={inputRef} onChange={setDigits} onSubmit={() => void sendCode()} />}
         {step === 'code' && (
           <CodeStep
@@ -113,6 +120,7 @@ export function LoginPage() {
             code={code}
             error={codeError}
             devCode={devCode}
+            telegramUrl={telegramUrl}
             verifying={verifying}
             resendIn={resendIn}
             inputRef={inputRef}

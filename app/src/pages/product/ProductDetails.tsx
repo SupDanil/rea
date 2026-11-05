@@ -14,7 +14,7 @@ export function ProductDetails({ item, open, onToggle, hidden = false }: Props) 
       aria-hidden={hidden || undefined}
     >
       <button
-        className="rounded-full bg-pd-glass px-4 py-1.5 text-[13px] font-medium text-pd-ink-2 backdrop-blur-md border border-pd-line transition-[background-color,transform,scale] active:scale-95 hover:bg-pd-glass-hover shadow-sm"
+        className="rounded-full bg-pd-glass px-4 py-1.5 text-[13px] font-medium text-pd-ink-2 border border-pd-line transition-[background-color,transform,scale] active:scale-95 hover:bg-pd-glass-hover shadow-sm"
         aria-expanded={open}
         aria-controls="inside"
         onClick={onToggle}

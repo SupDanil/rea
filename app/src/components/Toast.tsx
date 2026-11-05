@@ -13,34 +13,35 @@ export function Toast() {
   if (!toast) return null
 
   return (
-    <div
-      key={toast.text}
-      role="status"
-      aria-live="polite"
-      className={cx(
-        'fixed top-[calc(12px+env(safe-area-inset-top))] left-1/2 z-50',
-        'flex max-w-[min(calc(100%-28px),420px)] items-center gap-3 overflow-hidden rounded-full',
-        'bg-ink/90 dark:bg-surface/90 text-inverse-ink dark:text-ink backdrop-blur-2xl',
-        'border border-white/15 dark:border-white/10 px-4 py-2.5 text-[14px] font-medium shadow-lift',
-        'transition-all duration-200 [transform:translateX(-50%)]',
-        leaving
-          ? 'pointer-events-none animate-[toast-island-out_0.22s_ease-in_both]'
-          : 'animate-[toast-island-in_0.32s_var(--spring)_both]',
-      )}
-    >
-      <span className="size-2 rounded-full bg-accent flex-none animate-pulse" aria-hidden="true" />
-      <span className="overflow-hidden text-ellipsis whitespace-nowrap">{toast.text}</span>
-      {toast.action && (
-        <button
-          className="flex-none font-display text-[13px] font-bold text-accent dark:text-accent-soft hover:opacity-85 active:scale-95 transition-transform ml-1 cursor-pointer"
-          onClick={() => {
-            toast.action?.run()
-            hideToast()
-          }}
-        >
-          {toast.action.label}
-        </button>
-      )}
+    <div className="pointer-events-none fixed top-[calc(12px+env(safe-area-inset-top))] inset-x-0 z-50 flex justify-center px-3">
+      <div
+        key={toast.text}
+        role="status"
+        aria-live="polite"
+        className={cx(
+          'pointer-events-auto flex items-center gap-2.5 sm:gap-3 rounded-[20px] sm:rounded-full',
+          'max-w-[460px] bg-ink/90 dark:bg-surface/90 text-inverse-ink dark:text-ink backdrop-blur-2xl',
+          'border border-white/15 dark:border-white/10 px-3.5 sm:px-4 py-2 sm:py-2.5 text-[13px] sm:text-[14px] font-medium shadow-lift',
+          'transition-all duration-200',
+          leaving
+            ? 'pointer-events-none animate-[toast-island-out_0.22s_ease-in_both]'
+            : 'animate-[toast-island-in_0.32s_var(--spring)_both]',
+        )}
+      >
+        <span className="size-2 rounded-full bg-accent flex-none animate-pulse" aria-hidden="true" />
+        <span className="break-words leading-snug">{toast.text}</span>
+        {toast.action && (
+          <button
+            className="flex-none font-display text-[13px] font-bold text-accent dark:text-accent-soft hover:opacity-85 active:scale-95 transition-transform ml-1 cursor-pointer"
+            onClick={() => {
+              toast.action?.run()
+              hideToast()
+            }}
+          >
+            {toast.action.label}
+          </button>
+        )}
+      </div>
     </div>
   )
 }

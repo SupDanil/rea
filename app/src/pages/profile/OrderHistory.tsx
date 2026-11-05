@@ -39,19 +39,47 @@ export function OrderHistory({ orders, onOpen, onRepeat }: Props) {
             const lines = resolveLines(o.lines, catalog)
             const status = statusOf(o, now)
             return (
-              <li key={o.id} className={cx('flex items-center gap-2.5 rounded-[20px] py-3 pr-3 pl-4', panel)}>
-                <button className="flex min-w-0 flex-1 flex-col gap-[3px] text-left" onClick={() => onOpen(o)}>
-                  <span className="flex items-center gap-2 text-[15px]">
+              <li
+                key={o.id}
+                className={cx(
+                  'flex items-center gap-3 rounded-[20px] py-3 pr-3 pl-4 w-full min-w-0 overflow-hidden',
+                  panel,
+                )}
+              >
+                <button
+                  type="button"
+                  className="flex min-w-0 flex-1 flex-col gap-1 text-left cursor-pointer"
+                  onClick={() => onOpen(o)}
+                >
+                  <span className="flex items-center gap-2 text-[15px] font-display">
                     <b>№ {o.number}</b>
-                    <span className={cx('rounded-full px-2.5 py-[3px] text-[11px] font-bold transition-colors', statusColor[status])}>{statusText[status]}</span>
+                    <span
+                      className={cx(
+                        'rounded-full px-2.5 py-[3px] text-[11px] font-bold transition-colors',
+                        statusColor[status],
+                      )}
+                    >
+                      {statusText[status]}
+                    </span>
                   </span>
-                  <span className="truncate text-[13px] text-ink-2">{lines.map((l) => (l.qty > 1 ? `${l.item.name} ×${l.qty}` : l.item.name)).join(', ')}</span>
+                  <span className="text-[13px] leading-snug text-ink-2 break-words">
+                    {lines
+                      .map((l) => {
+                        const sizeBadge = l.variant && l.variant.size !== 'ONE' ? ` (${l.variant.size})` : ''
+                        return l.qty > 1 ? `${l.item.name}${sizeBadge} ×${l.qty}` : `${l.item.name}${sizeBadge}`
+                      })
+                      .join(', ')}
+                  </span>
                   <span className="text-[12px] text-muted">
                     {dateTime(o.createdAt)} · {formatPrice(o.total)}
                   </span>
                 </button>
                 {lines.length > 0 && (
-                  <button className={btn('secondary', 'sm')} onClick={() => onRepeat(o)}>
+                  <button
+                    type="button"
+                    className={cx(btn('secondary', 'sm'), 'shrink-0 self-center')}
+                    onClick={() => onRepeat(o)}
+                  >
                     Повторить
                   </button>
                 )}

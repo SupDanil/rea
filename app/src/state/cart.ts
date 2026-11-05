@@ -9,12 +9,12 @@ export function useCart() {
   const [lines, setLines] = usePersistent<CartLine[]>('zerno-cart', [])
 
   const add = useCallback(
-    (itemId: string, variantId: string, ingredientIds: string[], qty = 1) => {
-      const key = lineKey(itemId, variantId, ingredientIds)
+    (itemId: string, variantId: string, ingredientIds: string[], qty = 1, temperature?: 'hot' | 'cold') => {
+      const key = lineKey(itemId, variantId, ingredientIds, temperature)
       setLines((prev) =>
         prev.some((l) => l.key === key)
           ? prev.map((l) => (l.key === key ? { ...l, qty: l.qty + qty } : l))
-          : [...prev, { key, itemId, variantId, ingredientIds, qty }],
+          : [...prev, { key, itemId, variantId, ingredientIds, qty, temperature }],
       )
     },
     [setLines],

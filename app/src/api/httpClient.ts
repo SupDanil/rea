@@ -1,8 +1,12 @@
-import type { CatalogData, Order, Shop, UserProfile } from '../domain'
+import type { CatalogData, Order, Promotion, Shop, UserProfile } from '../domain'
 import type { ApiClient } from './client'
 import type { CheckPromoDto, CreateOrderDto, SendSmsDto, UpdateOrderDto, VerifySmsDto } from './types'
 
 export const AUTH_PHONE_KEY = 'shit_coffee_phone'
+export const AUTH_ACCESS_TOKEN_KEY = 'shit_coffee_access_token'
+export const AUTH_REFRESH_TOKEN_KEY = 'shit_coffee_refresh_token'
+export const AUTH_PROFILE_KEY = 'shit_coffee_profile_cache'
+
 /** Ids of orders placed on this device, so a guest without a phone can still follow them. */
 export const GUEST_ORDERS_KEY = 'zerno-order-ids'
 const GUEST_ORDERS_LIMIT = 30
@@ -48,6 +52,7 @@ const readGuestOrderIds = (): string[] => {
 
 export class HttpApiClient implements ApiClient {
   private readonly baseUrl: string
+  private refreshPromise: Promise<string | null> | null = null
 
   constructor(baseUrl: string) {
     this.baseUrl = baseUrl.replace(/\/+$/, '')
@@ -57,11 +62,77 @@ export class HttpApiClient implements ApiClient {
     return readStorage(AUTH_PHONE_KEY)
   }
 
-  private async request<T>(path: string, options?: RequestInit): Promise<T> {
+  private getAccessToken(): string | null {
+    return readStorage(AUTH_ACCESS_TOKEN_KEY)
+  }
+
+  private getRefreshToken(): string | null {
+    return readStorage(AUTH_REFRESH_TOKEN_KEY)
+  }
+
+  private clearAuth() {
+    writeStorage(AUTH_PHONE_KEY, null)
+    writeStorage(AUTH_ACCESS_TOKEN_KEY, null)
+    writeStorage(AUTH_REFRESH_TOKEN_KEY, null)
+    writeStorage(AUTH_PROFILE_KEY, null)
+  }
+
+  private async tryRefreshToken(): Promise<string | null> {
+    const refreshToken = this.getRefreshToken()
+    if (!refreshToken) {
+      this.clearAuth()
+      return null
+    }
+
+    if (!this.refreshPromise) {
+      this.refreshPromise = (async () => {
+        try {
+          const res = await fetch(`${this.baseUrl}/auth/refresh`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ refreshToken }),
+          })
+          if (!res.ok) {
+            this.clearAuth()
+            return null
+          }
+          const data = (await res.json()) as { accessToken: string; refreshToken: string }
+          writeStorage(AUTH_ACCESS_TOKEN_KEY, data.accessToken)
+          writeStorage(AUTH_REFRESH_TOKEN_KEY, data.refreshToken)
+          return data.accessToken
+        } catch {
+          this.clearAuth()
+          return null
+        } finally {
+          this.refreshPromise = null
+        }
+      })()
+    }
+
+    return this.refreshPromise
+  }
+
+  private async request<T>(path: string, options?: RequestInit, isRetry = false): Promise<T> {
+    const token = this.getAccessToken()
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...(options?.headers as Record<string, string> | undefined),
+    }
+
     const res = await fetch(`${this.baseUrl}${path}`, {
       ...options,
-      headers: { 'Content-Type': 'application/json', ...(options?.headers ?? {}) },
+      headers,
     })
+
+    // Auto-refresh token on 401 Unauthorized if we have a refresh token
+    if (res.status === 401 && !isRetry && !path.startsWith('/auth/')) {
+      const newToken = await this.tryRefreshToken()
+      if (newToken) {
+        return this.request<T>(path, options, true)
+      }
+    }
+
     if (!res.ok) {
       let message = `HTTP ${res.status} at ${path}`
       let reason: string | undefined
@@ -81,19 +152,27 @@ export class HttpApiClient implements ApiClient {
     return this.request<CatalogData>('/catalog')
   }
 
+  getPromos(): Promise<Promotion[]> {
+    return this.request<Promotion[]>('/promos')
+  }
+
   getShops(): Promise<Shop[]> {
     return this.request<Shop[]>('/shops')
   }
 
   async getProfile(): Promise<UserProfile | null> {
+    const token = this.getAccessToken()
     const phone = this.getAuthPhone()
-    if (!phone) return null
+    if (!token && !phone) return null
+
     try {
-      return await this.request<UserProfile>(`/profile?phone=${encodeURIComponent(phone)}`)
+      const query = phone ? `?phone=${encodeURIComponent(phone)}` : ''
+      const profile = await this.request<UserProfile>(`/profile${query}`)
+      writeStorage(AUTH_PROFILE_KEY, JSON.stringify(profile))
+      return profile
     } catch (err) {
-      // The customer was removed on the server: drop the stale session.
-      if (err instanceof ApiError && err.status === 404) {
-        writeStorage(AUTH_PHONE_KEY, null)
+      if (err instanceof ApiError && (err.status === 404 || err.status === 401)) {
+        this.clearAuth()
         return null
       }
       throw err
@@ -112,35 +191,53 @@ export class HttpApiClient implements ApiClient {
       method: 'POST',
       body: JSON.stringify({ phone, code, name }),
     })
+    if (res.accessToken) writeStorage(AUTH_ACCESS_TOKEN_KEY, res.accessToken)
+    if (res.refreshToken) writeStorage(AUTH_REFRESH_TOKEN_KEY, res.refreshToken)
     writeStorage(AUTH_PHONE_KEY, res.profile.phone)
+    writeStorage(AUTH_PROFILE_KEY, JSON.stringify(res.profile))
     return res
   }
 
-  updateProfile(patch: Partial<UserProfile>): Promise<UserProfile> {
+  async updateProfile(patch: Partial<UserProfile>): Promise<UserProfile> {
     const phone = this.getAuthPhone()
-    if (!phone) return Promise.reject(new ApiError(401, 'Not signed in'))
-    return this.request<UserProfile>('/profile', {
+    const token = this.getAccessToken()
+    if (!token && !phone) return Promise.reject(new ApiError(401, 'Not signed in'))
+    const updated = await this.request<UserProfile>('/profile', {
       method: 'PATCH',
       body: JSON.stringify({ ...patch, phone }),
     })
+    writeStorage(AUTH_PROFILE_KEY, JSON.stringify(updated))
+    return updated
   }
 
   async signOut(): Promise<void> {
-    writeStorage(AUTH_PHONE_KEY, null)
-    await this.request<{ success: boolean }>('/auth/sign-out', { method: 'POST' })
+    const refreshToken = this.getRefreshToken()
+    this.clearAuth()
+    try {
+      await this.request<{ success: boolean }>('/auth/sign-out', {
+        method: 'POST',
+        body: JSON.stringify({ refreshToken }),
+      })
+    } finally {
+      this.clearAuth()
+    }
   }
 
   async getOrders(): Promise<Order[]> {
     const phone = this.getAuthPhone()
+    const token = this.getAccessToken()
     const ids = readGuestOrderIds()
-    if (phone) {
-      const own = await this.request<Order[]>(`/orders?phone=${encodeURIComponent(phone)}`)
+
+    if (token || phone) {
+      const query = phone ? `?phone=${encodeURIComponent(phone)}` : ''
+      const own = await this.request<Order[]>(`/orders${query}`)
       // Orders placed on this device before signing in are still shown.
       const extraIds = ids.filter((id) => !own.some((o) => o.id === id))
       if (extraIds.length === 0) return own
       const guest = await this.request<Order[]>(`/orders?ids=${extraIds.map(encodeURIComponent).join(',')}`)
       return [...own, ...guest].sort((a, b) => b.createdAt - a.createdAt)
     }
+
     if (ids.length === 0) return []
     return this.request<Order[]>(`/orders?ids=${ids.map(encodeURIComponent).join(',')}`)
   }

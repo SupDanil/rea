@@ -1,6 +1,7 @@
 import { useState, useRef } from 'react'
 import { cx } from '../utils/cx'
 import { btn, buttonRow, hint } from './ui'
+import { useEscape } from '../hooks/useEscape'
 
 type Props = {
   title: string
@@ -9,16 +10,19 @@ type Props = {
   cancelLabel: string
   onConfirm: () => void
   onCancel: () => void
+  modal?: boolean
 }
 
 /**
  * 2026 Liquid Glass ConfirmBox:
  * Compact glass popover card with subtle inner glow, destructive hold-to-fill or click feedback,
  * tactile vibration, and quick cancel option.
+ * When `modal` is true, renders centered in a full-screen blurred backdrop overlay.
  */
-export function ConfirmBox({ title, text, confirmLabel, cancelLabel, onConfirm, onCancel }: Props) {
+export function ConfirmBox({ title, text, confirmLabel, cancelLabel, onConfirm, onCancel, modal = false }: Props) {
   const [holding, setHolding] = useState(false)
   const holdTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  useEscape(onCancel, modal)
 
   const startHold = () => {
     setHolding(true)
@@ -45,13 +49,13 @@ export function ConfirmBox({ title, text, confirmLabel, cancelLabel, onConfirm, 
     }
   }
 
-  return (
+  const box = (
     <div
       className={cx(
-        'relative overflow-hidden rounded-[24px] p-5',
-        'bg-surface/95 dark:bg-surface/95 backdrop-blur-2xl',
+        'relative overflow-hidden rounded-[24px] p-5 text-left',
+        'bg-surface',
         'border border-glass-border shadow-lift',
-        'animate-[sheet-up_0.25s_var(--spring)_both]',
+        'animate-[sheet-up_0.25s_var(--ease-soft)_both]',
       )}
       role="alertdialog"
       aria-label={title}
@@ -91,4 +95,21 @@ export function ConfirmBox({ title, text, confirmLabel, cancelLabel, onConfirm, 
       </div>
     </div>
   )
+
+  if (modal) {
+    return (
+      <div
+        className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-[fade-in_0.2s_ease-out]"
+        onClick={(e) => {
+          if (e.target === e.currentTarget) onCancel()
+        }}
+      >
+        <div className="w-full max-w-[360px]">
+          {box}
+        </div>
+      </div>
+    )
+  }
+
+  return box
 }

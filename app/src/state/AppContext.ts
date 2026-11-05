@@ -10,6 +10,7 @@ export type AppState = {
   cart: Cart
   orders: Orders
   profile: Profile | null
+  isAuthLoading: boolean
   loyalty: Loyalty
   signIn: (profile: Profile) => void
   updateProfile: (patch: Partial<Profile>) => Promise<Profile>

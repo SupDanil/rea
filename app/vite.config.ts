@@ -14,6 +14,20 @@ export default defineConfig({
   server: {
     host: true,
     allowedHosts: true,
+    proxy: {
+      '/api': {
+        target: 'http://localhost:3333',
+        changeOrigin: true,
+      },
+      '/_next': {
+        target: 'http://localhost:3333',
+        changeOrigin: true,
+      },
+      '/uploads': {
+        target: 'http://localhost:3333',
+        changeOrigin: true,
+      },
+    },
   },
   test: {
     environment: 'jsdom',
@@ -47,6 +61,8 @@ export default defineConfig({
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,svg,png,woff2}'],
+        // Product photos come from the API; a copy of each must not be downloaded on install.
+        globIgnores: ['uploads/**'],
         runtimeCaching: [
           {
             // Offline the app still shows the last menu it got from the API.

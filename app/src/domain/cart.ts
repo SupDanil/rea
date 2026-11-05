@@ -6,11 +6,15 @@ export type CartLine = {
   itemId: string
   variantId: string
   ingredientIds: string[]
+  temperature?: 'hot' | 'cold'
   qty: number
 }
 
-export const lineKey = (itemId: string, variantId: string, ingredientIds: string[]): string =>
-  [itemId, variantId, ...[...ingredientIds].sort()].join('|')
+export const lineKey = (itemId: string, variantId: string, ingredientIds: string[], temperature?: 'hot' | 'cold'): string => {
+  const parts = [itemId, variantId, ...[...ingredientIds].sort()]
+  if (temperature) parts.push(`temp:${temperature}`)
+  return parts.join('|')
+}
 
 export type ResolvedLine = CartLine & {
   item: MenuItem

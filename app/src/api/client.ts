@@ -1,8 +1,9 @@
-import type { CatalogData, Order, Shop, UserProfile } from '../domain'
+import type { CatalogData, Order, Promotion, Shop, UserProfile } from '../domain'
 import type { CheckPromoDto, CreateOrderDto, SendSmsDto, UpdateOrderDto, VerifySmsDto } from './types'
 
 export interface ApiClient {
   getCatalog(): Promise<CatalogData>
+  getPromos(): Promise<Promotion[]>
   getShops(): Promise<Shop[]>
   getProfile(): Promise<UserProfile | null>
   sendSmsCode(phone: string): Promise<SendSmsDto>

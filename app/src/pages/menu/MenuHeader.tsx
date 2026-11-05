@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { avatar, openDot, roundBtn } from '../../components/ui'
 import { BagIcon, ChevronDownIcon, PersonIcon, RabbitIcon } from '../../components/icons'
 import { shopStatus } from '../../domain'
@@ -7,8 +7,10 @@ import { useNow } from '../../hooks/useNow'
 import { useShop } from '../../queries/useShop'
 import { useApp } from '../../state/AppContext'
 import { countOf } from '../../state/cart'
+import { Presence } from '../../components/Presence'
 import { ShopPickerSheet } from '../../components/ShopPickerSheet'
 import { cx } from '../../utils/cx'
+import { COVER_ATTR } from '../../utils/morph'
 
 /**
  * 2026 Liquid Glass MenuHeader:
@@ -25,6 +27,23 @@ export function MenuHeader() {
   const shop = useShop()
   const now = useNow(60_000)
   const status = shop ? shopStatus(shop, now) : null
+  const headerRef = useRef<HTMLElement>(null)
+
+  useLayoutEffect(() => {
+    const update = () => {
+      if (!headerRef.current) return
+      const h = headerRef.current.offsetHeight
+      document.documentElement.style.setProperty('--header-h', `${h}px`)
+    }
+    update()
+    const ro = typeof ResizeObserver !== 'undefined' ? new ResizeObserver(update) : null
+    if (headerRef.current && ro) ro.observe(headerRef.current)
+    window.addEventListener('resize', update)
+    return () => {
+      ro?.disconnect()
+      window.removeEventListener('resize', update)
+    }
+  }, [])
 
   useEffect(() => {
     const onScroll = () => {
@@ -37,12 +56,14 @@ export function MenuHeader() {
   return (
     <>
       <header
+        ref={headerRef}
         className={cx(
-          'sticky top-0 z-20 flex items-center justify-between gap-2 px-3 sm:px-4 pt-[calc(10px+env(safe-area-inset-top))] pb-2.5 transition-all duration-300',
+          'sticky top-0 z-20 flex items-center justify-between gap-2 px-3 sm:px-4 pt-[calc(10px+env(safe-area-inset-top))] pb-2.5 border-b transition-[background-color,border-color,box-shadow] duration-200',
           scrolled
-            ? 'bg-bg/85 backdrop-blur-xl border-b border-line/60 shadow-[0_4px_20px_rgba(0,0,0,0.03)]'
-            : 'bg-transparent',
+            ? 'bg-bg/95 wide:bg-bg/85 wide:backdrop-blur-xl border-line/60 shadow-[0_4px_20px_rgba(0,0,0,0.03)]'
+            : 'bg-transparent border-line/0',
         )}
+        {...{ [COVER_ATTR]: '' }}
       >
         {/* Coffee Shop Capsule Button */}
         <button
@@ -120,7 +141,7 @@ export function MenuHeader() {
         </div>
       </header>
 
-      {showShopPicker && <ShopPickerSheet onClose={() => setShowShopPicker(false)} />}
+      <Presence>{showShopPicker && <ShopPickerSheet onClose={() => setShowShopPicker(false)} />}</Presence>
     </>
   )
 }
