@@ -2,7 +2,7 @@ import { block, blockTitle, btn, hint, panel } from '../../components/ui'
 import { useNow } from '../../hooks/useNow'
 import { useCatalog } from '../../queries/useCatalog'
 import { resolveLines } from '../../state/cart'
-import { statusOf, type Order, type OrderStatus } from '../../state/orders'
+import { type Order, type OrderStatus,statusOf } from '../../state/orders'
 import { cx } from '../../utils/cx'
 import { dateTime, formatPrice } from '../../utils/format'
 

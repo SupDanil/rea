@@ -1,6 +1,7 @@
-import { afterEach, describe, expect, it, vi } from 'vitest'
 import { act, render } from '@testing-library/react'
 import { useRef } from 'react'
+import { afterEach, describe, expect, it, vi } from 'vitest'
+
 import { useAmbientWhileVisible } from './useAmbientWhileVisible'
 
 function Banner() {

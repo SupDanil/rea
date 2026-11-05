@@ -1,1 +1,1 @@
-export { cartPricing, type AppliedPromo, type CartLoyalty } from '../../domain/pricing'
+export { type AppliedPromo, type CartLoyalty,cartPricing } from '../../domain/pricing'

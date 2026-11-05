@@ -1,11 +1,12 @@
-import { describe, it, expect, vi } from 'vitest'
-import { render, screen, fireEvent, waitFor, within } from '@testing-library/react'
-import { OrderStatusCard } from './OrderStatusCard'
-import { ShopPickerSheet } from '../../components/ShopPickerSheet'
-import { AppProvider } from '../../state/AppProvider'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import type { Order } from '../../domain'
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
+import { describe, expect, it, vi } from 'vitest'
+
 import { api } from '../../api'
+import { ShopPickerSheet } from '../../components/ShopPickerSheet'
+import type { Order } from '../../domain'
+import { AppProvider } from '../../state/AppProvider'
+import { OrderStatusCard } from './OrderStatusCard'
 
 const mockOrder: Order = {
   id: 'ord-smart-123',

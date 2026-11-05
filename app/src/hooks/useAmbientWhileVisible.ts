@@ -1,4 +1,4 @@
-import { useEffect, type RefObject } from 'react'
+import { type RefObject,useEffect } from 'react'
 
 /** Marks `ref` with `data-offscreen` while it is out of view, which pauses the `data-ambient` loops inside it. */
 export function useAmbientWhileVisible(ref: RefObject<HTMLElement | null>) {

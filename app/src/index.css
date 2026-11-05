@@ -366,10 +366,11 @@ html[data-scroll-lock] {
   --tinted: color-mix(in oklab, var(--tint) var(--tint-amount), var(--tint-base));
 }
 
-/* Soft highlight behind an illustration on its tinted square. */
+/* Studio spotlight highlight behind an illustration, matching ProductPage inside look */
 @utility art-glow {
-  --tinted: color-mix(in oklab, var(--tint) var(--tint-amount), var(--tint-base));
-  background: radial-gradient(70% 60% at 50% 42%, var(--glow) 0%, transparent 70%), var(--tinted);
+  background:
+    radial-gradient(ellipse 90% 55% at 50% 25%, color-mix(in srgb, var(--tint, #c5c7d7) var(--pd-spot-mix), var(--pd-spot-base)) 0%, transparent 75%),
+    linear-gradient(180deg, var(--pd-bg-from) 0%, var(--pd-bg-to) 100%);
 }
 
 /*

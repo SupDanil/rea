@@ -1,20 +1,21 @@
 import { useCallback, useEffect, useState } from 'react'
+
 import { api } from '../api'
 import type { CreateOrderDto, UpdateOrderDto } from '../api/types'
 import {
   canCancel,
   isActive,
   makingProgress,
-  readyTimeFor,
-  statusOf,
   type Order,
   type OrderStatus,
   type PaymentMethod,
   type Pickup,
+  readyTimeFor,
+  statusOf,
 } from '../domain/orders'
 
-export type { Pickup, PaymentMethod, Order, OrderStatus }
-export { readyTimeFor, statusOf, makingProgress, canCancel, isActive }
+export type { Order, OrderStatus,PaymentMethod, Pickup }
+export { canCancel, isActive,makingProgress, readyTimeFor, statusOf }
 
 const POLL_MS = 4000
 

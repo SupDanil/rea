@@ -1,6 +1,7 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { ApiError, AUTH_PHONE_KEY, AUTH_ACCESS_TOKEN_KEY, AUTH_REFRESH_TOKEN_KEY, GUEST_ORDERS_KEY, HttpApiClient, createHttpClient } from './httpClient'
+import { afterEach,beforeEach, describe, expect, it, vi } from 'vitest'
+
 import type { Order } from '../domain'
+import { ApiError, AUTH_ACCESS_TOKEN_KEY, AUTH_PHONE_KEY, AUTH_REFRESH_TOKEN_KEY, createHttpClient,GUEST_ORDERS_KEY, HttpApiClient } from './httpClient'
 
 const baseUrl = 'https://api.test.rea.local/api/v1'
 

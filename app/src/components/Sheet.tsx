@@ -1,8 +1,9 @@
 import type { ReactNode, Ref } from 'react'
+
+import { cx } from '../utils/cx'
 import { BackIcon, CloseIcon } from './icons'
 import { Modal } from './Modal'
 import { iconBtn, sheetBody, sheetDock, sheetTitle } from './ui'
-import { cx } from '../utils/cx'
 
 type Props = {
   /** Accessible name of the dialog */

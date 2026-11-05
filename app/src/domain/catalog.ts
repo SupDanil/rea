@@ -26,6 +26,7 @@ export type Ingredient = {
   color: string
   stopped?: boolean
   maxQty?: number
+  imageUrl?: string
 }
 
 export type IngredientGroup = {

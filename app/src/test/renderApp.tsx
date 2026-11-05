@@ -2,6 +2,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { render } from '@testing-library/react'
 import { createMemoryRouter, RouterProvider } from 'react-router'
 import { vi } from 'vitest'
+
 import { api, type ApiClient } from '../api'
 import { routes } from '../app/router'
 import { AppProvider } from '../state/AppProvider'

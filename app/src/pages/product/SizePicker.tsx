@@ -1,4 +1,5 @@
-import { useLayoutEffect, useRef, type RefObject } from 'react'
+import { type RefObject,useLayoutEffect, useRef } from 'react'
+
 import type { Variant } from '../../domain'
 
 const sizeLabel = { S: 'S', M: 'M', L: 'L', ONE: '' } as const

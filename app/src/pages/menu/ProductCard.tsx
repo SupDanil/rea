@@ -1,12 +1,13 @@
-import { memo, useMemo, useRef, useState, type CSSProperties } from 'react'
+import { type CSSProperties,memo, useMemo, useRef, useState } from 'react'
 import { flushSync } from 'react-dom'
+
 import { PlusIcon } from '../../components/icons'
 import { ItemArt } from '../../components/ItemArt'
-import { isDrink, isSoldOut, itemImage, minPrice, type MenuItem } from '../../domain'
+import { isDrink, isSoldOut, itemImage, type MenuItem,minPrice } from '../../domain'
 import { useApp } from '../../state/AppContext'
 import { cx } from '../../utils/cx'
-import { artProps } from '../../utils/morph'
 import { formatPrice } from '../../utils/format'
+import { artProps } from '../../utils/morph'
 import { bounce, flyTo } from '../../utils/motion'
 
 /** Where a product sits in the menu feed, as opposed to a promo of the same product. */
@@ -111,7 +112,7 @@ export const ProductCard = memo(function ProductCard({ item, onOpen }: ProductCa
 
       <div
         className={cx(
-          'art-glow pointer-events-none relative grid aspect-square place-items-center overflow-hidden rounded-[18px] sm:rounded-[20px]',
+          'art-glow mesh-grain pointer-events-none relative grid aspect-square place-items-center overflow-hidden rounded-[18px] sm:rounded-[20px]',
           soldOut && 'opacity-60 grayscale-50',
         )}
         style={{ '--tint': item.art.bg } as CSSProperties}
@@ -120,16 +121,16 @@ export const ProductCard = memo(function ProductCard({ item, onOpen }: ProductCa
           ref={artRef}
           art={activeArt}
           imageUrl={activeImageUrl}
-          className="h-[84%] w-auto aspect-[200/220] transition-transform duration-300 ease-soft group-hover:-translate-y-1 group-hover:scale-105"
+          className="relative z-10 h-[84%] w-auto aspect-[200/220] transition-transform duration-300 ease-soft group-hover:-translate-y-1 group-hover:scale-105"
           {...artProps(item.id, CARD_SLOT)}
         />
         {item.badge && (
-          <span className="absolute top-2 left-2 rounded-full bg-accent px-2 py-0.5 text-[10px] font-display font-bold tracking-wider text-accent-ink uppercase shadow-sm">
+          <span className="absolute top-2 left-2 rounded-full bg-accent px-2 py-0.5 text-[10px] font-display font-bold tracking-wider text-accent-ink uppercase shadow-sm z-10">
             {item.badge}
           </span>
         )}
         {isOnlyCold && (
-          <span className="absolute top-2 right-2 rounded-full bg-blue-500/80 backdrop-blur-xs px-1.5 py-0.5 text-[9px] font-bold text-white shadow-xs">
+          <span className="absolute top-2 right-2 rounded-full bg-blue-500/80 backdrop-blur-xs px-1.5 py-0.5 text-[9px] font-bold text-white shadow-xs z-10">
             ❄️ Лёд
           </span>
         )}

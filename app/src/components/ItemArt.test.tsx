@@ -1,5 +1,6 @@
-import { describe, expect, it } from 'vitest'
 import { fireEvent, render } from '@testing-library/react'
+import { describe, expect, it } from 'vitest'
+
 import { ItemArt } from './ItemArt'
 
 const art = { kind: 'cup', fill: '#5e4b7e', bg: '#dcd8ec' } as const

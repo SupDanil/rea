@@ -1,10 +1,11 @@
 import { createHashRouter, Navigate, type RouteObject } from 'react-router'
+
 import { CartPage } from '../pages/cart/CartPage'
 import { LoginPage } from '../pages/login/LoginPage'
 import { OrderPage } from '../pages/order/OrderPage'
 import { ProductPage } from '../pages/product/ProductPage'
-import { PromoArticlePage } from '../pages/promo/PromoArticlePage'
 import { ProfilePage } from '../pages/profile/ProfilePage'
+import { PromoArticlePage } from '../pages/promo/PromoArticlePage'
 import { RootLayout } from './RootLayout'
 
 // Hash routing keeps deep links working on GitHub Pages without a server fallback;

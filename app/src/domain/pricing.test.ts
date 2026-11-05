@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
-import { cartPricing } from './pricing'
+
 import { testCatalog as staticCatalog } from '../test/catalogFixture'
+import { cartPricing } from './pricing'
 
 describe('domain/pricing', () => {
   const lines = [

@@ -1,21 +1,22 @@
 import { useCallback, useEffect, useState } from 'react'
+
 import { api } from '../api'
 import {
   GIFT_DRINK_LIMIT,
   giftValue,
+  type Level,
   levels,
+  type Loyalty,
   loyaltyOf,
   STAMP_MIN_TOTAL,
   STAMPS_PER_GIFT,
-  type Level,
-  type Loyalty,
 } from '../domain/loyalty'
 import type { UserProfile } from '../domain/profile'
 import { hasAuthToken, readCachedProfile, writeCachedProfile } from '../utils/storage'
 
 export type Profile = UserProfile
 export type { Level, Loyalty }
-export { levels, STAMPS_PER_GIFT, STAMP_MIN_TOTAL, GIFT_DRINK_LIMIT, loyaltyOf, giftValue }
+export { GIFT_DRINK_LIMIT, giftValue,levels, loyaltyOf, STAMP_MIN_TOTAL, STAMPS_PER_GIFT }
 
 // Keys the old demo build kept its fake profile and orders under.
 const LEGACY_KEYS = ['zerno-orders', 'zerno-profile', 'mock-api-orders', 'mock-api-profile']

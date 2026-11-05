@@ -3,7 +3,7 @@ import { useNow } from '../../hooks/useNow'
 import { useCatalog } from '../../queries/useCatalog'
 import { useApp } from '../../state/AppContext'
 import { countOf, subtotalOf } from '../../state/cart'
-import { isActive, statusOf, type OrderStatus } from '../../state/orders'
+import { isActive, type OrderStatus,statusOf } from '../../state/orders'
 import { cx } from '../../utils/cx'
 import { formatPrice } from '../../utils/format'
 

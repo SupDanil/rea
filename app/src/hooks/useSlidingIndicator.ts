@@ -1,4 +1,4 @@
-import { useLayoutEffect, useRef, type RefObject } from 'react'
+import { type RefObject,useLayoutEffect, useRef } from 'react'
 
 /**
  * One highlight that slides between tabs instead of each tab fading its own

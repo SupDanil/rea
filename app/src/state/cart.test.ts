@@ -1,7 +1,8 @@
-import { describe, it, expect, beforeEach } from 'vitest'
+import { act,renderHook } from '@testing-library/react'
+import { beforeEach,describe, expect, it } from 'vitest'
+
 import { testCatalog } from '../test/catalogFixture'
-import { renderHook, act } from '@testing-library/react'
-import { useCart, resolveLine, resolveLines, subtotalOf } from './cart'
+import { resolveLine, resolveLines, subtotalOf,useCart } from './cart'
 
 describe('useCart hook and state', () => {
   beforeEach(() => {

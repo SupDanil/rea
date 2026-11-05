@@ -1,13 +1,14 @@
-import { describe, it, expect } from 'vitest'
+import { describe, expect,it } from 'vitest'
+
 import {
-  formatPrice,
-  formatAmount,
   clockTime,
   dateTime,
-  plural,
+  formatAmount,
   formatPhone,
-  phoneDigits,
+  formatPrice,
   isEmail,
+  phoneDigits,
+  plural,
 } from './format'
 
 describe('Utils: format', () => {

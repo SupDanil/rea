@@ -1,4 +1,5 @@
 import type { RefObject } from 'react'
+
 import { block, blockTitle, field, hint } from '../../components/ui'
 
 type Props = { value: string; error: boolean; inputRef: RefObject<HTMLInputElement | null>; onChange: (value: string) => void }

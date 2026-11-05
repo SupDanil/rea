@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react'
+
 import { IngredientArt } from '../../components/ItemArt'
 import type { Ingredient, IngredientGroup, Variant } from '../../domain'
 import { countAddons } from '../../domain'

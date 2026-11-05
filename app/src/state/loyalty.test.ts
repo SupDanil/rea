@@ -1,8 +1,9 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { renderHook, act } from '@testing-library/react'
-import { useProfile, giftValue } from './loyalty'
+import { act,renderHook } from '@testing-library/react'
+import { afterEach,beforeEach, describe, expect, it, vi } from 'vitest'
+
 import { api } from '../api'
 import { testCatalog } from '../test/catalogFixture'
+import { giftValue,useProfile } from './loyalty'
 
 const flush = () => act(async () => {
   await Promise.resolve()

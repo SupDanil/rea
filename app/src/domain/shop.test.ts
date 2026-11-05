@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { hoursOn, isPaused, prepRange, shopStatus, type Shop } from './shop'
+
+import { hoursOn, isPaused, prepRange, type Shop,shopStatus } from './shop'
 
 const shop: Shop = {
   id: 's',

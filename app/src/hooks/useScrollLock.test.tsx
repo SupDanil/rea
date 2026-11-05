@@ -1,5 +1,6 @@
-import { describe, expect, it } from 'vitest'
 import { renderHook } from '@testing-library/react'
+import { describe, expect, it } from 'vitest'
+
 import { useScrollLock } from './useScrollLock'
 
 const locked = () => document.documentElement.hasAttribute('data-scroll-lock')

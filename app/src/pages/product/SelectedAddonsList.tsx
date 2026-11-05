@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
+
 import { IngredientArt } from '../../components/ItemArt'
 import type { Ingredient, IngredientGroup } from '../../domain'
 import { cx } from '../../utils/cx'
+import { optimizedImageUrl } from '../../utils/imageUrl'
 
 export type SelectedAddonItem = {
   group: IngredientGroup
@@ -304,8 +306,16 @@ export function SelectedAddonsList({ items, onRemoveAll, className }: Props) {
           >
             {/* Left: Icon & Name */}
             <div className="flex items-center gap-1.5 min-w-0 flex-1">
-              <div className="size-4.5 xs:size-5 shrink-0 grid place-items-center rounded-full bg-pd-tile border border-pd-line/50">
-                <IngredientArt color={item.ingredient.color} className="size-3 xs:size-3.5" />
+              <div className="size-4.5 xs:size-5 shrink-0 grid place-items-center rounded-full bg-pd-tile border border-pd-line/50 overflow-hidden">
+                {item.ingredient.imageUrl ? (
+                  <img
+                    src={optimizedImageUrl(item.ingredient.imageUrl)}
+                    alt=""
+                    className="size-full object-contain"
+                  />
+                ) : (
+                  <IngredientArt color={item.ingredient.color} className="size-3 xs:size-3.5" />
+                )}
               </div>
               <span className="text-[11px] xs:text-[11.5px] wide:text-[12.5px] font-semibold text-pd-ink truncate leading-tight">
                 {item.ingredient.name}

@@ -1,7 +1,8 @@
-import { useState, useRef } from 'react'
+import { useRef,useState } from 'react'
+
+import { useEscape } from '../hooks/useEscape'
 import { cx } from '../utils/cx'
 import { btn, buttonRow, hint } from './ui'
-import { useEscape } from '../hooks/useEscape'
 
 type Props = {
   title: string

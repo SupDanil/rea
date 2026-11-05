@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+
 import { artProps, COVER_ATTR, findThumb, flyArt, PAGE_ATTR, settledRect } from './morph'
 
 const rect = (left: number, top: number, width: number, height: number) =>

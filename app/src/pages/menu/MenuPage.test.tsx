@@ -1,7 +1,8 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { fireEvent, screen, waitFor, within } from '@testing-library/react'
-import { renderApp } from '../../test/renderApp'
+import { afterEach,beforeEach, describe, expect, it, vi } from 'vitest'
+
 import { catalogData, testShop } from '../../test/catalogFixture'
+import { renderApp } from '../../test/renderApp'
 
 describe('MenuPage (API-driven menu)', () => {
   beforeEach(() => localStorage.clear())

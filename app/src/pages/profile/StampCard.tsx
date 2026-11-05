@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react'
+
 import { hint } from '../../components/ui'
-import { GIFT_DRINK_LIMIT, STAMP_MIN_TOTAL, STAMPS_PER_GIFT, type Loyalty } from '../../state/loyalty'
+import { GIFT_DRINK_LIMIT, type Loyalty,STAMP_MIN_TOTAL, STAMPS_PER_GIFT } from '../../state/loyalty'
 import { cx } from '../../utils/cx'
 import { formatPrice, plural } from '../../utils/format'
 import { prefersReducedMotion } from '../../utils/motion'

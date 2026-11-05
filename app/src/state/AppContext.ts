@@ -1,4 +1,5 @@
 import { createContext, useContext } from 'react'
+
 import type { Cart } from './cart'
 import type { Loyalty, Profile } from './loyalty'
 import type { Order, Orders } from './orders'

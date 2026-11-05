@@ -1,10 +1,11 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { renderHook, act } from '@testing-library/react'
-import { useCheckout } from './useCheckout'
-import * as AppContextModule from '../../state/AppContext'
-import * as AppNavigateModule from '../../hooks/useAppNavigate'
-import { SAVED_NAME_KEY } from '../../utils/storage'
+import { act,renderHook } from '@testing-library/react'
+import { afterEach,beforeEach, describe, expect, it, vi } from 'vitest'
+
 import { ApiError } from '../../api'
+import * as AppNavigateModule from '../../hooks/useAppNavigate'
+import * as AppContextModule from '../../state/AppContext'
+import { SAVED_NAME_KEY } from '../../utils/storage'
+import { useCheckout } from './useCheckout'
 
 describe('useCheckout hook', () => {
   const mockClearCart = vi.fn()

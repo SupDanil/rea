@@ -1,8 +1,9 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { fireEvent, screen, within } from '@testing-library/react'
-import { renderApp } from '../../test/renderApp'
-import { catalogData } from '../../test/catalogFixture'
+import { afterEach,beforeEach, describe, expect, it, vi } from 'vitest'
+
 import type { CatalogData, Promotion } from '../../domain'
+import { catalogData } from '../../test/catalogFixture'
+import { renderApp } from '../../test/renderApp'
 
 describe('PromoArticlePage (Dedicated Promo Story & Product Links)', () => {
   beforeEach(() => localStorage.clear())

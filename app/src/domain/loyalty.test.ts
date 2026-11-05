@@ -1,8 +1,9 @@
 import { describe, expect, it } from 'vitest'
+
+import { testCatalog as staticCatalog } from '../test/catalogFixture'
 import { giftValue, loyaltyOf, STAMP_MIN_TOTAL } from './loyalty'
 import type { Order } from './orders'
 import type { UserProfile } from './profile'
-import { testCatalog as staticCatalog } from '../test/catalogFixture'
 
 describe('domain/loyalty', () => {
   const profile: UserProfile = {

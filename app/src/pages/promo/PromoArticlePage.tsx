@@ -1,16 +1,17 @@
-import { useState, useRef, type CSSProperties } from 'react'
+import { type CSSProperties,useRef, useState } from 'react'
 import { Navigate, useParams } from 'react-router'
+
 import { CloseIcon, PlusIcon } from '../../components/icons'
 import { ItemArt } from '../../components/ItemArt'
 import { Modal } from '../../components/Modal'
-import { isSoldOut, minPrice, type MenuItem, itemImage } from '../../domain'
-import { useCatalog, useCatalogQuery } from '../../queries/useCatalog'
+import { isSoldOut, itemImage,type MenuItem, minPrice } from '../../domain'
 import { useAppNavigate } from '../../hooks/useAppNavigate'
+import { useCatalog, useCatalogQuery } from '../../queries/useCatalog'
 import { useApp } from '../../state/AppContext'
 import { cx } from '../../utils/cx'
 import { formatPrice } from '../../utils/format'
-import { bounce, flyTo } from '../../utils/motion'
 import { artProps } from '../../utils/morph'
+import { bounce, flyTo } from '../../utils/motion'
 
 const ARTICLE_SLOT = 'article'
 

@@ -1,4 +1,5 @@
 import { useState } from 'react'
+
 import { block, blockTitle, panel, toggle } from '../../components/ui'
 import type { Profile } from '../../state/loyalty'
 import type { Theme } from '../../state/theme'

@@ -1,12 +1,14 @@
-import { useEffect, useLayoutEffect, useMemo, useRef, useState, type RefObject } from 'react'
+import { type RefObject,useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
+
 import { ItemArt } from '../../components/ItemArt'
 import type { IngredientGroup, MenuItem, Variant } from '../../domain'
 import { countAddons } from '../../domain'
 import { cx } from '../../utils/cx'
 import { artProps } from '../../utils/morph'
 import { prefersReducedMotion } from '../../utils/motion'
-import { SelectedAddonsList, type SelectedAddonItem } from './SelectedAddonsList'
+import { type SelectedAddonItem,SelectedAddonsList } from './SelectedAddonsList'
 import type { Selection } from './useProductConfig'
+import { useArtBounds } from './useArtBounds'
 
 export type HeroBuilderAreaProps = {
   item: MenuItem
@@ -135,6 +137,8 @@ export function HeroBuilderArea({
     return () => window.clearTimeout(t)
   }, [])
 
+  const effectiveImageUrl = imageUrl !== undefined ? imageUrl : item.imageUrl
+  const bounds = useArtBounds(artRef, effectiveImageUrl, `${item.id}-${temperature}-${item.art.kind}`)
   const isBuilder = hasAddons
   const W = containerDims.width || 390
   const H = containerDims.height || 380
@@ -184,11 +188,6 @@ export function HeroBuilderArea({
   const sizeScale = variant.size === 'L' ? 1.05 : variant.size === 'S' ? 0.94 : 1
   const currentScale = isBuilder ? sizeScale * builderScale : sizeScale * heroScale
 
-  // Distance from SVG/image center (x=100 in 200x220 viewBox) to the outer left rim of the drink (x≈46-52)
-  // In unscaled rendered pixels (baseHeight=160, baseWidth=145.45): (100 - 48) / 200 * 145.45 ≈ 38px
-  const unscaledVisualHalfWidth = 38
-  const visualHalfWidth = Math.round(unscaledVisualHalfWidth * currentScale)
-
   const rightMargin = sideMargin
 
   // Vertical carousel width: generous ~62-66% of screen width so it directly overlaps the cup
@@ -196,14 +195,11 @@ export function HeroBuilderArea({
   const maxListLimit = W >= 600 ? 320 : 255
   const rightListWidth = Math.max(140, Math.min(maxListLimit, Math.round(W * listWidthRatio)))
 
-  // Symmetrical left/right alignment:
-  // In State B (Builder), cup shifts left:
-  // - On desktop: strictly centered in the left area (between container left edge and the right addons list)
-  // - On mobile: visual left edge aligns with sideMargin from screen left edge to maximize room for addons list
-  const desktopShiftX = -Math.round((rightMargin + rightListWidth) / 2)
-  const mobileShiftX = -Math.round(W / 2 - visualHalfWidth - sideMargin)
-  const targetShiftX = isDesktop ? desktopShiftX : mobileShiftX
-  const shiftX = isBuilder ? Math.min(0, targetShiftX) : 0
+  // Align the visible left edge, including asymmetric transparent image padding.
+  // Scale, vertical position and the addons list retain their original layout.
+  const shiftX = isBuilder
+    ? sideMargin - W / 2 + (100 - bounds.x) * (160 / 220) * currentScale
+    : 0
 
   const shouldAnimate = !isInitial && !prefersReducedMotion()
 
@@ -228,7 +224,7 @@ export function HeroBuilderArea({
               <ItemArt
                 key={`${item.id}-${temperature || 'default'}`}
                 art={temperature === 'cold' && item.art.kind === 'cup' && !imageUrl ? { ...item.art, kind: 'iced' as const } : item.art}
-                imageUrl={imageUrl !== undefined ? imageUrl : item.imageUrl}
+                imageUrl={effectiveImageUrl}
                 className={cx(
                   'h-[160px] w-auto aspect-[200/220] select-none pointer-events-none',
                   item.id !== openedWith && 'animate-[swap-in_0.4s_var(--ease-soft)_both]',

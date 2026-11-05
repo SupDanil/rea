@@ -1,4 +1,5 @@
 import { useRef } from 'react'
+
 import { block, blockTitle, hint } from '../../components/ui'
 import { prepRange, type Shop } from '../../domain'
 import { useSlidingIndicator } from '../../hooks/useSlidingIndicator'

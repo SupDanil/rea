@@ -1,4 +1,5 @@
 import type { CSSProperties } from 'react'
+
 import { ItemArt } from '../../components/ItemArt'
 import { block, blockTitle } from '../../components/ui'
 import type { MenuItem } from '../../domain'
@@ -22,10 +23,10 @@ export function UpsellRow({ items, disabled, onAdd }: { items: MenuItem[]; disab
             disabled={disabled}
           >
             <span
-              className="art-glow grid aspect-square place-items-center rounded-[16px]"
+              className="art-glow mesh-grain grid aspect-square place-items-center rounded-[16px] overflow-hidden"
               style={{ '--tint': item.art.bg } as CSSProperties}
             >
-              <ItemArt art={item.art} className="size-[84%]" />
+              <ItemArt art={item.art} className="relative z-10 size-[84%]" />
             </span>
             <span className="mx-1 mt-1 min-h-[30px] font-display text-[12px] leading-[1.2] font-bold text-ink line-clamp-2">
               {item.name}

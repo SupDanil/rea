@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
+
 import { readString, writeString } from '../utils/storage'
 
 export type Theme = 'light' | 'dark'

@@ -1,6 +1,6 @@
+import { type CartLine,resolveLines } from './cart'
 import type { Catalog } from './catalog'
 import { isDrink } from './catalog'
-import { resolveLines, type CartLine } from './cart'
 import type { Order } from './orders'
 import type { UserProfile } from './profile'
 

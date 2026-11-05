@@ -1,11 +1,12 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { render, screen, fireEvent, act } from '@testing-library/react'
-import { ConfirmBox } from './ConfirmBox'
-import { Toast } from './Toast'
-import { Sheet } from './Sheet'
+import { act,fireEvent, render, screen } from '@testing-library/react'
+import { afterEach,beforeEach, describe, expect, it, vi } from 'vitest'
+
 import { CartLineItem } from '../pages/cart/CartLineItem'
 import { AppContext, type AppState } from '../state/AppContext'
 import type { ResolvedLine } from '../state/cart'
+import { ConfirmBox } from './ConfirmBox'
+import { Sheet } from './Sheet'
+import { Toast } from './Toast'
 
 describe('2026 Interactive UI Patterns', () => {
   beforeEach(() => {

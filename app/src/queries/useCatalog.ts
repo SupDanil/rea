@@ -1,7 +1,8 @@
 import { useQuery } from '@tanstack/react-query'
 import { useMemo } from 'react'
+
 import { api } from '../api'
-import { createCatalog, type Catalog } from '../domain'
+import { type Catalog,createCatalog } from '../domain'
 import { queryKeys } from './keys'
 
 /** Stand-in while the menu loads or when it failed: every lookup simply finds nothing. */

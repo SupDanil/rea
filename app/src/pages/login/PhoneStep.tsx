@@ -1,9 +1,10 @@
-import { useState, type RefObject } from 'react'
+import { type RefObject,useState } from 'react'
+
+import { LegalModal } from '../../components/LegalModal'
 import { btn, field, hint } from '../../components/ui'
 import { cx } from '../../utils/cx'
 import { formatPhone, phoneDigits } from '../../utils/format'
 import { stepBox, stepLead, stepTitle } from './steps'
-import { LegalModal } from '../../components/LegalModal'
 
 type Props = {
   digits: string

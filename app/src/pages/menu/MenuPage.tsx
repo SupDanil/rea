@@ -1,15 +1,16 @@
 import { useCallback } from 'react'
+
 import { EmptyState } from '../../components/EmptyState'
 import type { Promotion } from '../../domain'
+import { useAppNavigate } from '../../hooks/useAppNavigate'
 import { useCatalog, useCatalogQuery } from '../../queries/useCatalog'
 import { useShop } from '../../queries/useShop'
-import { useAppNavigate } from '../../hooks/useAppNavigate'
 import { cx } from '../../utils/cx'
 import { PAGE_ATTR } from '../../utils/morph'
 import { CategoryNav } from './CategoryNav'
-import { PromoBanner } from './PromoBanner'
 import { MenuHeader } from './MenuHeader'
 import { CARD_SLOT, ProductCard } from './ProductCard'
+import { PromoBanner } from './PromoBanner'
 import { sectionId, useMenuScrollSpy } from './useMenuScrollSpy'
 
 /** The base layer: every other screen opens on top of it. */
@@ -72,7 +73,9 @@ export function MenuPage() {
       />
       <main>
         {spy.sections.map(({ sub }, i) => {
-          const categoryPromo = catalog.promoByCategory.get(sub.id) || (sub.parentId ? catalog.promoByCategory.get(sub.parentId) : undefined)
+          const categoryPromo =
+            catalog.promoByCategory.get(sub.id) ||
+            (sub.parentId ? catalog.promoByCategory.get(sub.parentId) : undefined)
           const categoryPromoProduct = categoryPromo?.targetProductId ? catalog.itemById.get(categoryPromo.targetProductId) : undefined
           const items = catalog.itemsOf(sub.id)
 

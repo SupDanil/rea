@@ -1,8 +1,10 @@
-import { useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { type PointerEvent, useEffect, useLayoutEffect, useRef, useState } from 'react'
+
 import { IngredientArt } from '../../components/ItemArt'
 import type { Ingredient, IngredientGroup } from '../../domain'
 import { cx } from '../../utils/cx'
 import { formatPrice } from '../../utils/format'
+import { optimizedImageUrl } from '../../utils/imageUrl'
 
 type Props = {
   group: IngredientGroup
@@ -14,511 +16,263 @@ type Props = {
   onRemove: (ingredient: Ingredient) => void
 }
 
-/** The deck's exact height, so the cup above it keeps its size until the deck is built. */
+// 152px card + 8px bottom padding + optional 44px pagination. No loading jump.
 export function CraftDeckSlot({ group }: { group: IngredientGroup }) {
-  const withDots = group.ingredients.length > 1
-  return <div aria-hidden="true" className={withDots ? 'h-[188px] xs:h-[192px]' : 'h-[158px] xs:h-[162px]'} />
+  return <div aria-hidden="true" className={group.ingredients.length > 1 ? 'h-[204px]' : 'h-[160px]'} />
 }
 
-/**
- * 2026 Specialty Coffee CoverFlow Deck:
- * Compact square/squircle cards (104px × 128px) that leave maximum room for the drink cup.
- * The active central card is visibly brought forward (scale-110, -translate-y-1.5, z-20, glowing crema elevation).
- * Side cards gracefully recede (scale-90, opacity-40).
- * Magnetic snap centering with exact pixel offset calculations.
- */
-export function CraftDeck({
-  group,
-  qtyOf,
-  canAdd,
-  onPick,
-  onRemove,
-}: Props) {
-  const containerRef = useRef<HTMLDivElement>(null)
-  const initialIndex = () => {
-    const selectedIdx = group.ingredients.findIndex((i) => qtyOf(i.id) > 0)
-    return selectedIdx >= 0 ? selectedIdx : 0
-  }
-  const [activeIndex, setActiveIndex] = useState(initialIndex)
+function nearestCard(el: HTMLDivElement) {
+  const center = el.scrollLeft + el.clientWidth / 2
+  let nearest = 0
+  let distance = Infinity
+  el.querySelectorAll<HTMLElement>('[data-card-index]').forEach((card, index) => {
+    const diff = Math.abs(card.offsetLeft + card.offsetWidth / 2 - center)
+    if (diff < distance) { nearest = index; distance = diff }
+  })
+  return nearest
+}
 
-  // Mouse drag-to-scroll state for desktop
-  const isMouseDownRef = useRef(false)
-  const dragDistanceRef = useRef(0)
+/** Native touch scrolling; mouse dragging never handles touch-generated mouse events. */
+export function CraftDeck({ group, qtyOf, canAdd, onPick, onRemove }: Props) {
+  const containerRef = useRef<HTMLDivElement>(null)
+  const [activeIndex, setActiveIndex] = useState(() => Math.max(0, group.ingredients.findIndex((i) => qtyOf(i.id) > 0)))
+  const activeRef = useRef(activeIndex)
+  const scrollFrame = useRef(0)
+  const dragCleanup = useRef<(() => void) | null>(null)
+  const dragged = useRef(false)
   const [isDragging, setIsDragging] = useState(false)
+
+  const markActive = (index: number) => {
+    activeRef.current = index
+    setActiveIndex(index)
+  }
 
   const centerCard = (index: number, smooth = true) => {
     const el = containerRef.current
-    if (!el) return
-    const card = el.querySelector<HTMLElement>(`[data-card-index="${index}"]`)
-    if (card) {
-      const targetScroll = card.offsetLeft - (el.clientWidth - card.offsetWidth) / 2
-      if (Math.abs(el.scrollLeft - targetScroll) > 2) {
-        if (typeof el.scrollTo === 'function') {
-          try {
-            el.scrollTo({ left: targetScroll, behavior: smooth ? 'smooth' : 'instant' })
-          } catch {
-            el.scrollLeft = targetScroll
-          }
-        } else {
-          el.scrollLeft = targetScroll
-        }
-      }
-      setActiveIndex(index)
-    }
+    const card = el?.querySelector<HTMLElement>(`[data-card-index="${index}"]`)
+    if (!el || !card) return
+    const left = card.offsetLeft - (el.clientWidth - card.offsetWidth) / 2
+    const behavior = smooth && !window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'smooth' : 'instant'
+    if (typeof el.scrollTo === 'function') el.scrollTo({ left, behavior })
+    else el.scrollLeft = left
+    markActive(index)
   }
 
-  // Synchronously center the selected card (or first card) before first paint when switching groups.
-  // This eliminates all 1-frame jerks, layout shifts, or scale animations on tab change.
   useLayoutEffect(() => {
     const el = containerRef.current
     if (!el) return
-
-    const selectedIdx = group.ingredients.findIndex((i) => qtyOf(i.id) > 0)
-    const targetIdx = selectedIdx >= 0 ? selectedIdx : 0
-    setActiveIndex(targetIdx)
-
-    const card = el.querySelector<HTMLElement>(`[data-card-index="${targetIdx}"]`)
-    if (card) {
-      const targetScroll = card.offsetLeft - (el.clientWidth - card.offsetWidth) / 2
-      el.scrollLeft = targetScroll
-    }
+    centerCard(Math.max(0, group.ingredients.findIndex((i) => qtyOf(i.id) > 0)), false)
+    // Resize/orientation changes retain the current card; selections don't restart the swipe.
+    let width = el.clientWidth
+    const observer = new ResizeObserver(() => {
+      if (width === el.clientWidth) return
+      width = el.clientWidth
+      centerCard(activeRef.current, false)
+    })
+    observer.observe(el)
+    return () => observer.disconnect()
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [group.id])
 
-  // Track centered card on scroll
-  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
-    const el = e.currentTarget
-    const containerCenter = el.scrollLeft + el.clientWidth / 2
-    const cards = el.querySelectorAll<HTMLElement>('[data-card-index]')
-    let closestIdx = 0
-    let minDiff = Infinity
-    cards.forEach((card, idx) => {
-      const cardCenter = card.offsetLeft + card.offsetWidth / 2
-      const diff = Math.abs(containerCenter - cardCenter)
-      if (diff < minDiff) {
-        minDiff = diff
-        closestIdx = idx
-      }
+  useEffect(() => () => {
+    cancelAnimationFrame(scrollFrame.current)
+    dragCleanup.current?.()
+  }, [])
+
+  const handleScroll = () => {
+    if (scrollFrame.current) return
+    scrollFrame.current = requestAnimationFrame(() => {
+      scrollFrame.current = 0
+      const el = containerRef.current
+      if (el) markActive(nearestCard(el))
     })
-    if (closestIdx !== activeIndex) {
-      setActiveIndex(closestIdx)
-    }
   }
 
-  // Desktop mouse wheel translation: scroll horizontally when rolling the wheel over the carousel
   useEffect(() => {
     const el = containerRef.current
     if (!el) return
-
+    let lastWheel = -Infinity
     const onWheel = (e: WheelEvent) => {
-      if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
-        e.preventDefault()
-        try {
-          el.scrollBy({ left: e.deltaY, behavior: 'auto' })
-        } catch {
-          el.scrollLeft += e.deltaY
-        }
-      }
+      if (e.ctrlKey || Math.abs(e.deltaX) >= Math.abs(e.deltaY) || Math.abs(e.deltaY) < 6) return
+      const next = Math.max(0, Math.min(group.ingredients.length - 1, activeRef.current + Math.sign(e.deltaY)))
+      if (next === activeRef.current) return // At the ends, let the page scroll vertically.
+      e.preventDefault()
+      if (Date.now() - lastWheel < 220) return
+      lastWheel = Date.now()
+      centerCard(next)
     }
-
     el.addEventListener('wheel', onWheel, { passive: false })
     return () => el.removeEventListener('wheel', onWheel)
-  }, [group.id])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [group.id, group.ingredients.length])
 
-  const handleWheel = (e: React.WheelEvent<HTMLDivElement>) => {
-    if (Math.abs(e.deltaY) > Math.abs(e.deltaX)) {
-      try {
-        e.currentTarget.scrollBy({ left: e.deltaY, behavior: 'auto' })
-      } catch {
-        e.currentTarget.scrollLeft += e.deltaY
-      }
+  const handlePointerDown = (e: PointerEvent<HTMLDivElement>) => {
+    // Native pan + inertia + CSS snap own the entire touch/pen gesture.
+    dragged.current = false
+    if (e.pointerType !== 'mouse' || e.button !== 0) return
+    const el = e.currentTarget
+    const startX = e.clientX
+    const startScroll = el.scrollLeft
+    const pointerId = e.pointerId
+    dragCleanup.current?.()
+    const move = (event: globalThis.PointerEvent) => {
+      if (event.pointerId !== pointerId) return
+      const delta = event.clientX - startX
+      if (!dragged.current && Math.abs(delta) <= 6) return
+      dragged.current = true
+      el.style.scrollSnapType = 'none'
+      setIsDragging(true)
+      event.preventDefault()
+      el.scrollLeft = startScroll - delta
     }
-  }
-
-  // Desktop mouse drag-to-scroll: smooth click & drag across the carousel
-  const handleMouseDown = (e: React.MouseEvent) => {
-    if (e.button !== 0 || !containerRef.current) return
-    isMouseDownRef.current = true
-    const startX = e.clientX || e.pageX
-    const startScrollLeft = containerRef.current.scrollLeft
-    dragDistanceRef.current = 0
-
-    const onGlobalMouseMove = (moveEvent: MouseEvent) => {
-      if (!isMouseDownRef.current || !containerRef.current) return
-      const currentX = moveEvent.clientX || moveEvent.pageX
-      const diff = (currentX - startX) * 1.2
-      dragDistanceRef.current = Math.abs(diff)
-      if (dragDistanceRef.current > 4) {
-        setIsDragging(true)
-      }
-      containerRef.current.scrollLeft = startScrollLeft - diff
+    const cleanup = () => {
+      window.removeEventListener('pointermove', move)
+      window.removeEventListener('pointerup', end)
+      window.removeEventListener('pointercancel', end)
+      window.removeEventListener('blur', cancel)
+      el.style.scrollSnapType = ''
+      dragCleanup.current = null
     }
-
-    const onGlobalMouseUp = () => {
-      isMouseDownRef.current = false
+    const cancel = () => { cleanup(); setIsDragging(false) }
+    const end = (event: globalThis.PointerEvent) => {
+      if (event.pointerId !== pointerId) return
+      const index = nearestCard(el)
+      cleanup()
       setIsDragging(false)
-      window.removeEventListener('mousemove', onGlobalMouseMove)
-      window.removeEventListener('mouseup', onGlobalMouseUp)
+      if (dragged.current) centerCard(index)
     }
-
-    window.addEventListener('mousemove', onGlobalMouseMove)
-    window.addEventListener('mouseup', onGlobalMouseUp)
-  }
-
-  const handleClickCapture = (e: React.MouseEvent) => {
-    if (dragDistanceRef.current > 6) {
-      e.stopPropagation()
-      e.preventDefault()
-      dragDistanceRef.current = 0
-    }
-  }
-
-  const canGoPrev = activeIndex > 0
-  const canGoNext = activeIndex < group.ingredients.length - 1
-
-  const goPrev = (e: React.MouseEvent) => {
-    e.stopPropagation()
-    if (canGoPrev) centerCard(activeIndex - 1, true)
-  }
-
-  const goNext = (e: React.MouseEvent) => {
-    e.stopPropagation()
-    if (canGoNext) centerCard(activeIndex + 1, true)
-  }
-
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'ArrowLeft' && canGoPrev) {
-      e.preventDefault()
-      centerCard(activeIndex - 1, true)
-    } else if (e.key === 'ArrowRight' && canGoNext) {
-      e.preventDefault()
-      centerCard(activeIndex + 1, true)
-    }
+    dragCleanup.current = cleanup
+    window.addEventListener('pointermove', move, { passive: false })
+    window.addEventListener('pointerup', end)
+    window.addEventListener('pointercancel', end)
+    window.addEventListener('blur', cancel)
   }
 
   return (
     <section
-      role="dialog"
+      role="region"
+      aria-roledescription="карусель"
       aria-label={group.name}
       tabIndex={0}
-      onKeyDown={handleKeyDown}
-      className="relative flex flex-col items-center w-full animate-[fade-only_0.15s_var(--ease-soft)_both] focus:outline-none"
+      onKeyDown={(e) => {
+        const index = activeRef.current
+        const next = e.key === 'ArrowLeft' ? Math.max(0, index - 1)
+          : e.key === 'ArrowRight' ? Math.min(group.ingredients.length - 1, index + 1)
+          : e.key === 'Home' ? 0 : e.key === 'End' ? group.ingredients.length - 1 : null
+        if (next !== null) { e.preventDefault(); centerCard(next) }
+      }}
+      className="relative flex w-full min-w-0 flex-col items-center pb-2 focus-visible:outline-2 focus-visible:outline-accent focus-visible:outline-offset-2"
     >
-      {/* Desktop Prev / Next Nav Chevrons */}
-      {canGoPrev && (
-        <button
-          type="button"
-          onClick={goPrev}
-          aria-label="Предыдущая добавка"
-          className="hidden sm:grid absolute left-2 top-1/2 -translate-y-1/2 z-30 size-8.5 place-items-center rounded-full bg-pd-glass hover:bg-pd-glass-hover text-pd-ink border border-pd-line shadow-xs transition-all active:scale-95 cursor-pointer"
-        >
-          <span className="text-[18px] font-bold leading-none select-none">‹</span>
-        </button>
-      )}
-      {canGoNext && (
-        <button
-          type="button"
-          onClick={goNext}
-          aria-label="Следующая добавка"
-          className="hidden sm:grid absolute right-2 top-1/2 -translate-y-1/2 z-30 size-8.5 place-items-center rounded-full bg-pd-glass hover:bg-pd-glass-hover text-pd-ink border border-pd-line shadow-xs transition-all active:scale-95 cursor-pointer"
-        >
-          <span className="text-[18px] font-bold leading-none select-none">›</span>
-        </button>
-      )}
-
-      {/* Center-Snapped Magnetic Carousel */}
+      {activeIndex > 0 && <button type="button" onClick={() => centerCard(activeRef.current - 1)} aria-label="Предыдущая добавка" className="absolute left-2 top-24 z-10 hidden size-11 place-items-center rounded-full bg-pd-panel text-pd-ink sm:grid">‹</button>}
+      {activeIndex < group.ingredients.length - 1 && <button type="button" onClick={() => centerCard(activeRef.current + 1)} aria-label="Следующая добавка" className="absolute right-2 top-24 z-10 hidden size-11 place-items-center rounded-full bg-pd-panel text-pd-ink sm:grid">›</button>}
       <div
         ref={containerRef}
         data-carousel-container="true"
         onScroll={handleScroll}
-        onWheel={handleWheel}
-        onMouseDown={handleMouseDown}
-        onClickCapture={handleClickCapture}
+        onPointerDown={handlePointerDown}
+        onDragStart={(e) => e.preventDefault()}
+        onClickCapture={(e) => {
+          if (dragged.current) { e.preventDefault(); e.stopPropagation(); dragged.current = false }
+        }}
         className={cx(
-          'no-scrollbar relative w-full flex items-center gap-2.5 overflow-x-auto pt-5 pb-3 [perspective:1000px]',
-          // Dynamic padding magnetically centers the 104px (xs: 108px) card
-          'px-[calc(50%-52px)] xs:px-[calc(50%-54px)]',
-          'snap-x snap-mandatory touch-pan-x',
-          isDragging ? 'cursor-grabbing select-none' : 'cursor-grab sm:cursor-auto',
+          'no-scrollbar relative flex w-full min-w-0 items-stretch gap-3 overflow-x-auto overscroll-x-contain snap-x snap-mandatory',
+          'px-[calc(50%-60px)] touch-auto',
+          isDragging ? 'cursor-grabbing select-none' : 'cursor-grab',
         )}
       >
-        {group.ingredients.map((ing, idx) => {
-          const qty = qtyOf(ing.id)
-          const isSelected = qty > 0
-          const isCenter = idx === activeIndex
-
-          return group.counter ? (
-            <CoverFlowCounterCard
-              key={ing.id}
-              ingredient={ing}
-              index={idx}
-              qty={qty}
-              isCenter={isCenter}
-              canAdd={canAdd(ing)}
-              onAdd={(item, art) => {
-                onPick(item, art)
-                centerCard(idx, true)
-              }}
-              onRemove={(item) => {
-                onRemove(item)
-                centerCard(idx, true)
-              }}
-              onClick={() => centerCard(idx, true)}
-            />
-          ) : (
-            <CoverFlowChoiceCard
-              key={ing.id}
-              ingredient={ing}
-              index={idx}
-              selected={isSelected}
-              isCenter={isCenter}
-              onPick={(item, art) => {
-                onPick(item, art)
-                centerCard(idx, true)
-              }}
-              onClick={() => centerCard(idx, true)}
-            />
-          )
-        })}
+        {group.ingredients.map((ingredient, index) => (
+          <IngredientCard
+            key={ingredient.id}
+            ingredient={ingredient}
+            index={index}
+            active={index === activeIndex}
+            counter={!!group.counter}
+            qty={qtyOf(ingredient.id)}
+            canAdd={canAdd(ingredient)}
+            onPick={(art) => { onPick(ingredient, art); centerCard(index) }}
+            onRemove={() => { onRemove(ingredient); centerCard(index) }}
+          />
+        ))}
       </div>
-
-      {/* Horizontal Carousel Pagination Dots */}
       {group.ingredients.length > 1 && (
-        <div
-          className="flex items-center justify-center gap-1 pt-1.5 pb-1"
-          role="tablist"
-          aria-label="Навигация по карусели добавок"
-        >
-          {group.ingredients.map((ing, idx) => {
-            const isCurrent = idx === activeIndex
-            const hasQty = qtyOf(ing.id) > 0
-            return (
-              <button
-                key={ing.id}
-                type="button"
-                onClick={() => centerCard(idx, true)}
-                aria-label={`${ing.name} (${idx + 1} из ${group.ingredients.length})`}
-                className="group size-5 grid place-items-center cursor-pointer"
-              >
-                <span
-                  className={cx(
-                    'transition-all duration-300 ease-soft rounded-full block',
-                    isCurrent
-                      ? 'w-6 h-2 bg-accent shadow-xs'
-                      : hasQty
-                      ? 'size-2 bg-accent/65 group-hover:bg-accent/85'
-                      : 'size-2 bg-pd-ink/25 group-hover:bg-pd-ink/50 dark:bg-crema/25 dark:group-hover:bg-crema/50',
-                  )}
-                />
-              </button>
-            )
-          })}
+        <div className="flex h-11 max-w-full items-center justify-center overflow-x-auto" aria-label="Навигация по карусели добавок">
+          {group.ingredients.map((ingredient, index) => (
+            <button
+              key={ingredient.id}
+              type="button"
+              aria-current={index === activeIndex ? 'true' : undefined}
+              aria-label={`${ingredient.name} (${index + 1} из ${group.ingredients.length})`}
+              onClick={() => centerCard(index)}
+              className="grid size-11 shrink-0 justify-items-center content-start pt-2 rounded-full focus-visible:outline-2 focus-visible:outline-accent"
+            >
+              <span className={cx('block h-1.5 rounded-full', index === activeIndex ? 'w-5 bg-accent' : 'w-1.5 bg-pd-muted')} />
+            </button>
+          ))}
         </div>
       )}
     </section>
   )
 }
 
-/** CoverFlow Centered Card for Single-Choice (Milk) */
-function CoverFlowChoiceCard({
-  ingredient,
-  index,
-  selected,
-  isCenter,
-  onPick,
-  onClick,
-}: {
+function IngredientCard({ ingredient, index, active, counter, qty, canAdd, onPick, onRemove }: {
   ingredient: Ingredient
   index: number
-  selected: boolean
-  isCenter: boolean
-  onPick: (ing: Ingredient, art: Element | null) => void
-  onClick: () => void
+  active: boolean
+  counter: boolean
+  qty: number
+  canAdd: boolean
+  onPick: (art: Element | null) => void
+  onRemove: () => void
 }) {
-  const artRef = useRef<SVGSVGElement>(null)
-
-  return (
-    <button
-      role="button"
-      data-card-index={index}
-      aria-pressed={selected}
-      aria-label={ingredient.name}
-      disabled={ingredient.stopped}
-      onClick={() => {
-        onClick()
-        onPick(ingredient, artRef.current)
-      }}
-      className={cx(
-        'group relative flex w-[104px] xs:w-[108px] h-[126px] xs:h-[130px] shrink-0 flex-col items-center justify-between p-2 rounded-[20px] border text-center transition-all duration-300 ease-soft snap-center select-none cursor-pointer transform-gpu',
-        isCenter
-          ? cx(
-              'scale-110 -translate-y-1.5 z-20 opacity-100',
-              selected
-                ? 'bg-pd-tile-on border-accent shadow-sm ring-1.5 ring-accent/40'
-                : 'bg-pd-tile border-pd-tile-on-line/80 shadow-xs',
-            )
-          : cx(
-              'scale-90 translate-y-1 z-0 opacity-85 hover:opacity-100 border-pd-line shadow-xs',
-              selected ? 'bg-pd-tile-on/90 border-accent/60' : 'bg-pd-tile/90',
-            ),
-        ingredient.stopped && 'opacity-25 pointer-events-none',
-      )}
-    >
-      {/* Centered Top: Compact Swatch Disc */}
-      <div className="relative mt-0.5 grid size-8.5 place-items-center rounded-full bg-pd-glass border border-pd-line shadow-xs">
-        <IngredientArt ref={artRef} color={ingredient.color} className="size-4.5" />
-        {selected && (
-          <span className="absolute -top-1 -right-1 grid size-4 place-items-center rounded-full bg-accent text-white text-[9px] font-black animate-pop shadow-xs">
-            ✓
+  const artRef = useRef<HTMLDivElement>(null)
+  const selected = qty > 0
+  const content = (
+    <>
+      <div data-ingredient-media className="relative h-[88px] w-full min-w-0">
+        <div ref={artRef} className="mx-auto flex h-[76px] w-[112px] items-center justify-center">
+          {ingredient.imageUrl ? (
+            <img src={optimizedImageUrl(ingredient.imageUrl)} alt={ingredient.name} width={112} height={76} draggable={false} decoding="async" className="pointer-events-none block h-full w-full min-w-0 object-contain" />
+          ) : <IngredientArt color={ingredient.color} className="size-16" />}
+        </div>
+        <span className="absolute inset-x-0 bottom-0 flex justify-center">
+          <span className="max-w-full rounded-lg bg-pd-panel/60 dark:bg-pd-panel/35 px-1 py-0.5 text-[13px] font-bold leading-[14px] text-pd-ink">
+            <span className="line-clamp-2 break-words">{ingredient.name}</span>
           </span>
-        )}
-      </div>
-
-      {/* Centered Middle: Name & Price */}
-      <div className="my-auto flex flex-col items-center w-full px-0.5">
-        <div className="font-display text-[11px] xs:text-[11.5px] font-bold text-pd-ink leading-[1.18] line-clamp-2 text-center break-words w-full">
-          {ingredient.name}
-        </div>
-        <div className="mt-0.5 text-[10px] font-semibold text-pd-muted text-center tabular-nums">
-          {ingredient.stopped
-            ? 'нет в наличии'
-            : ingredient.price > 0
-            ? `+${formatPrice(ingredient.price)}`
-            : 'включено'}
-        </div>
-      </div>
-
-      {/* Centered Bottom: Compact Selector */}
-      <div className="w-full mt-auto">
-        <span
-          className={cx(
-            'flex h-6 w-full items-center justify-center rounded-full text-[10.5px] font-bold transition-all duration-200',
-            selected
-              ? 'bg-accent text-white shadow-xs'
-              : 'bg-pd-glass border border-pd-line text-pd-ink hover:bg-pd-glass-hover',
-          )}
-        >
-          {selected ? 'Выбрано ✓' : 'Выбрать'}
         </span>
+        {selected && <span className="absolute right-1 top-0 grid min-w-5 h-5 place-items-center rounded-full bg-accent px-1 text-[11px] font-bold text-white">{counter ? `×${qty}` : <svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true"><path d="m3 8 3 3 7-7" fill="none" stroke="currentColor" strokeWidth="2" /></svg>}</span>}
       </div>
+      <span className="text-[12px] font-medium leading-[16px] text-pd-ink-2 tabular-nums">
+        {ingredient.stopped ? 'нет в наличии' : ingredient.price > 0 ? `+${formatPrice(ingredient.price)}` : counter ? 'бесплатно' : 'включено'}
+      </span>
+    </>
+  )
+  const cardClass = cx(
+    // Compact, unboxed cards. Only the caption gets a backing over the image.
+    'relative grid h-[152px] w-[120px] min-w-0 shrink-0 snap-center grid-rows-[88px_16px_44px] gap-y-0.5 text-center select-none',
+    ingredient.stopped && 'opacity-60',
+  )
+  const actionClass = 'group flex h-11 w-full items-center justify-center rounded-full px-1 text-[12px] font-bold text-pd-ink focus-visible:outline-2 focus-visible:outline-accent disabled:opacity-40'
+  const actionFillClass = 'flex h-8 w-full items-center justify-center rounded-full transition-colors'
+  const idleFillClass = 'bg-pd-glass group-hover:bg-pd-glass-hover'
+  if (!counter) return (
+    <button type="button" data-card-index={index} data-active={active} aria-label={ingredient.name} aria-pressed={selected} disabled={ingredient.stopped} onClick={() => onPick(artRef.current)} className={cx(cardClass, 'cursor-pointer focus-visible:outline-2 focus-visible:outline-accent focus-visible:outline-offset-2')}>
+      {content}
+      <span className={actionClass}><span className={cx(actionFillClass, selected ? 'bg-accent text-white' : idleFillClass)}>{selected ? 'Выбрано' : 'Выбрать'}</span></span>
     </button>
   )
-}
-
-/** CoverFlow Centered Card for Counter Groups (Syrups, espresso shots, protein) */
-function CoverFlowCounterCard({
-  ingredient,
-  index,
-  qty,
-  isCenter,
-  canAdd,
-  onAdd,
-  onRemove,
-  onClick,
-}: {
-  ingredient: Ingredient
-  index: number
-  qty: number
-  isCenter: boolean
-  canAdd: boolean
-  onAdd: (ing: Ingredient, art: Element | null) => void
-  onRemove: (ing: Ingredient) => void
-  onClick: () => void
-}) {
-  const artRef = useRef<SVGSVGElement>(null)
-  const isSelected = qty > 0
-
   return (
-    <div
-      data-card-index={index}
-      onClick={onClick}
-      className={cx(
-        'group relative flex w-[104px] xs:w-[108px] h-[126px] xs:h-[130px] shrink-0 flex-col items-center justify-between p-2 rounded-[20px] border text-center transition-all duration-300 ease-soft snap-center select-none cursor-pointer transform-gpu',
-        isCenter
-          ? cx(
-              'scale-110 -translate-y-1.5 z-20 opacity-100',
-              isSelected
-                ? 'bg-pd-tile-on border-accent shadow-sm ring-1.5 ring-accent/40'
-                : 'bg-pd-tile border-pd-tile-on-line/80 shadow-xs',
-            )
-          : cx(
-              'scale-90 translate-y-1 z-0 opacity-85 hover:opacity-100 border-pd-line shadow-xs',
-              isSelected ? 'bg-pd-tile-on/90 border-accent/60' : 'bg-pd-tile/90',
-            ),
-        ingredient.stopped && 'opacity-25',
+    <div data-card-index={index} data-active={active} className={cardClass}>
+      {content}
+      {qty > 0 ? (
+        <div className="relative flex h-11 w-full items-center justify-between">
+          <span aria-hidden="true" className="pointer-events-none absolute inset-x-1 inset-y-1.5 rounded-full bg-pd-glass" />
+          <button type="button" aria-label={`${ingredient.name}: убрать порцию`} onClick={onRemove} className="relative grid size-11 place-items-center rounded-full text-lg text-pd-ink focus-visible:outline-2 focus-visible:outline-accent">−</button>
+          <span aria-live="polite" className="relative text-[14px] font-bold text-pd-ink tabular-nums">{qty}</span>
+          <button type="button" aria-label={`${ingredient.name}: добавить порцию`} disabled={!canAdd || ingredient.stopped} onClick={() => onPick(artRef.current)} className="relative grid size-11 place-items-center rounded-full text-lg text-pd-ink focus-visible:outline-2 focus-visible:outline-accent disabled:opacity-40">+</button>
+        </div>
+      ) : (
+        <button type="button" aria-label={`${ingredient.name}: добавить порцию`} disabled={!canAdd || ingredient.stopped} onClick={() => onPick(artRef.current)} className={actionClass}><span className={cx(actionFillClass, idleFillClass)}>{ingredient.stopped ? 'Закончилось' : '+ Добавить'}</span></button>
       )}
-    >
-      {/* Centered Top: Swatch with Animated Badge */}
-      <div className="relative mt-0.5 grid size-8.5 place-items-center rounded-full bg-pd-glass border border-pd-line shadow-xs">
-        <IngredientArt ref={artRef} color={ingredient.color} className="size-4.5" />
-        {isSelected && (
-          <span
-            key={qty}
-            className="absolute -top-1 -right-1 grid size-4.5 place-items-center rounded-full bg-accent text-white text-[9px] font-black animate-pop shadow-xs"
-          >
-            ×{qty}
-          </span>
-        )}
-      </div>
-
-      {/* Centered Middle: Name & Price */}
-      <div className="my-auto flex flex-col items-center w-full px-0.5">
-        <div className="font-display text-[11px] xs:text-[11.5px] font-bold text-pd-ink leading-[1.18] line-clamp-2 text-center break-words w-full">
-          {ingredient.name}
-        </div>
-        <div className="mt-0.5 text-[10px] font-semibold text-pd-muted text-center tabular-nums">
-          {ingredient.stopped
-            ? 'нет в наличии'
-            : `+${formatPrice(ingredient.price)}`}
-        </div>
-      </div>
-
-      {/* Centered Bottom: Touch-friendly Controls */}
-      <div className="w-full mt-auto" onClick={(e) => e.stopPropagation()}>
-        {ingredient.stopped ? (
-          <button
-            disabled
-            aria-label={`${ingredient.name}: добавить порцию`}
-            className="flex h-6 w-full items-center justify-center rounded-full bg-pd-glass text-[9.5px] font-semibold text-pd-muted border border-pd-line opacity-50 cursor-not-allowed"
-          >
-            Закончилось
-          </button>
-        ) : qty === 0 ? (
-          <button
-            disabled={!canAdd}
-            onClick={() => onAdd(ingredient, artRef.current)}
-            aria-label={`${ingredient.name}: добавить порцию`}
-            className="flex h-6 w-full items-center justify-center gap-0.5 rounded-full bg-pd-glass hover:bg-pd-glass-hover border border-pd-line text-[10.5px] font-bold text-pd-ink shadow-xs transition-transform active:scale-95 cursor-pointer disabled:opacity-40"
-          >
-            <span className="text-[13px] font-light leading-none">+</span>
-            <span>Добавить</span>
-          </button>
-        ) : (
-          <div className="flex h-6 w-full items-center justify-between rounded-full bg-pd-glass px-1 border border-accent/40 shadow-xs">
-            <button
-              onClick={() => onRemove(ingredient)}
-              aria-label={`${ingredient.name}: убрать порцию`}
-              className="grid size-4.5 place-items-center rounded-full bg-surface text-ink text-[12px] font-bold shadow-xs active:scale-90 transition-transform cursor-pointer"
-            >
-              −
-            </button>
-            <span
-              className="font-display text-[11.5px] font-black text-pd-ink tabular-nums animate-pop px-1"
-              aria-live="polite"
-            >
-              {qty}
-            </span>
-            <button
-              disabled={!canAdd}
-              onClick={() => onAdd(ingredient, artRef.current)}
-              aria-label={`${ingredient.name}: добавить порцию`}
-              className="grid size-4.5 place-items-center rounded-full bg-accent text-white text-[12px] font-bold shadow-xs active:scale-90 transition-transform cursor-pointer disabled:opacity-35"
-            >
-              +
-            </button>
-          </div>
-        )}
-      </div>
     </div>
   )
 }

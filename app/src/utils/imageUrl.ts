@@ -28,5 +28,9 @@ export const originalImageUrl = (url: string) => (isLocal(url) ? `${API_ORIGIN}$
  */
 export function optimizedImageUrl(url: string) {
   if (!isLocal(url) || /\.(svg|gif)$/i.test(url)) return originalImageUrl(url)
+  if (url.includes('/addons/')) {
+    const base = originalImageUrl(url)
+    return base.includes('?') ? base : `${base}?v=5`
+  }
   return `${API_ORIGIN}/_next/image?url=${encodeURIComponent(url)}&w=${WIDTH}&q=${QUALITY}`
 }

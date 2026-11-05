@@ -1,14 +1,15 @@
-import { describe, it, expect } from 'vitest'
+import { describe, expect,it } from 'vitest'
+
 import {
-  minPrice,
-  isSoldOut,
-  isDrink,
-  countAddons,
   addonLabel,
-  createCatalog,
-  type MenuItem,
   type CatalogData,
+  countAddons,
+  createCatalog,
   type Ingredient,
+  isDrink,
+  isSoldOut,
+  type MenuItem,
+  minPrice,
 } from './catalog'
 
 describe('Domain: catalog', () => {

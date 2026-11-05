@@ -1,13 +1,14 @@
 import { describe, expect, it } from 'vitest'
+
 import {
   ACCEPT_AFTER,
   canCancel,
   isActive,
   MAKE_AFTER,
   makingProgress,
+  type Order,
   readyTimeFor,
   statusOf,
-  type Order,
 } from './orders'
 
 describe('domain/orders', () => {

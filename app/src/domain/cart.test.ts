@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
-import { countOf, lineKey, normalizePromo, resolveLine, resolveLines, subtotalOf } from './cart'
+
 import { testCatalog as staticCatalog } from '../test/catalogFixture'
+import { countOf, lineKey, normalizePromo, resolveLine, resolveLines, subtotalOf } from './cart'
 
 describe('domain/cart', () => {
   it('formats lineKey with sorted ingredientIds', () => {

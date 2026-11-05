@@ -1,7 +1,8 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { fireEvent, screen, waitFor } from '@testing-library/react'
-import { renderApp } from '../../test/renderApp'
+import { afterEach,beforeEach, describe, expect, it, vi } from 'vitest'
+
 import type { Order } from '../../domain'
+import { renderApp } from '../../test/renderApp'
 
 const profile = { phone: '+79990001122', name: 'Аня', email: '', notifications: true, joinedAt: 1 }
 

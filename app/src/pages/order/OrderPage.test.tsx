@@ -1,14 +1,15 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { render, screen, act, fireEvent, waitFor } from '@testing-library/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { OrderPage } from './OrderPage'
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router'
-import * as AppContextModule from '../../state/AppContext'
-import * as AppNavigateModule from '../../hooks/useAppNavigate'
+import { afterEach,beforeEach, describe, expect, it, vi } from 'vitest'
+
 import { api } from '../../api'
+import * as AppNavigateModule from '../../hooks/useAppNavigate'
 import { queryKeys } from '../../queries/keys'
-import { catalogData, testShop } from '../../test/catalogFixture'
+import * as AppContextModule from '../../state/AppContext'
 import type { Order } from '../../state/orders'
+import { catalogData, testShop } from '../../test/catalogFixture'
+import { OrderPage } from './OrderPage'
 
 /** Minimal EventSource stand-in so the SSE path can be driven from the test. */
 class FakeEventSource {

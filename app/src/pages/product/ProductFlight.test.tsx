@@ -1,5 +1,6 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { act, fireEvent, screen, waitFor } from '@testing-library/react'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
+
 import type { Promotion } from '../../domain'
 import { catalogData } from '../../test/catalogFixture'
 import { renderApp } from '../../test/renderApp'
@@ -83,7 +84,7 @@ describe('Menu card ↔ product screen flight', () => {
   it('swaps the slot for the toppings deck once the screen is up', async () => {
     const sheet = await openSheet()
 
-    await waitFor(() => expect(sheet.querySelector('section[role="dialog"]')).toBeInTheDocument())
+    await waitFor(() => expect(sheet.querySelector('section[aria-roledescription="карусель"]')).toBeInTheDocument())
     expect(sheet.querySelector('.h-\\[188px\\]')).toBeNull()
   })
 

@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+
 import { btn } from './ui'
 
 type Props = { art?: ReactNode; title: string; text: string; actionLabel: string; onAction: () => void }

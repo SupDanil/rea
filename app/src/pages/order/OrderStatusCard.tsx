@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+
 import { QrCodeView } from '../../components/QrCodeView'
 import type { Order, OrderStatus } from '../../state/orders'
 import { cx } from '../../utils/cx'

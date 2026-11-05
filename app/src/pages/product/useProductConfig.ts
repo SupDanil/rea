@@ -1,7 +1,8 @@
 import { useMemo, useState } from 'react'
+
 import type { Catalog } from '../../domain'
-import { useCatalog } from '../../queries/useCatalog'
 import type { Ingredient, IngredientGroup, MenuItem, Nutrition } from '../../domain'
+import { useCatalog } from '../../queries/useCatalog'
 
 /** Chosen add-on ids per ingredient group */
 export type Selection = Record<string, string[]>

@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
+
 import { flyTo } from './motion'
 
 describe('flyTo', () => {

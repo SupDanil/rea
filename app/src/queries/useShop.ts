@@ -1,9 +1,10 @@
-import { useContext } from 'react'
 import { useQuery } from '@tanstack/react-query'
+import { useContext } from 'react'
+
 import { api } from '../api'
 import type { Shop } from '../domain'
-import { queryKeys } from './keys'
 import { AppContext } from '../state/AppContext'
+import { queryKeys } from './keys'
 
 // The pause switch should reach guests quickly, so shops refresh more often than the menu.
 const SHOPS_REFRESH_MS = 30_000

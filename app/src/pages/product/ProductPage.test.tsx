@@ -1,11 +1,12 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { render, screen, fireEvent, waitFor, within } from '@testing-library/react'
-import { MemoryRouter, Routes, Route } from 'react-router'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { ProductPage } from './ProductPage'
-import { AppProvider } from '../../state/AppProvider'
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
+import { MemoryRouter, Route,Routes } from 'react-router'
+import { afterEach,beforeEach, describe, expect, it, vi } from 'vitest'
+
 import { api } from '../../api'
+import { AppProvider } from '../../state/AppProvider'
 import { catalogData } from '../../test/catalogFixture'
+import { ProductPage } from './ProductPage'
 
 describe('ProductPage Component', () => {
   beforeEach(() => {
@@ -65,7 +66,7 @@ describe('ProductPage Component', () => {
     vi.spyOn(api, 'getCatalog').mockResolvedValue(catalogData)
     renderAt('/product/latte')
     fireEvent.click(await screen.findByRole('button', { name: /Сиропы/ }))
-    const panel = await screen.findByRole('dialog', { name: 'Сиропы' }).catch(() => screen.getByLabelText('Сиропы'))
+    const panel = await screen.findByRole('region', { name: 'Сиропы' }).catch(() => screen.getByLabelText('Сиропы'))
     fireEvent.click(within(panel).getByRole('button', { name: 'Ваниль: добавить порцию' }))
     fireEvent.click(within(panel).getByRole('button', { name: 'Ваниль: добавить порцию' }))
     // Stop-listed syrup from the server cannot be added.
@@ -134,7 +135,7 @@ describe('ProductPage Component', () => {
 
     // Switch to syrups and add Vanilla
     fireEvent.click(screen.getByRole('button', { name: /Сиропы/ }))
-    const panel = await screen.findByRole('dialog', { name: 'Сиропы' })
+    const panel = await screen.findByRole('region', { name: 'Сиропы' })
     fireEvent.click(within(panel).getByRole('button', { name: 'Ваниль: добавить порцию' }))
 
     const addonsList = screen.getByRole('region', { name: 'Выбранные добавки' })

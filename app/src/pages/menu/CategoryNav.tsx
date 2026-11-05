@@ -1,8 +1,9 @@
-import { useEffect, useState, useRef, type RefObject } from 'react'
+import { type RefObject,useEffect, useRef, useState } from 'react'
+
 import type { Catalog, Category } from '../../domain'
 import { useSlidingIndicator } from '../../hooks/useSlidingIndicator'
-import { COVER_ATTR } from '../../utils/morph'
 import { cx } from '../../utils/cx'
+import { COVER_ATTR } from '../../utils/morph'
 
 type Props = {
   catalog: Catalog

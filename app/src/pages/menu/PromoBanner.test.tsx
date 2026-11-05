@@ -1,9 +1,10 @@
-import { describe, it, expect, vi } from 'vitest'
 import { fireEvent, render, screen } from '@testing-library/react'
-import { PromoBanner } from './PromoBanner'
+import { describe, expect, it, vi } from 'vitest'
+
+import type { MenuItem, Promotion } from '../../domain'
 import { AppProvider } from '../../state/AppProvider'
 import { catalogData } from '../../test/catalogFixture'
-import type { MenuItem, Promotion } from '../../domain'
+import { PromoBanner } from './PromoBanner'
 
 describe('PromoBanner (2026 Bento Liquid Glass Design)', () => {
   const dummyProduct: MenuItem = catalogData.items[0] // cappuccino

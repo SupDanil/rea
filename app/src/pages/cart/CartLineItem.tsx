@@ -1,11 +1,12 @@
-import { useRef, useState, type CSSProperties } from 'react'
+import { type CSSProperties,useRef, useState } from 'react'
+
 import { TrashIcon } from '../../components/icons'
 import { ItemArt } from '../../components/ItemArt'
 import { addonLabel, countAddons, itemImage } from '../../domain'
 import type { ResolvedLine } from '../../state/cart'
-import { artProps } from '../../utils/morph'
 import { cx } from '../../utils/cx'
 import { formatPrice } from '../../utils/format'
+import { artProps } from '../../utils/morph'
 
 const sizeText = { S: 'S', M: 'M', L: 'L', ONE: '' } as const
 const stepBtn = 'grid size-[32px] sm:size-[34px] place-items-center rounded-full text-[17px] font-bold text-ink hover:bg-surface active:scale-90 transition-all disabled:opacity-30 cursor-pointer'
@@ -100,12 +101,12 @@ export function CartLineItem({ line, disabled, onOpen, onQty, onRemove }: Props)
         className="relative z-1 w-full rounded-[22px] grid grid-cols-[76px_1fr] gap-3 p-2.5 bg-surface/95 dark:bg-surface/95 "
       >
         <button
-          className="art-glow grid size-[76px] place-items-center rounded-[18px] cursor-pointer hover:opacity-90 active:scale-96 transition-all"
+          className="art-glow mesh-grain grid size-[76px] place-items-center rounded-[18px] cursor-pointer hover:opacity-90 active:scale-96 transition-all overflow-hidden"
           style={{ '--tint': line.item.art.bg } as CSSProperties}
           onClick={onOpen}
           aria-label={`Открыть ${line.item.name}`}
         >
-          <ItemArt art={cartArt} imageUrl={cartImage} className="size-[86%]" {...artProps(line.item.id, line.key)} />
+          <ItemArt art={cartArt} imageUrl={cartImage} className="relative z-10 size-[86%]" {...artProps(line.item.id, line.key)} />
         </button>
 
         <div className="flex min-w-0 flex-col pt-0.5 pr-1">

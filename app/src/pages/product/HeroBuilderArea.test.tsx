@@ -96,7 +96,7 @@ describe('HeroBuilderArea Adaptive Scaling', () => {
     // shiftX should be negative (shifted to left margin/left third)
     // cup remains prominent and tall (scale ~2.15), filling stage height
     const transformStyle = transformWrapper.style.transform
-    expect(transformStyle).toMatch(/translate3d\(-\d+px, 0, 0\)/)
+    expect(transformStyle).toMatch(/translate3d\(-[\d.]+px, 0, 0\)/)
     expect(transformStyle).toMatch(/scale\(2\.[0-9]+\)/)
 
     // Addons list appears on the right
@@ -104,7 +104,7 @@ describe('HeroBuilderArea Adaptive Scaling', () => {
     expect(screen.getByText('Овсяное')).toBeInTheDocument()
   })
 
-  it('centers the cup strictly in the middle of the left area on desktop', () => {
+  it('matches the left cup margin to the right list margin on desktop', () => {
     let observerCallback: (entries: unknown[]) => void = () => {}
     vi.stubGlobal('ResizeObserver', class {
       constructor(callback: (entries: unknown[]) => void) {
@@ -142,12 +142,11 @@ describe('HeroBuilderArea Adaptive Scaling', () => {
       observerCallback([])
     })
 
-    // On desktop:
-    // rightMargin = 20, rightListWidth = 320
-    // desktopShiftX = -Math.round((20 + 320) / 2) = -170px
-    // Center of left area = (700 - 340) / 2 = 180px, exactly 180px from left edge and 180px from addons list
     const desktopTransform = transformWrapper.style.transform
-    expect(desktopTransform).toContain('translate3d(-170px, 0, 0)')
+    const scale = Number(/scale\(([\d.]+)\)/.exec(desktopTransform)![1])
+    const shift = Number(/translate3d\((-?[\d.]+)px/.exec(desktopTransform)![1])
+    const visibleLeft = 700 / 2 + shift - 38 * scale
+    expect(visibleLeft).toBeCloseTo(20)
 
     vi.unstubAllGlobals()
   })

@@ -1,6 +1,7 @@
-import { describe, it, expect } from 'vitest'
-import { statusTitles, statusSubtitle, totalLabel, discountRows } from './orderCopy'
+import { describe, expect,it } from 'vitest'
+
 import type { Order } from '../../state/orders'
+import { discountRows,statusSubtitle, statusTitles, totalLabel } from './orderCopy'
 
 describe('Order copy helpers', () => {
   const baseOrder: Order = {

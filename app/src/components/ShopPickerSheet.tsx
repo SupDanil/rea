@@ -1,8 +1,8 @@
-import { Sheet, SheetBody } from './Sheet'
-import { prepRange, shopStatus, type Shop } from '../domain'
+import { prepRange, type Shop,shopStatus } from '../domain'
 import { useNow } from '../hooks/useNow'
 import { useShopsQuery } from '../queries/useShop'
 import { useApp } from '../state/AppContext'
+import { Sheet, SheetBody } from './Sheet'
 import { openDot } from './ui'
 
 interface ShopPickerSheetProps {

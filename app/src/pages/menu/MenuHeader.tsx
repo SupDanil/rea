@@ -1,14 +1,15 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
-import { avatar, openDot, roundBtn } from '../../components/ui'
+
 import { BagIcon, ChevronDownIcon, PersonIcon, RabbitIcon } from '../../components/icons'
+import { Presence } from '../../components/Presence'
+import { ShopPickerSheet } from '../../components/ShopPickerSheet'
+import { avatar, openDot, roundBtn } from '../../components/ui'
 import { shopStatus } from '../../domain'
 import { useAppNavigate } from '../../hooks/useAppNavigate'
 import { useNow } from '../../hooks/useNow'
 import { useShop } from '../../queries/useShop'
 import { useApp } from '../../state/AppContext'
 import { countOf } from '../../state/cart'
-import { Presence } from '../../components/Presence'
-import { ShopPickerSheet } from '../../components/ShopPickerSheet'
 import { cx } from '../../utils/cx'
 import { COVER_ATTR } from '../../utils/morph'
 

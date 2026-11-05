@@ -1,4 +1,4 @@
-import { createCatalog, type CatalogData, type Nutrition, type Shop } from '../domain'
+import { type CatalogData, createCatalog, type Nutrition, type Shop } from '../domain'
 
 const n = (kcal: number, fat = 0, carbs = 0, protein = 0): Nutrition => ({ kcal, fat, carbs, protein })
 

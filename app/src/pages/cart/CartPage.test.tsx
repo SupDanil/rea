@@ -1,8 +1,9 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { fireEvent, screen, waitFor, within } from '@testing-library/react'
-import { renderApp } from '../../test/renderApp'
-import { testShop } from '../../test/catalogFixture'
+import { afterEach,beforeEach, describe, expect, it, vi } from 'vitest'
+
 import type { Order } from '../../domain'
+import { testShop } from '../../test/catalogFixture'
+import { renderApp } from '../../test/renderApp'
 
 const seedCart = (lines: unknown[]) => localStorage.setItem('zerno-cart', JSON.stringify(lines))
 const latteLine = { key: 'latte|m|vanilla', itemId: 'latte', variantId: 'm', ingredientIds: ['vanilla'], qty: 2 }

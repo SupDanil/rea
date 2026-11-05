@@ -1,4 +1,5 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
+
 import type { Catalog } from '../../domain'
 import { useCatalog } from '../../queries'
 import { animateWindowScroll } from '../../utils/scrollTo'
