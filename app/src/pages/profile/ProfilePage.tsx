@@ -1,5 +1,6 @@
 import { useState } from 'react'
 
+import { Button } from '../../components/Button'
 import { ConfirmBox } from '../../components/ConfirmBox'
 import { Sheet, SheetBody } from '../../components/Sheet'
 import { avatar, textBtn } from '../../components/ui'
@@ -29,14 +30,14 @@ function ProfileLoadingSkeleton() {
       <SheetBody>
         <div className="space-y-4 pt-1" role="status" aria-label="Загружаем профиль">
           <div className="flex items-center gap-3.5 px-1 pt-1 pb-4 animate-pulse">
-            <div className="size-12 rounded-full bg-surface-2" />
+            <div className="size-12 rounded-pill bg-surface-2" />
             <div className="space-y-2">
               <div className="h-5 w-32 rounded-lg bg-surface-2" />
               <div className="h-4 w-24 rounded bg-surface-2" />
             </div>
           </div>
-          <div className="h-36 rounded-[22px] bg-surface-2 animate-pulse" />
-          <div className="h-28 rounded-[22px] bg-surface-2 animate-pulse" />
+          <div className="h-36 rounded-card bg-surface-2 animate-pulse" />
+          <div className="h-28 rounded-card bg-surface-2 animate-pulse" />
         </div>
       </SheetBody>
     </Sheet>
@@ -66,8 +67,8 @@ function ProfileView({ profile }: { profile: Profile }) {
             {profile.name.trim().slice(0, 1).toUpperCase() || '☕'}
           </span>
           <div>
-            <div className="text-[22px] font-extrabold tracking-[-0.03em]">{profile.name}</div>
-            <div className="mt-0.5 text-[14px] text-muted">{profile.phone}</div>
+            <div className="text-title font-extrabold tracking-(--tracking-display)">{profile.name}</div>
+            <div className="mt-0.5 text-body text-muted">{profile.phone}</div>
           </div>
         </div>
 
@@ -76,10 +77,10 @@ function ProfileView({ profile }: { profile: Profile }) {
         <OrderHistory orders={myOrders} onOpen={(o) => go(`/order/${o.id}`)} onRepeat={repeat} />
         <ProfileSettings profile={profile} theme={theme} onToggleTheme={toggleTheme} onUpdate={saveProfile} />
 
-        <div className="mt-[22px] text-center">
-          <button className={textBtn(true)} onClick={() => setConfirmExit(true)}>
+        <div className="mt-5.5 text-center">
+          <Button className={textBtn(true)} onClick={() => setConfirmExit(true)}>
             Выйти из профиля
-          </button>
+          </Button>
         </div>
 
         {confirmExit && (

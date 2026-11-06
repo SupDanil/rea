@@ -1,6 +1,8 @@
 import type { RefObject } from 'react'
 
-import { btn, hint, textBtn } from '../../components/ui'
+import { Button } from '../../components/Button'
+import { TextField } from '../../components/TextField'
+import { hint, textBtn } from '../../components/ui'
 import { cx } from '../../utils/cx'
 import { formatPhone } from '../../utils/format'
 import { stepBox, stepLead, stepTitle } from './steps'
@@ -51,19 +53,17 @@ export function CodeStep({
 
       {/* Button to quickly open Telegram bot if link is provided */}
       {telegramUrl && (
-        <button
+        <Button
           type="button"
           onClick={handleOpenTelegram}
-          className={cx(
-            btn('secondary', 'md'),
-            'w-full my-1.5 flex items-center justify-center gap-2.5 bg-[#2AABEE]/15 hover:bg-[#2AABEE]/25 border-[#2AABEE]/30 text-ink shadow-sm active:scale-98 transition-all'
-          )}
+          className={cx('w-full my-1.5 flex items-center justify-center gap-2.5 bg-telegram/15 hover:bg-telegram/25 border-telegram/30 text-ink shadow-sm active:scale-98 transition-all'
+          )} variant="secondary" size="md"
         >
-          <svg className="size-4.5 text-[#2AABEE]" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+          <svg className="size-4.5 text-telegram" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
             <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm4.64 6.8c-.15 1.58-.8 5.42-1.13 7.19-.14.75-.42 1-.68 1.03-.58.05-1.02-.38-1.58-.75-.88-.58-1.38-.94-2.23-1.5-.99-.65-.35-1.01.22-1.59.15-.15 2.71-2.48 2.76-2.69a.2.2 0 00-.05-.18c-.06-.05-.14-.03-.21-.02-.09.02-1.49.95-4.22 2.79-.4.27-.76.41-1.08.4-.36-.01-1.04-.2-1.55-.37-.63-.2-1.12-.31-1.08-.66.02-.18.27-.36.74-.55 2.92-1.27 4.86-2.11 5.83-2.51 2.78-1.16 3.35-1.36 3.73-1.36.08 0 .27.02.39.12.1.08.13.19.14.27-.01.06.01.24 0 .38z" />
           </svg>
-          <span className="font-bold text-[13px]">Получить код в Telegram</span>
-        </button>
+          <span className="font-bold text-compact">Получить код в Telegram</span>
+        </Button>
       )}
 
       {/* 4 Separate Glass Digit Cells */}
@@ -72,7 +72,7 @@ export function CodeStep({
           Код из SMS
         </label>
         {/* Transparent accessible input overlaid over the 4 cells */}
-        <input
+        <TextField
           id="sms-code"
           aria-label="Код из SMS"
           ref={inputRef}
@@ -95,20 +95,20 @@ export function CodeStep({
             <div
               key={idx}
               className={cx(
-                'size-14 sm:size-16 rounded-[20px] grid place-items-center font-display text-[26px] font-bold text-ink  transition-all duration-200 pointer-events-none select-none',
+                'size-14 sm:size-16 rounded-card grid place-items-center font-display text-heading font-bold text-ink  transition-all duration-200 pointer-events-none select-none',
                 error
-                  ? 'border-2 border-danger bg-danger/5 text-danger'
+                  ? 'border-(length:--stroke-width-strong) border-danger bg-danger/5 text-danger'
                   : isCurrent
-                    ? 'border-2 border-accent bg-surface/95 shadow-lift ring-4 ring-accent/10 scale-105'
+                    ? 'border-(length:--stroke-width-strong) border-accent bg-surface/95 shadow-lift ring-(length:--focus-halo-width) ring-accent/10 scale-105'
                     : char
-                      ? 'border border-line-strong bg-surface/90 shadow-sm'
-                      : 'border border-line bg-surface/60',
+                      ? 'border-(length:--stroke-width) border-line-strong bg-surface/90 shadow-sm'
+                      : 'border-(length:--stroke-width) border-line bg-surface/60',
               )}
             >
               {char ? (
                 <span className="animate-[pop_0.2s_var(--spring)]">{char}</span>
               ) : isCurrent ? (
-                <span className="size-2 rounded-full bg-accent animate-pulse" />
+                <span className="size-2 rounded-pill bg-accent animate-pulse" />
               ) : null}
             </div>
           )
@@ -119,9 +119,9 @@ export function CodeStep({
         {error ?? (verifying ? 'Проверяем код…' : devCode ? `код для входа: ${devCode}` : 'Код придёт в течение минуты')}
       </p>
 
-      <button className={cx(textBtn(), 'self-center mt-2')} disabled={resendIn > 0} onClick={onResend}>
+      <Button className={cx(textBtn(), 'self-center mt-2')} disabled={resendIn > 0} onClick={onResend}>
         {resendIn > 0 ? `Отправить снова через ${resendIn} с` : 'Отправить код ещё раз'}
-      </button>
+      </Button>
     </div>
   )
 }

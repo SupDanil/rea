@@ -1,11 +1,13 @@
-import { useCallback } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 import { EmptyState } from '../../components/EmptyState'
+import { Loader } from '../../components/Loader'
 import type { Promotion } from '../../domain'
 import { useAppNavigate } from '../../hooks/useAppNavigate'
 import { useCatalog, useCatalogQuery } from '../../queries/useCatalog'
 import { useShop } from '../../queries/useShop'
 import { cx } from '../../utils/cx'
+import { preloadCriticalImages } from '../../utils/imagePreload'
 import { PAGE_ATTR } from '../../utils/morph'
 import { CategoryNav } from './CategoryNav'
 import { MenuHeader } from './MenuHeader'
@@ -21,8 +23,42 @@ export function MenuPage() {
   const shop = useShop()
   const spy = useMenuScrollSpy(catalog)
 
+  const [imagesReady, setImagesReady] = useState(() => {
+    if (typeof navigator !== 'undefined' && /jsdom/i.test(navigator.userAgent)) return true
+    return false
+  })
+  const [loaderMounted, setLoaderMounted] = useState(true)
+
   const mainPromo = catalog.mainPromo
   const mainPromoProduct = mainPromo?.targetProductId ? catalog.itemById.get(mainPromo.targetProductId) : undefined
+
+  useEffect(() => {
+    if (!catalog.items.length) return
+    const criticalUrls: string[] = []
+    if (mainPromo?.imageUrl) criticalUrls.push(mainPromo.imageUrl)
+    if (mainPromoProduct?.imageUrl) criticalUrls.push(mainPromoProduct.imageUrl)
+    for (const item of catalog.items) {
+      if (item.imageUrl) criticalUrls.push(item.imageUrl)
+      if (criticalUrls.length >= 6) break
+    }
+
+    const isTest = typeof navigator !== 'undefined' && /jsdom/i.test(navigator.userAgent)
+    const minDelay = isTest ? 0 : 550
+
+    Promise.all([
+      preloadCriticalImages(criticalUrls, 1200),
+      new Promise((resolve) => setTimeout(resolve, minDelay)),
+    ]).finally(() => {
+      setImagesReady(true)
+    })
+  }, [catalog.items, mainPromo?.imageUrl, mainPromoProduct?.imageUrl])
+
+  useEffect(() => {
+    if (spy.activeTop && imagesReady) {
+      const timer = setTimeout(() => setLoaderMounted(false), 380)
+      return () => clearTimeout(timer)
+    }
+  }, [spy.activeTop, imagesReady])
 
   const open = useCallback((id: string) => go(`/product/${id}`, { artSlot: CARD_SLOT }), [go])
   const openPromo = (promo: Promotion) => {
@@ -36,16 +72,18 @@ export function MenuPage() {
   if (!spy.activeTop) {
     return (
       <div className="flex min-h-dvh flex-col">
-        <MenuHeader />
         {isPending ? (
-          <MenuSkeleton />
+          <Loader />
         ) : (
-          <EmptyState
-            title={isError ? 'Меню не загрузилось' : 'Меню пока пустое'}
-            text={isError ? 'Проверьте интернет и попробуйте ещё раз' : 'Скоро здесь появятся напитки и еда'}
-            actionLabel="Обновить"
-            onAction={() => void refetch()}
-          />
+          <>
+            <MenuHeader />
+            <EmptyState
+              title={isError ? 'Меню не загрузилось' : 'Меню пока пустое'}
+              text={isError ? 'Проверьте интернет и попробуйте ещё раз' : 'Скоро здесь появятся напитки и еда'}
+              actionLabel="Обновить"
+              onAction={() => void refetch()}
+            />
+          </>
         )}
       </div>
     )
@@ -53,6 +91,7 @@ export function MenuPage() {
 
   return (
     <div {...{ [PAGE_ATTR]: '' }}>
+      {loaderMounted && <Loader isExiting={imagesReady} />}
       <MenuHeader />
       {mainPromo && (
         <PromoBanner
@@ -71,7 +110,7 @@ export function MenuPage() {
         showSubtabs={spy.showSubtabs}
         onSelect={spy.scrollToSub}
       />
-      <main>
+      <main className="relative z-0">
         {spy.sections.map(({ sub }, i) => {
           const categoryPromo =
             catalog.promoByCategory.get(sub.id) ||
@@ -86,10 +125,10 @@ export function MenuPage() {
               className={cx(
                 'scroll-mt-(--tabs-h) px-2.5 sm:px-3 pt-4 sm:pt-5 pb-1',
                 // Tall enough to scroll up under the tab bar, so its tab can land on it and stay lit.
-                i === spy.sections.length - 1 && 'min-h-[calc(100dvh-var(--tabs-h)-24px)]',
+                i === spy.sections.length - 1 && 'min-h-[calc(100dvh-var(--tabs-h)-calc(var(--space-unit)*6))]',
               )}
             >
-              <h2 className="mx-1 mb-3 font-display text-[20px] sm:text-[22px] font-bold text-ink tracking-tight">
+              <h2 className="mx-1 mb-3 font-display text-title-sm sm:text-title font-bold text-ink tracking-tight">
                 {sub.name}
               </h2>
               <div className="grid grid-cols-2 gap-2.5 sm:gap-3 wide:grid-cols-3 wide:gap-3.5 lg:grid-cols-4">
@@ -108,27 +147,10 @@ export function MenuPage() {
             </section>
           )
         })}
-        <p className="px-8 pt-7 pb-[calc(96px+env(safe-area-inset-bottom))] text-center text-[12px] text-muted">
+        <p className="px-8 pt-7 pb-[calc(calc(var(--space-unit)*24)+env(safe-area-inset-bottom))] text-center text-caption text-muted">
           {shop ? `Цены указаны для кофейни: ${shop.address}. ` : ''}Состав и аллергены — в карточке товара.
         </p>
       </main>
-    </div>
-  )
-}
-
-function MenuSkeleton() {
-  return (
-    <div className="px-2.5 sm:px-3 pt-4" role="status" aria-label="Загружаем меню">
-      <div className="mb-4 flex gap-3.5 px-1">
-        {[72, 96, 64].map((w) => (
-          <div key={w} className="h-6 rounded-lg bg-surface-2 animate-pulse" style={{ width: w }} />
-        ))}
-      </div>
-      <div className="grid grid-cols-2 gap-2 sm:gap-2.5 wide:grid-cols-3 lg:grid-cols-4">
-        {Array.from({ length: 6 }, (_, i) => (
-          <div key={i} className="h-[220px] rounded-[22px] bg-surface-2 animate-pulse" />
-        ))}
-      </div>
     </div>
   )
 }

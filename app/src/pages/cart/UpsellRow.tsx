@@ -1,5 +1,6 @@
 import type { CSSProperties } from 'react'
 
+import { Button } from '../../components/Button'
 import { ItemArt } from '../../components/ItemArt'
 import { block, blockTitle } from '../../components/ui'
 import type { MenuItem } from '../../domain'
@@ -16,25 +17,27 @@ export function UpsellRow({ items, disabled, onAdd }: { items: MenuItem[]; disab
       <h2 className={blockTitle}>Добавить к заказу</h2>
       <div className="no-scrollbar -mx-3 flex gap-2.5 overflow-x-auto px-3 pb-1">
         {items.map((item) => (
-          <button
+          <Button
             key={item.id}
-            className="flex flex-[0_0_120px] flex-col gap-1 rounded-[22px] p-2 text-left bg-surface/90 border border-line shadow-card hover:border-accent/40 active:scale-95 transition-all cursor-pointer"
+            className="flex flex-[0_0_calc(var(--space-unit)*30)] flex-col gap-1 rounded-card p-2 text-left bg-surface/90 border-(length:--stroke-width) border-line shadow-card hover:border-accent/40 active:scale-95 transition-all cursor-pointer"
             onClick={() => onAdd(item)}
             disabled={disabled}
           >
             <span
-              className="art-glow mesh-grain grid aspect-square place-items-center rounded-[16px] overflow-hidden"
-              style={{ '--tint': item.art.bg } as CSSProperties}
+              className="art-glow mesh-grain grid aspect-square place-items-center rounded-control overflow-hidden"
+              style={{
+                '--tint': item.art.bg || 'var(--art-fallback)',
+              } as CSSProperties}
             >
               <ItemArt art={item.art} className="relative z-10 size-[84%]" />
             </span>
-            <span className="mx-1 mt-1 min-h-[30px] font-display text-[12px] leading-[1.2] font-bold text-ink line-clamp-2">
+            <span className="mx-1 mt-1 min-h-7.5 font-display text-caption leading-(--leading-title) font-bold text-ink line-clamp-2">
               {item.name}
             </span>
-            <span className="mx-1 font-display text-[12px] font-bold text-accent">
+            <span className="mx-1 font-display text-caption font-bold text-accent">
               + {formatPrice(item.variants[0].price)}
             </span>
-          </button>
+          </Button>
         ))}
       </div>
     </section>

@@ -1,8 +1,9 @@
-import { describe, it, expect, vi } from 'vitest'
-import { render, screen, act } from '@testing-library/react'
+import { act,render, screen } from '@testing-library/react'
 import { createRef } from 'react'
+import { describe, expect, it, vi } from 'vitest'
+
+import type { IngredientGroup, MenuItem, Variant } from '../../domain'
 import { HeroBuilderArea } from './HeroBuilderArea'
-import type { MenuItem, IngredientGroup, Variant } from '../../domain'
 
 const dummyNutrition = { kcal: 120, fat: 5, carbs: 8, protein: 5 }
 

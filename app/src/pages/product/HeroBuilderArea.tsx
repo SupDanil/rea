@@ -1,14 +1,14 @@
 import { type RefObject,useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 
-import { ItemArt } from '../../components/ItemArt'
+import { ArtGlow, ItemArt } from '../../components/ItemArt'
 import type { IngredientGroup, MenuItem, Variant } from '../../domain'
 import { countAddons } from '../../domain'
 import { cx } from '../../utils/cx'
 import { artProps } from '../../utils/morph'
 import { prefersReducedMotion } from '../../utils/motion'
 import { type SelectedAddonItem,SelectedAddonsList } from './SelectedAddonsList'
-import type { Selection } from './useProductConfig'
 import { useArtBounds } from './useArtBounds'
+import type { Selection } from './useProductConfig'
 
 export type HeroBuilderAreaProps = {
   item: MenuItem
@@ -206,7 +206,7 @@ export function HeroBuilderArea({
   return (
     <div
       ref={containerRef}
-      className="relative w-full h-full min-h-[200px] flex items-center justify-center overflow-visible"
+      className="relative w-full h-full min-h-50 flex items-center justify-center overflow-visible"
     >
       {/* 1. DRINK CUP: Center in State A, shifted left in State B (z-10, sits UNDER the carousel) */}
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
@@ -219,14 +219,17 @@ export function HeroBuilderArea({
         >
           {/* Cup Art with floating keyframe and bounce ref. The float waits for the flight in to land, and settles after a while: a loop that never ends keeps the phone busy for nothing. */}
           <div ref={cupRef} className="animate-[float-soft_6s_ease-in-out_1s_2]">
-            {/* The shadow sits inside what moves: painted once, not blurred anew on every frame. */}
-            <div className="drop-shadow-[0_20px_40px_var(--pd-cup-shadow)]">
+            {/*
+              The shadow fades in under the flying copy, so it is there when the real cup takes over.
+            */}
+            <div className="relative">
+              <ArtGlow color="var(--pd-cup-shadow)" className="-inset-[14%] top-[2%] animate-[fade-only_0.3s_ease_0.08s_both]" />
               <ItemArt
                 key={`${item.id}-${temperature || 'default'}`}
                 art={temperature === 'cold' && item.art.kind === 'cup' && !imageUrl ? { ...item.art, kind: 'iced' as const } : item.art}
                 imageUrl={effectiveImageUrl}
                 className={cx(
-                  'h-[160px] w-auto aspect-[200/220] select-none pointer-events-none',
+                  'relative h-40 w-auto aspect-[200/220] select-none pointer-events-none',
                   item.id !== openedWith && 'animate-[swap-in_0.4s_var(--ease-soft)_both]',
                 )}
                 ref={artRef}
@@ -241,7 +244,7 @@ export function HeroBuilderArea({
       {renderedItems && renderedItems.length > 0 && (
         <div
           className={cx(
-            'absolute top-1/2 -translate-y-1/2 z-20 h-full max-h-[calc(100%-8px)] flex flex-col justify-center',
+            'absolute top-1/2 -translate-y-1/2 z-20 h-full max-h-[calc(100%-calc(var(--space-unit)*2))] flex flex-col justify-center',
             isBuilder && !leaving
               ? 'opacity-100 translate-x-0 pointer-events-auto'
               : 'opacity-0 translate-x-3 pointer-events-none',

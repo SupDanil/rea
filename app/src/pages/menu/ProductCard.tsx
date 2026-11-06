@@ -1,8 +1,9 @@
 import { type CSSProperties,memo, useMemo, useRef, useState } from 'react'
 import { flushSync } from 'react-dom'
 
-import { PlusIcon } from '../../components/icons'
+import { Button } from '../../components/Button'
 import { ItemArt } from '../../components/ItemArt'
+import { QuickAddButton } from '../../components/QuickAddButton'
 import { isDrink, isSoldOut, itemImage, type MenuItem,minPrice } from '../../domain'
 import { useApp } from '../../state/AppContext'
 import { cx } from '../../utils/cx'
@@ -97,76 +98,61 @@ export const ProductCard = memo(function ProductCard({ item, onOpen }: ProductCa
   return (
     <div
       className={cx(
-        'group relative flex flex-col rounded-[24px] sm:rounded-[26px] p-2.5 pb-3.5 text-left transition-all duration-200 has-[[data-open]:active]:scale-97 hover:shadow-lift',
+        'group relative flex flex-col rounded-panel sm:rounded-panel p-2.5 pb-3.5 text-left transition-all duration-200 has-[[data-open]:active]:scale-97 hover:shadow-lift isolate',
         soldOut
-          ? 'bg-surface/50 border border-line/40 opacity-60'
-          : 'bg-surface/90 border border-line shadow-card hover:border-line-strong',
+          ? 'bg-surface/50 border-(length:--stroke-width) border-line/40 opacity-60'
+          : 'bg-surface/90 border-(length:--stroke-width) border-line shadow-card hover:border-line-strong',
       )}
     >
-      <button
+      <Button
         data-open
-        className="absolute inset-0 rounded-[24px] sm:rounded-[26px] cursor-pointer"
+        className="absolute inset-0 rounded-panel sm:rounded-panel cursor-pointer"
         onClick={() => onOpen(item.id)}
         aria-label={`${item.name}, от ${formatPrice(minPrice(item))}${soldOut ? ', закончилось' : ''}`}
       />
 
       <div
         className={cx(
-          'art-glow mesh-grain pointer-events-none relative grid aspect-square place-items-center overflow-hidden rounded-[18px] sm:rounded-[20px]',
+          'art-glow mesh-grain pointer-events-none relative grid aspect-square place-items-center overflow-hidden rounded-media sm:rounded-card isolate',
           soldOut && 'opacity-60 grayscale-50',
         )}
-        style={{ '--tint': item.art.bg } as CSSProperties}
+        style={{
+          '--tint': item.art.bg || 'var(--art-fallback)',
+        } as CSSProperties}
       >
         <ItemArt
           ref={artRef}
           art={activeArt}
           imageUrl={activeImageUrl}
-          className="relative z-10 h-[84%] w-auto aspect-[200/220] transition-transform duration-300 ease-soft group-hover:-translate-y-1 group-hover:scale-105"
+          className="relative z-1 h-[84%] w-auto aspect-[200/220] transition-transform duration-300 ease-soft group-hover:-translate-y-1 group-hover:scale-105"
           {...artProps(item.id, CARD_SLOT)}
         />
         {item.badge && (
-          <span className="absolute top-2 left-2 rounded-full bg-accent px-2 py-0.5 text-[10px] font-display font-bold tracking-wider text-accent-ink uppercase shadow-sm z-10">
+          <span className="absolute top-2 left-2 rounded-pill bg-accent px-2 py-0.5 text-micro font-display font-bold tracking-wider text-accent-ink uppercase shadow-sm z-2">
             {item.badge}
           </span>
         )}
         {isOnlyCold && (
-          <span className="absolute top-2 right-2 rounded-full bg-blue-500/80 backdrop-blur-xs px-1.5 py-0.5 text-[9px] font-bold text-white shadow-xs z-10">
+          <span className="absolute top-2 right-2 rounded-pill bg-cold/80 backdrop-blur-xs px-1.5 py-0.5 text-micro font-bold text-white shadow-xs z-2">
             ❄️ Лёд
           </span>
         )}
       </div>
 
-      <div className={cx('pointer-events-none mx-1.5 mt-2.5 font-display text-[15px] sm:text-[16px] leading-[1.2] font-bold text-ink truncate', soldOut && 'opacity-60')}>
+      <div className={cx('pointer-events-none mx-1.5 mt-2.5 font-display text-control sm:text-body-lg leading-(--leading-title) font-bold text-ink truncate', soldOut && 'opacity-60')}>
         {item.name}
       </div>
 
-      <div className={cx('pointer-events-none mx-1.5 mt-1 line-clamp-2 flex-1 text-[12px] sm:text-[13px] leading-[1.4] text-muted', soldOut && 'opacity-60')}>
+      <div className={cx('pointer-events-none mx-1.5 mt-1 line-clamp-2 flex-1 text-caption sm:text-compact leading-(--leading-copy) text-muted', soldOut && 'opacity-60')}>
         {item.description}
       </div>
 
       <div className="mt-2.5 mr-1 ml-1.5 flex items-center justify-between">
-        <span className={cx('pointer-events-none font-display text-[14px] sm:text-[15px] font-bold text-ink', soldOut && 'text-[12px] font-normal text-muted')}>
+        <span className={cx('pointer-events-none font-display text-body sm:text-control font-bold text-ink', soldOut && 'text-caption font-normal text-muted')}>
           {soldOut ? 'Закончилось' : `${item.variants.length > 1 ? 'от ' : ''}${formatPrice(minPrice(item))}`}
         </span>
         {!soldOut && (
-          <button
-            className={cx(
-              'relative z-1 grid size-8 sm:size-9 place-items-center rounded-full cursor-pointer shadow-sm transition-all duration-150 active:scale-90',
-              justAdded
-                ? 'bg-accent text-accent-ink'
-                : 'bg-surface border border-glass-border text-ink hover:bg-accent hover:text-accent-ink hover:border-transparent',
-            )}
-            onClick={quickAdd}
-            aria-label={`Добавить «${item.name}» в корзину`}
-          >
-            {justAdded ? (
-              <svg key="done" className="animate-pop" viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
-                <path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            ) : (
-              <PlusIcon />
-            )}
-          </button>
+          <QuickAddButton added={justAdded} onClick={quickAdd} aria-label={`Добавить «${item.name}» в корзину`} />
         )}
       </div>
     </div>

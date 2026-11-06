@@ -2,7 +2,8 @@ import { useRef,useState } from 'react'
 
 import { useEscape } from '../hooks/useEscape'
 import { cx } from '../utils/cx'
-import { btn, buttonRow, hint } from './ui'
+import { Button } from './Button'
+import { buttonRow, hint } from './ui'
 
 type Props = {
   title: string
@@ -53,28 +54,26 @@ export function ConfirmBox({ title, text, confirmLabel, cancelLabel, onConfirm, 
   const box = (
     <div
       className={cx(
-        'relative overflow-hidden rounded-[24px] p-5 text-left',
+        'relative overflow-hidden rounded-panel p-5 text-left',
         'bg-surface',
-        'border border-glass-border shadow-lift',
+        'border-(length:--stroke-width) border-glass-border shadow-lift',
         'animate-[sheet-up_0.25s_var(--ease-soft)_both]',
       )}
       role="alertdialog"
       aria-label={title}
     >
       <div className="flex items-center gap-2 mb-1">
-        <span className="size-2 rounded-full bg-danger animate-pulse" aria-hidden="true" />
-        <p className="font-display text-[17px] font-bold text-ink">{title}</p>
+        <span className="size-2 rounded-pill bg-danger animate-pulse" aria-hidden="true" />
+        <p className="font-display text-body-lg font-bold text-ink">{title}</p>
       </div>
 
-      <p className={cx(hint(), 'mt-1 text-[13px] text-muted leading-relaxed')}>{text}</p>
+      <p className={cx(hint(), 'mt-1 text-compact text-muted leading-relaxed')}>{text}</p>
 
       <div className={cx(buttonRow, 'mt-4')}>
-        <button
-          className={cx(
-            btn('danger'),
-            'relative overflow-hidden transition-all',
+        <Button
+          className={cx('relative overflow-hidden transition-all',
             holding && 'scale-98',
-          )}
+          )} variant="danger" size="md"
           onClick={onConfirm}
           onPointerDown={startHold}
           onPointerUp={cancelHold}
@@ -88,11 +87,11 @@ export function ConfirmBox({ title, text, confirmLabel, cancelLabel, onConfirm, 
             />
           )}
           <span className="relative z-10">{confirmLabel}</span>
-        </button>
+        </Button>
 
-        <button className={btn('secondary')} onClick={onCancel}>
+        <Button  variant="secondary" size="md" onClick={onCancel}>
           {cancelLabel}
-        </button>
+        </Button>
       </div>
     </div>
   )
@@ -105,7 +104,7 @@ export function ConfirmBox({ title, text, confirmLabel, cancelLabel, onConfirm, 
           if (e.target === e.currentTarget) onCancel()
         }}
       >
-        <div className="w-full max-w-[360px]">
+        <div className="w-full max-w-(--layout-dialog-sm)">
           {box}
         </div>
       </div>

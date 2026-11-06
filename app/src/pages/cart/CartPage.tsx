@@ -1,11 +1,12 @@
 import { useRef, useState } from 'react'
 
+import { Button } from '../../components/Button'
 import { EmptyState } from '../../components/EmptyState'
 import { Presence } from '../../components/Presence'
 import { Sheet, SheetBody, SheetDock } from '../../components/Sheet'
 import { ShopPickerSheet } from '../../components/ShopPickerSheet'
 import { Summary, SummaryRow, SummaryTotal } from '../../components/Summary'
-import { addBtn, addPrice, textBtn } from '../../components/ui'
+import { addPrice, textBtn } from '../../components/ui'
 import { isDrink, isPaused, type MenuItem } from '../../domain'
 import { useAppNavigate } from '../../hooks/useAppNavigate'
 import { useNow } from '../../hooks/useNow'
@@ -16,7 +17,6 @@ import { countOf, type ResolvedLine,resolveLines } from '../../state/cart'
 import type { Profile } from '../../state/loyalty'
 import { giftValue } from '../../state/loyalty'
 import type { PaymentMethod, Pickup } from '../../state/orders'
-import { cx } from '../../utils/cx'
 import { formatPrice } from '../../utils/format'
 import { collapseOut, fadeAway } from '../../utils/motion'
 import { readSavedName } from '../../utils/storage'
@@ -46,13 +46,13 @@ function CartLoadingSkeleton() {
     <Sheet label="Корзина" title="Корзина" onBack={back} backLabel="В меню">
       <SheetBody>
         <div className="space-y-4 pt-1" role="status" aria-label="Проверяем авторизацию">
-          <div className="rounded-[22px] bg-surface-2 p-4 animate-pulse">
+          <div className="rounded-card bg-surface-2 p-4 animate-pulse">
             <div className="h-4 w-32 rounded-lg bg-surface-3 mb-2.5" />
             <div className="h-3 w-48 rounded bg-surface-3" />
           </div>
           <div className="space-y-2.5">
             {[1, 2].map((i) => (
-              <div key={i} className="h-16 rounded-[20px] bg-surface-2 p-3 flex items-center gap-3 animate-pulse">
+              <div key={i} className="h-16 rounded-card bg-surface-2 p-3 flex items-center gap-3 animate-pulse">
                 <div className="size-10 rounded-xl bg-surface-3" />
                 <div className="flex-1 space-y-2">
                   <div className="h-4 w-28 rounded bg-surface-3" />
@@ -62,7 +62,7 @@ function CartLoadingSkeleton() {
               </div>
             ))}
           </div>
-          <div className="rounded-[22px] bg-surface-2 p-4 space-y-3 animate-pulse">
+          <div className="rounded-card bg-surface-2 p-4 space-y-3 animate-pulse">
             <div className="h-3.5 w-24 rounded bg-surface-3" />
             <div className="h-10 rounded-xl bg-surface-3" />
           </div>
@@ -146,9 +146,9 @@ function CartView({ profile }: { profile: Profile }) {
   })
 
   const clearButton = lines.length > 0 && (
-    <button className={textBtn()} onClick={() => void clear()} disabled={paying}>
+    <Button className={textBtn()} onClick={() => void clear()} disabled={paying}>
       Очистить
-    </button>
+    </Button>
   )
 
   return (
@@ -198,14 +198,14 @@ function CartView({ profile }: { profile: Profile }) {
       {lines.length > 0 && (
         <SheetDock ref={dockRef}>
           {paused && (
-            <p className="mb-2 text-center text-[13px] font-semibold text-danger" role="alert">
+            <p className="mb-2 text-center text-compact font-semibold text-danger" role="alert">
               {shop?.pauseReason ? `Кофейня временно не принимает заказы: ${shop.pauseReason}` : 'Кофейня временно не принимает заказы'}
             </p>
           )}
-          <button className={cx(addBtn, 'w-full shadow-lift')} onClick={() => void pay(name)} disabled={paying || paused} aria-busy={paying}>
+          <Button variant="primary" size="lg" fullWidth className="flex items-center justify-between" onClick={() => void pay(name)} disabled={paying || paused} aria-busy={paying}>
             {paying ? (
               <span className="flex w-full items-center justify-center gap-2.5">
-                <span className="size-5 rounded-full border-[2.5px] border-white/35 border-t-white animate-[spin_0.8s_linear_infinite]" aria-hidden="true" />
+                <span className="size-5 rounded-pill border-[calc(var(--space-unit)*0.625)] border-white/35 border-t-white animate-[spin_0.8s_linear_infinite]" aria-hidden="true" />
                 {payment === 'card' ? 'Оплачиваем…' : 'Отправляем…'}
               </span>
             ) : (
@@ -216,7 +216,7 @@ function CartView({ profile }: { profile: Profile }) {
                 </span>
               </>
             )}
-          </button>
+          </Button>
         </SheetDock>
       )}
       <Presence>{showShopPicker && <ShopPickerSheet onClose={() => setShowShopPicker(false)} />}</Presence>
@@ -234,8 +234,8 @@ function EmptyCartArt() {
       <circle cx="60" cy="54" r="18" fill="var(--surface)" />
       <circle cx="54" cy="52" r="2" fill="var(--ink)" opacity="0.75" />
       <circle cx="66" cy="52" r="2" fill="var(--ink)" opacity="0.75" />
-      <path d="M38 56h44l-4 40H42z" fill="none" stroke="var(--faint)" strokeWidth="3.5" strokeLinejoin="round" />
-      <path d="M48 56a12 12 0 0 1 24 0" fill="none" stroke="var(--faint)" strokeWidth="3" />
+      <path d="M38 56h44l-4 40H42z" fill="none" stroke="var(--faint)" strokeWidth="var(--icon-stroke-strong)" strokeLinejoin="round" />
+      <path d="M48 56a12 12 0 0 1 24 0" fill="none" stroke="var(--faint)" strokeWidth="var(--icon-stroke-strong)" />
     </svg>
   )
 }

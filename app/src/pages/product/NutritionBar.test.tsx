@@ -30,7 +30,7 @@ describe('NutritionBar Component', () => {
     const deltaBadge = screen.getByText('+40 ккал')
     expect(deltaBadge).toBeInTheDocument()
     // Positioned below the button so it never covers the temperature/size buttons above
-    expect(deltaBadge.className).toContain('top-[calc(100%+4px)]')
+    expect(deltaBadge.className).toContain('top-[calc(100%+calc(var(--space-unit)*1))]')
     expect(deltaBadge.className).toContain('animate-[delta-float-down_1.1s_var(--ease-soft)_both]')
   })
 })

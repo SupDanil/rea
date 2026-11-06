@@ -34,4 +34,23 @@ describe('useTheme hook', () => {
     })
     expect(result.current.theme).toBe(initial)
   })
+
+  it('uses the current CSS background token for browser chrome in both themes', () => {
+    const style = document.createElement('style')
+    style.textContent = ':root { --bg: #f1e9ff; } :root[data-theme="dark"] { --bg: #211530; }'
+    const meta = document.createElement('meta')
+    meta.name = 'theme-color'
+    document.head.append(style, meta)
+    try {
+      const { result, unmount } = renderHook(() => useTheme())
+      expect(meta.content).toBe('#f1e9ff')
+      act(() => result.current.toggle())
+      expect(meta.content).toBe('#211530')
+      unmount()
+    } finally {
+      style.remove()
+      meta.remove()
+    }
+  })
+
 })

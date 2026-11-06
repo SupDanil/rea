@@ -1,3 +1,4 @@
+import { Button } from '../../components/Button'
 import type { IngredientGroup } from '../../domain'
 import { cx } from '../../utils/cx'
 import type { Selection } from './useProductConfig'
@@ -30,15 +31,15 @@ export function CraftTabBar({
         const pickedCount = (selection[group.id] ?? []).length
 
         return (
-          <button
+          <Button
             key={group.id}
             onClick={() => onSelectGroup(group.id)}
             aria-label={group.name}
             className={cx(
-              'flex h-8.5 shrink-0 items-center gap-1.5 rounded-full px-3.5 text-[12px] font-bold transition-all duration-200 ease-soft active:scale-95 cursor-pointer shadow-xs',
+              'flex h-8.5 shrink-0 items-center gap-1.5 rounded-pill px-3.5 text-caption font-bold transition-all duration-200 ease-soft active:scale-95 cursor-pointer shadow-xs',
               isActive
-                ? 'bg-ink text-surface dark:bg-surface-2 dark:text-crema border border-transparent shadow-sm'
-                : 'bg-pd-glass hover:bg-pd-glass-hover text-pd-ink border border-pd-line',
+                ? 'bg-ink text-surface dark:bg-surface-2 dark:text-crema border-(length:--stroke-width) border-transparent shadow-sm'
+                : 'bg-pd-glass hover:bg-pd-glass-hover text-pd-ink border-(length:--stroke-width) border-pd-line',
             )}
           >
             <span>{group.name}</span>
@@ -46,7 +47,7 @@ export function CraftTabBar({
               <span
                 key={pickedCount}
                 className={cx(
-                  'grid size-4.5 place-items-center rounded-full text-[9.5px] font-extrabold leading-none animate-pop',
+                  'grid size-4.5 place-items-center rounded-pill text-micro font-extrabold leading-none animate-pop',
                   isActive
                     ? 'bg-accent text-white'
                     : 'bg-accent/15 text-accent dark:bg-accent/25 dark:text-crema',
@@ -55,7 +56,7 @@ export function CraftTabBar({
                 {pickedCount}
               </span>
             )}
-          </button>
+          </Button>
         )
       })}
     </div>

@@ -5,7 +5,6 @@ import { readString, writeString } from '../utils/storage'
 export type Theme = 'light' | 'dark'
 
 const STORAGE_KEY = 'zerno-theme'
-const themeColor = { light: '#f4f0ea', dark: '#15120f' } as const
 const systemQuery = () => window.matchMedia('(prefers-color-scheme: dark)')
 
 const readStored = (): Theme | null => {
@@ -15,7 +14,8 @@ const readStored = (): Theme | null => {
 
 const apply = (theme: Theme) => {
   document.documentElement.dataset.theme = theme
-  document.querySelector('meta[name="theme-color"]')?.setAttribute('content', themeColor[theme])
+  const background = getComputedStyle(document.documentElement).getPropertyValue('--bg').trim()
+  if (background) document.querySelector('meta[name="theme-color"]')?.setAttribute('content', background)
 }
 
 /** Follows the system until the user picks a theme, then remembers that pick. */

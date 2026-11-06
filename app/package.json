@@ -6,13 +6,15 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
-    "lint": "eslint .",
+    "lint": "npm run check:design && eslint .",
     "lint:fix": "eslint . --fix",
     "lint:fast": "oxlint",
     "test": "vitest run",
     "preview": "vite preview",
     "test:flights": "node scripts/flight-check.mjs",
-    "test:sheets": "node scripts/sheet-check.mjs"
+    "test:sheets": "node scripts/sheet-check.mjs",
+    "check:design": "node scripts/check-design-system.mjs",
+    "test:design": "node scripts/design-system-check.mjs"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.105.0",

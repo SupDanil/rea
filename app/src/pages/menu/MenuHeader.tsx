@@ -1,9 +1,10 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 
+import { Button, IconButton } from '../../components/Button'
 import { BagIcon, ChevronDownIcon, PersonIcon, RabbitIcon } from '../../components/icons'
 import { Presence } from '../../components/Presence'
 import { ShopPickerSheet } from '../../components/ShopPickerSheet'
-import { avatar, openDot, roundBtn } from '../../components/ui'
+import { avatar, openDot } from '../../components/ui'
 import { shopStatus } from '../../domain'
 import { useAppNavigate } from '../../hooks/useAppNavigate'
 import { useNow } from '../../hooks/useNow'
@@ -48,7 +49,7 @@ export function MenuHeader() {
 
   useEffect(() => {
     const onScroll = () => {
-      setScrolled(window.scrollY > 16)
+      setScrolled(window.scrollY > 4)
     }
     window.addEventListener('scroll', onScroll, { passive: true })
     return () => window.removeEventListener('scroll', onScroll)
@@ -59,51 +60,51 @@ export function MenuHeader() {
       <header
         ref={headerRef}
         className={cx(
-          'sticky top-0 z-20 flex items-center justify-between gap-2 px-3 sm:px-4 pt-[calc(10px+env(safe-area-inset-top))] pb-2.5 border-b transition-[background-color,border-color,box-shadow] duration-200',
+          'sticky top-0 z-30 flex items-center justify-between gap-2 px-3 sm:px-4 pt-[calc(calc(var(--space-unit)*2.5)+env(safe-area-inset-top))] pb-2.5 border-b-(length:--stroke-width) transition-[background-color,border-color,box-shadow] duration-200',
           scrolled
-            ? 'bg-bg/95 wide:bg-bg/85 wide:backdrop-blur-xl border-line/60 shadow-[0_4px_20px_rgba(0,0,0,0.03)]'
+            ? 'bg-bg/95 backdrop-blur-xl border-line/60 shadow-header'
             : 'bg-transparent border-line/0',
         )}
         {...{ [COVER_ATTR]: '' }}
       >
         {/* Coffee Shop Capsule Button */}
-        <button
+        <Button
           onClick={() => setShowShopPicker(true)}
-          className="flex min-w-0 items-center gap-2.5 rounded-full bg-surface/90 border border-line py-1.5 pl-1.5 pr-3.5 shadow-sm backdrop-blur-md text-left cursor-pointer hover:bg-surface active:scale-98 transition-all"
+          className="flex min-w-0 items-center gap-2.5 rounded-pill bg-surface/90 border-(length:--stroke-width) border-line py-1.5 pl-1.5 pr-3.5 shadow-sm backdrop-blur-md text-left cursor-pointer hover:bg-surface active:scale-98 transition-all"
           aria-label={shop && status ? `shit кофе: ${shop.address}, ${status.text}` : 'shit кофе'}
         >
-          <div className="grid size-9 place-items-center rounded-full bg-ink text-surface dark:bg-surface-2 dark:text-crema shadow-xs flex-none">
+          <div className="grid size-9 place-items-center rounded-pill bg-ink text-surface dark:bg-surface-2 dark:text-crema shadow-xs flex-none">
             <RabbitIcon size={20} className="size-5" />
           </div>
           <div className="min-w-0">
-            <div className="flex items-center gap-1 font-display text-[13px] sm:text-[14px] font-bold text-ink tracking-tight">
+            <div className="flex items-center gap-1 font-display text-compact sm:text-body font-bold text-ink tracking-tight">
               <span>shit кофе</span>
               <ChevronDownIcon className="text-muted size-3" />
             </div>
             {shop && status && (
               <div
-                className="flex items-center gap-1.5 text-[11px] text-muted font-medium truncate"
+                className="flex items-center gap-1.5 text-micro text-muted font-medium truncate"
                 data-shop-status={status.kind}
               >
-                <span className={status.kind === 'open' ? openDot : 'size-1.5 rounded-full bg-danger'} aria-hidden="true" />
+                <span className={status.kind === 'open' ? openDot : 'size-1.5 rounded-pill bg-danger'} aria-hidden="true" />
                 {shop.address} · {status.text}
               </div>
             )}
           </div>
-        </button>
+        </Button>
 
         {/* Action Controls */}
         <div className="flex gap-2 items-center">
-          <button
-            className={roundBtn}
+          <IconButton
+
             onClick={toggleTheme}
             aria-label={theme === 'dark' ? 'Включить светлую тему' : 'Включить тёмную тему'}
           >
             <ThemeIcon dark={theme === 'dark'} />
-          </button>
+          </IconButton>
 
-          <button
-            className={roundBtn}
+          <IconButton
+
             onClick={() => go('/profile')}
             aria-label={profile ? `Профиль${gifts ? `, подарков: ${gifts}` : ''}` : 'Войти'}
           >
@@ -116,16 +117,16 @@ export function MenuHeader() {
             )}
             {gifts > 0 && (
               <span
-                className="absolute -top-1 -right-1 grid size-5 place-items-center rounded-full bg-surface text-[11px] shadow-card animate-[pop_0.35s_var(--spring)]"
+                className="absolute -top-1 -right-1 grid size-5 place-items-center rounded-pill bg-surface text-micro shadow-card animate-[pop_0.35s_var(--spring)]"
                 aria-hidden="true"
               >
                 🎁
               </span>
             )}
-          </button>
+          </IconButton>
 
-          <button
-            className={roundBtn}
+          <IconButton
+
             onClick={() => go('/cart')}
             aria-label={`Корзина, товаров: ${cartCount}`}
           >
@@ -133,12 +134,12 @@ export function MenuHeader() {
             {cartCount > 0 && (
               <span
                 key={cartCount}
-                className="absolute -top-[3px] -right-[3px] grid h-5 min-w-5 place-items-center rounded-full border-2 border-bg bg-accent px-1 text-[11px] font-display font-extrabold text-accent-ink animate-[pop_0.35s_var(--spring)]"
+                className="absolute -top-[calc(var(--space-unit)*0.75)] -right-[calc(var(--space-unit)*0.75)] grid h-5 min-w-5 place-items-center rounded-pill border-(length:--stroke-width-strong) border-bg bg-accent px-1 text-micro font-display font-extrabold text-accent-ink animate-[pop_0.35s_var(--spring)]"
               >
                 {cartCount}
               </span>
             )}
-          </button>
+          </IconButton>
         </div>
       </header>
 
@@ -151,12 +152,12 @@ function ThemeIcon({ dark }: { dark: boolean }) {
   return (
     <svg key={String(dark)} className="animate-spin-in" viewBox="0 0 24 24" width="19" height="19" aria-hidden="true">
       {dark ? (
-        <g fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round">
+        <g fill="none" stroke="currentColor" strokeWidth="var(--icon-stroke)" strokeLinecap="round">
           <circle cx="12" cy="12" r="4" />
           <path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.3 5.3l1.4 1.4M17.3 17.3l1.4 1.4M5.3 18.7l1.4-1.4M17.3 6.7l1.4-1.4" />
         </g>
       ) : (
-        <path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5Z" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
+        <path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5Z" fill="none" stroke="currentColor" strokeWidth="var(--icon-stroke)" strokeLinejoin="round" />
       )}
     </svg>
   )

@@ -1,6 +1,7 @@
 import type { RefObject } from 'react'
 
-import { block, blockTitle, field, hint } from '../../components/ui'
+import { TextField } from '../../components/TextField'
+import { block, blockTitle, hint } from '../../components/ui'
 
 type Props = { value: string; error: boolean; inputRef: RefObject<HTMLInputElement | null>; onChange: (value: string) => void }
 
@@ -10,10 +11,10 @@ export function NameField({ value, error, inputRef, onChange }: Props) {
       <label className={blockTitle} htmlFor="guest-name">
         Как вас назвать?
       </label>
-      <input
+      <TextField
         id="guest-name"
         ref={inputRef}
-        className={field(error)}
+         error={error} fieldSize="md"
         value={value}
         maxLength={20}
         autoComplete="given-name"

@@ -1,5 +1,6 @@
 import { type RefObject,useEffect, useRef, useState } from 'react'
 
+import { Button } from '../../components/Button'
 import type { Catalog, Category } from '../../domain'
 import { useSlidingIndicator } from '../../hooks/useSlidingIndicator'
 import { cx } from '../../utils/cx'
@@ -56,12 +57,12 @@ export function CategoryNav({ catalog, navRef, activeTop, activeSub, activeSubs,
   return (
     <nav
       className={cx(
-        'sticky z-10 border-b transition-all duration-200',
+        'sticky z-20 border-b-(length:--stroke-width) transition-all duration-200',
         isStuck
-          ? 'bg-bg/95 pt-4 sm:pt-4.5 pb-3.5 sm:pb-4 border-line/60 shadow-[0_8px_24px_rgba(0,0,0,0.06)] backdrop-blur-2xl'
-          : 'mt-1 bg-bg/95 pt-3 pb-2.5 border-line/40 wide:bg-bg/85 wide:backdrop-blur-xl',
+          ? 'bg-bg/95 pt-4 sm:pt-4.5 pb-3.5 sm:pb-4 border-line/60 shadow-sticky backdrop-blur-2xl'
+          : 'mt-1 bg-bg/95 pt-3 pb-2.5 border-line/40 backdrop-blur-xl',
       )}
-      style={{ top: 'var(--header-h, 68px)' }}
+      style={{ top: 'var(--header-h)' }}
       aria-label="Категории меню"
       ref={navRef}
       {...{ [COVER_ATTR]: '' }}
@@ -69,22 +70,22 @@ export function CategoryNav({ catalog, navRef, activeTop, activeSub, activeSubs,
       {/* Top Categories */}
       <div className="no-scrollbar relative flex gap-4 sm:gap-6 overflow-x-auto px-3.5 sm:px-4" role="tablist" ref={tabsRef}>
         <span
-          className="pointer-events-none absolute bottom-0 left-0 h-[3px] rounded-full bg-accent opacity-0 transition-[transform,scale,width] duration-350 ease-soft shadow-[0_0_8px_rgba(196,91,36,0.35)]"
+          className="pointer-events-none absolute bottom-0 left-0 h-0.75 rounded-pill bg-accent opacity-0 transition-[transform,scale,width] duration-350 ease-soft shadow-accent-glow"
           ref={tabIndicator}
           aria-hidden="true"
         />
         {catalog.topCategories.map((top) => {
           const selected = top.id === activeTop.id
           return (
-            <button
+            <Button
               key={top.id}
               role="tab"
               aria-selected={selected}
               className={cx(
                 'relative whitespace-nowrap transition-all duration-200 cursor-pointer',
                 isStuck
-                  ? 'pt-1.5 pb-2.5 sm:pt-2 sm:pb-3 text-[17px] sm:text-[19px]'
-                  : 'pt-0.5 pb-2 text-[17px] sm:text-[19px]',
+                  ? 'pt-1.5 pb-2.5 sm:pt-2 sm:pb-3 text-body-lg sm:text-lead'
+                  : 'pt-0.5 pb-2 text-body-lg sm:text-lead',
                 selected
                   ? 'font-display font-bold text-ink'
                   : 'font-display font-medium text-muted hover:text-ink/80',
@@ -95,7 +96,7 @@ export function CategoryNav({ catalog, navRef, activeTop, activeSub, activeSubs,
               }}
             >
               {top.name}
-            </button>
+            </Button>
           )
         })}
       </div>
@@ -111,29 +112,29 @@ export function CategoryNav({ catalog, navRef, activeTop, activeSub, activeSubs,
           ref={subTabsRef}
         >
           <span
-            className="pointer-events-none absolute top-0 bottom-0 left-0 rounded-full bg-accent opacity-0 transition-[transform,scale,width] duration-350 ease-soft shadow-sm"
+            className="pointer-events-none absolute top-0 bottom-0 left-0 rounded-pill bg-accent opacity-0 transition-[transform,scale,width] duration-350 ease-soft shadow-sm"
             ref={subIndicator}
             aria-hidden="true"
           />
           {activeSubs.map((sub) => {
             const selected = sub.id === activeSub
             return (
-              <button
+              <Button
                 key={sub.id}
                 role="tab"
                 aria-selected={selected}
                 className={cx(
-                  'relative z-1 rounded-full px-3.5 whitespace-nowrap transition-colors duration-250 cursor-pointer',
-                  isStuck ? 'py-1.5 text-[13px] sm:py-2' : 'py-1.5 text-[13px]',
+                  'relative z-1 rounded-pill px-3.5 whitespace-nowrap transition-colors duration-250 cursor-pointer',
+                  isStuck ? 'py-1.5 text-compact sm:py-2' : 'py-1.5 text-compact',
                   'font-semibold',
                   selected
                     ? 'text-accent-ink'
-                    : 'text-ink-2 bg-surface/80 border border-line hover:border-accent/30',
+                    : 'text-ink-2 bg-surface/80 border-(length:--stroke-width) border-line hover:border-accent/30',
                 )}
                 onClick={() => onSelect(sub.id)}
               >
                 {sub.name}
-              </button>
+              </Button>
             )
           })}
         </div>

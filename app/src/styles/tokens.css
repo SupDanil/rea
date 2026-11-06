@@ -1,0 +1,476 @@
+/* Single source of truth for the client brand. See docs/design-system.md. */
+
+:root {
+  color-scheme: light;
+  /* Brand primitives. Spacing utilities consume this unit, including arbitrary layouts. */
+  --weight-regular: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+  --weight-bold: 700;
+  --weight-heavy: 800;
+  --weight-black: 900;
+  --tracking-code: .6em;
+  --blur-glass: 24px;
+  --blur-panel: 28px;
+  --grain-opacity: .2;
+  --shadow-ready-glow: 0 0 38px color-mix(in srgb, var(--open) 65%, transparent);
+  --layout-sheet-height: 51.25rem;
+  --space-unit: 0.25rem;
+  --type-scale: 1;
+  --radius-scale: 1;
+  --stroke-width: 1px;
+  --stroke-width-strong: calc(var(--stroke-width) * 2);
+  --focus-width: calc(var(--stroke-width) * 2);
+  --focus-halo-width: calc(var(--stroke-width) * 4);
+  --icon-stroke: 1.8;
+  --icon-stroke-strong: calc(var(--icon-stroke) * 1.55);
+  --font-body: 'Onest', system-ui, -apple-system, sans-serif;
+  --font-heading: 'Unbounded', system-ui, -apple-system, sans-serif;
+  --font-editorial: 'Cormorant Garamond', Georgia, serif;
+  --type-micro: calc(0.625rem * var(--type-scale));
+  --type-caption: calc(0.75rem * var(--type-scale));
+  --type-compact: calc(0.8125rem * var(--type-scale));
+  --type-body: calc(0.875rem * var(--type-scale));
+  --type-control: calc(0.9375rem * var(--type-scale));
+  --type-body-lg: calc(1rem * var(--type-scale));
+  --type-lead: calc(1.125rem * var(--type-scale));
+  --type-title-sm: calc(1.25rem * var(--type-scale));
+  --type-title: calc(1.375rem * var(--type-scale));
+  --type-heading: calc(1.625rem * var(--type-scale));
+  --type-display: calc(2rem * var(--type-scale));
+  --type-hero: calc(2.5rem * var(--type-scale));
+  --type-showcase: calc(3.5rem * var(--type-scale));
+  --leading-display: 1.1;
+  --leading-title: 1.2;
+  --leading-copy: 1.4;
+  --leading-body: 1.5;
+  --tracking-display: -0.02em;
+  --tracking-label: 0.02em;
+  --radius-control: calc(1rem * var(--radius-scale));
+  --radius-card: calc(1.25rem * var(--radius-scale));
+  --radius-media: calc(1.125rem * var(--radius-scale));
+  --radius-panel: calc(1.5rem * var(--radius-scale));
+  --radius-dialog: calc(2rem * var(--radius-scale));
+  --radius-pill: 9999px;
+  --control-sm: calc(var(--space-unit) * 9);
+  --control-md: calc(var(--space-unit) * 12);
+  --control-lg: calc(var(--space-unit) * 14);
+  --control-icon: calc(var(--space-unit) * 10);
+  --control-icon-lg: calc(var(--space-unit) * 11);
+  --control-pad: calc(var(--space-unit) * 6);
+  --button-radius: var(--radius-pill);
+  --button-font: var(--font-body);
+  --button-weight: var(--weight-semibold);
+  --button-bg: var(--accent);
+  --button-ink: var(--accent-ink);
+  --button-hover-bg: var(--accent-2);
+  --button-shadow: var(--shadow-action);
+  --button-secondary-bg: var(--surface);
+  --button-secondary-ink: var(--ink);
+  --button-secondary-border: var(--line);
+  --field-radius: var(--radius-control);
+  --field-bg: var(--surface);
+  --field-ink: var(--ink);
+  --field-border: var(--line);
+  --stepper-radius: var(--radius-pill);
+  --stepper-bg: var(--surface-2);
+  --segment-inset: var(--space-unit);
+  --segment-height: calc(var(--space-unit) * 10.5);
+  --segment-height-compact: calc(var(--space-unit) * 6.5);
+  --segment-radius: var(--radius-pill);
+  --segment-bg: var(--surface-2);
+  --segment-selected-bg: var(--surface);
+  --segment-selected-ink: var(--ink);
+  --switch-width: calc(var(--space-unit) * 12);
+  --switch-height: calc(var(--space-unit) * 7);
+  --switch-inset: calc(var(--space-unit) * .75);
+  --switch-thumb: calc(var(--switch-height) - var(--switch-inset) * 2);
+  --field-height: calc(var(--space-unit) * 12.5);
+  --panel-padding: calc(var(--space-unit) * 4);
+  --page-gutter: calc(var(--space-unit) * 3);
+  --page-gutter-wide: calc(var(--space-unit) * 6);
+  --section-gap: calc(var(--space-unit) * 6);
+  --layout-phone: 30rem;
+  --layout-dialog-sm: 22.5rem;
+  --layout-sheet: 35rem;
+  --layout-product: 40rem;
+  --layout-product-wide: 43.75rem;
+  --layout-content: 68.75rem;
+  --layout-hero: 77.5rem;
+  --layout-modal-height: 55rem;
+  --layout-dock: 28.75rem;
+  --opacity-disabled: 0.45;
+  --opacity-stopped: 0.6;
+  --press-scale: 0.96;
+  --motion-fast: 150ms;
+  --motion-control: 200ms;
+  --motion-swap: 300ms;
+  --motion-sheet: 340ms;
+  --neutral-white: #ffffff;
+  --neutral-black: #000000;
+  --brand-telegram: #2aabee;
+  --cold: #3b82f6;
+  --cold-ink: #60a5fa;
+  --promo-fallback: #e88b4c;
+  --art-fallback: #c5c7d7;
+  --order-making-bg: #261a13;
+  --order-ready-bg: #15291c;
+  --on-dark: var(--neutral-white);
+  --on-light: #1c140f;
+  --level-start: var(--clay);
+  --level-end: #7d3a18;
+  --level-second-end: #8e3810;
+  --level-third-end: #9c3d0c;
+  --level-last-start: #341e14;
+  --level-last-end: #120906;
+  /* Palette: Warm Specialty Espresso Glass Light */
+  --bg: #F4F1EB;
+  --surface: #FCFAF7;
+  --surface-2: #EAE3D8;
+  --ink: #1C140F;
+  --ink-2: #3D2F26;
+  --muted: #7D6D63;
+  --faint: #B8ABA0;
+  --line: color-mix(in srgb, var(--ink) 9%, transparent);
+  --line-strong: color-mix(in srgb, var(--ink) 18%, transparent);
+  /* Signature warm amber caramel & roasted crema accent - NOT blue/Drinkit! */
+  --accent: #C45B24;
+  --accent-2: #D96E32;
+  --accent-soft: #F2A272;
+  --accent-ink: #FFFFFF;
+  --inverse: var(--ink);
+  --inverse-ink: #FCFAF7;
+  --crema: #D9954C;
+  --clay: #B85F38;
+  --sage: #7E9470;
+  --open: #2D9E5E;
+  --pending: #D4932A;
+  --error: var(--danger);
+  --danger: #D6453D;
+
+  /* Liquid Glass tokens (warm amber/espresso reflection) */
+  --glass: color-mix(in srgb, var(--surface) 72%, transparent);
+  --glass-strong: color-mix(in srgb, var(--neutral-white) 90%, transparent);
+  --glass-border: color-mix(in srgb, var(--neutral-white) 65%, transparent);
+  --glass-edge: color-mix(in srgb, var(--neutral-white) 85%, transparent);
+  --glass-shadow: inset 0 1px 0 color-mix(in srgb, var(--neutral-white) 80%, transparent), inset 0 -1px 0 color-mix(in srgb, var(--ink) 5%, transparent), 0 18px 48px color-mix(in srgb, var(--ink) 10%, transparent);
+  --glass-panel: color-mix(in srgb, var(--surface) 88%, transparent);
+  --glow: color-mix(in srgb, var(--neutral-white) 65%, transparent);
+  --sticky: color-mix(in srgb, var(--bg) 90%, transparent);
+  --dock: color-mix(in srgb, var(--surface) 88%, transparent);
+  --panel: color-mix(in srgb, var(--surface) 96%, transparent);
+
+  /* Item tints */
+  --tint-base: #F4F1EB;
+  --tint-amount: 22%;
+  --header-h: 68px;
+  --tabs-h: 96px;
+  --card-shadow: 0 2px 10px color-mix(in srgb, var(--ink) 4%, transparent), 0 12px 30px color-mix(in srgb, var(--ink) 5%, transparent);
+  --lift-shadow: 0 4px 16px color-mix(in srgb, var(--ink) 6%, transparent), 0 22px 50px color-mix(in srgb, var(--ink) 10%, transparent);
+  --ease-soft: cubic-bezier(0.2, 0.8, 0.2, 1);
+  --ease-sheet: cubic-bezier(0.32, 0.72, 0, 1);
+  --ease-sheet-out: cubic-bezier(0.4, 0, 0.8, 0.4);
+  --spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* Product screen: warm espresso studio */
+  --pd-bg-from: #F8F5EE;
+  --pd-bg-to: #E9E2D5;
+  --pd-spot-mix: 35%;
+  --pd-spot-base: #FFFFFF;
+  --pd-ink: var(--ink);
+  --pd-ink-2: var(--ink-2);
+  --pd-muted: var(--muted);
+  --pd-faint: var(--faint);
+  --pd-glass: color-mix(in srgb, var(--neutral-white) 72%, transparent);
+  --pd-glass-hover: color-mix(in srgb, var(--neutral-white) 92%, transparent);
+  --pd-glass-strong: #FFFFFF;
+  --pd-line: color-mix(in srgb, var(--ink) 8%, transparent);
+  --pd-line-strong: color-mix(in srgb, var(--ink) 18%, transparent);
+  --pd-panel: color-mix(in srgb, var(--surface) 96%, transparent);
+  --pd-scrim: color-mix(in srgb, var(--ink) 25%, transparent);
+  --pd-tile: color-mix(in srgb, var(--ink) 4%, transparent);
+  --pd-tile-hover: color-mix(in srgb, var(--ink) 7%, transparent);
+  --pd-tile-on: color-mix(in oklab, var(--accent) 14%, var(--neutral-white));
+  --pd-tile-on-line: var(--accent);
+  --pd-step: color-mix(in srgb, var(--ink) 6%, transparent);
+  --pd-step-on: color-mix(in srgb, var(--accent) 14%, transparent);
+  --pd-track: color-mix(in srgb, var(--ink) 7%, transparent);
+  --pd-cup-shadow: color-mix(in srgb, var(--ink) 18%, transparent);
+  --pd-panel-shadow: 0 20px 50px color-mix(in srgb, var(--ink) 12%, transparent);
+  /* Semantic effects: every accent effect follows the same brand hue. */
+  --shadow-control: 0 2px 8px color-mix(in srgb, var(--neutral-black) 12%, transparent);
+  --shadow-action: 0 8px 28px color-mix(in srgb, var(--accent) 32%, transparent);
+  --shadow-selected: 0 4px 24px color-mix(in srgb, var(--accent) 20%, transparent);
+  --shadow-success: 0 6px 22px color-mix(in srgb, var(--open) 35%, transparent);
+  --shadow-ready: 0 8px 32px -4px color-mix(in srgb, var(--open) 30%, transparent);
+  --shadow-header: 0 4px 20px color-mix(in srgb, var(--neutral-black) 3%, transparent);
+  --shadow-sticky: 0 8px 24px color-mix(in srgb, var(--neutral-black) 6%, transparent);
+  --shadow-footer: 0 -4px 20px color-mix(in srgb, var(--neutral-black) 4%, transparent);
+  --shadow-pending: 0 8px 24px color-mix(in srgb, var(--pending) 20%, transparent);
+  --shadow-accent-glow: 0 0 8px color-mix(in srgb, var(--accent) 35%, transparent);
+  --shadow-open-glow: 0 0 10px color-mix(in srgb, var(--open) 60%, transparent);
+  --shadow-white-glow: 0 0 10px color-mix(in srgb, var(--neutral-white) 60%, transparent);
+  --shadow-status-dot: 0 0 0 3px color-mix(in srgb, var(--open) 22%, transparent);
+  --art-glow: color-mix(in srgb, var(--neutral-black) 18%, transparent);
+
+
+
+  --background-ready: radial-gradient(120% 90% at 50% 0%, color-mix(in srgb, var(--open) 20%, transparent) 0%, color-mix(in srgb, var(--open) 5%, transparent) 55%, transparent 80%);
+  --background-accepted: radial-gradient(120% 90% at 50% 0%, color-mix(in srgb, var(--open) 12%, transparent) 0%, transparent 70%);
+
+}
+
+/* Dark Palette: "Тёмная обжарка" (Dark Roast Velvet) */
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --order-making-bg: #20140d;
+  --bg: #0C0806;
+  --surface: #18110D;
+  --surface-2: #241A14;
+  --ink: #F7F1EB;
+  --ink-2: #D8CBC0;
+  --muted: #998A7E;
+  --faint: #544439;
+  --line: color-mix(in srgb, var(--ink) 8%, transparent);
+  --line-strong: color-mix(in srgb, var(--ink) 18%, transparent);
+  /* Glowing amber crema accent */
+  --accent: #E07D3E;
+  --accent-2: #EC9255;
+  --accent-soft: #7C3A16;
+  --accent-ink: #0C0806;
+  --inverse: var(--ink);
+  --inverse-ink: #0C0806;
+  --crema: #D48C42;
+  --clay: #C06B42;
+  --sage: #8DA87E;
+  --open: #3FBF7F;
+  --pending: #E6A238;
+  --error: var(--danger);
+  --danger: #E05349;
+
+  /* Liquid Glass tokens - dark */
+  --glass: color-mix(in srgb, var(--surface) 72%, transparent);
+  --glass-strong: color-mix(in srgb, var(--surface-2) 85%, transparent);
+  --glass-border: color-mix(in srgb, var(--neutral-white) 14%, transparent);
+  --glass-edge: color-mix(in srgb, var(--neutral-white) 22%, transparent);
+  --glass-shadow: inset 0 1px 0 color-mix(in srgb, var(--neutral-white) 18%, transparent), inset 0 -1px 0 color-mix(in srgb, var(--neutral-black) 40%, transparent), 0 18px 48px color-mix(in srgb, var(--neutral-black) 60%, transparent);
+  --glass-panel: color-mix(in srgb, var(--surface) 92%, transparent);
+  --glow: color-mix(in srgb, var(--crema) 28%, transparent);
+  --sticky: color-mix(in srgb, var(--bg) 90%, transparent);
+  --dock: color-mix(in srgb, var(--surface) 88%, transparent);
+  --panel: color-mix(in srgb, var(--surface) 96%, transparent);
+
+  --tint-base: #140E0A;
+  --tint-amount: 28%;
+  --card-shadow: 0 2px 8px color-mix(in srgb, var(--neutral-black) 45%, transparent), 0 12px 28px color-mix(in srgb, var(--neutral-black) 50%, transparent);
+  --lift-shadow: 0 4px 16px color-mix(in srgb, var(--neutral-black) 50%, transparent), 0 24px 56px color-mix(in srgb, var(--neutral-black) 70%, transparent);
+
+  /* Product screen: dark espresso studio */
+  --pd-bg-from: #1C130D;
+  --pd-bg-to: #0C0806;
+  --pd-spot-mix: 35%;
+  --pd-spot-base: #382418;
+  --pd-ink: var(--ink);
+  --pd-ink-2: color-mix(in srgb, var(--ink) 90%, transparent);
+  --pd-muted: color-mix(in srgb, var(--ink) 65%, transparent);
+  --pd-faint: color-mix(in srgb, var(--ink) 38%, transparent);
+  --pd-glass: color-mix(in srgb, var(--neutral-white) 8%, transparent);
+  --pd-glass-hover: color-mix(in srgb, var(--neutral-white) 14%, transparent);
+  --pd-glass-strong: color-mix(in srgb, var(--neutral-white) 20%, transparent);
+  --pd-line: color-mix(in srgb, var(--ink) 9%, transparent);
+  --pd-line-strong: color-mix(in srgb, var(--ink) 24%, transparent);
+  --pd-panel: color-mix(in srgb, var(--surface) 95%, transparent);
+  --pd-scrim: color-mix(in srgb, var(--neutral-black) 60%, transparent);
+  --pd-tile: color-mix(in srgb, var(--neutral-white) 6%, transparent);
+  --pd-tile-hover: color-mix(in srgb, var(--neutral-white) 10%, transparent);
+  --pd-tile-on: color-mix(in oklab, var(--accent) 32%, var(--surface));
+  --pd-tile-on-line: var(--accent);
+  --pd-step: color-mix(in srgb, var(--neutral-white) 10%, transparent);
+  --pd-step-on: color-mix(in srgb, var(--accent) 25%, transparent);
+  --pd-track: color-mix(in srgb, var(--neutral-white) 10%, transparent);
+  --pd-cup-shadow: color-mix(in srgb, var(--neutral-black) 50%, transparent);
+  --pd-panel-shadow: 0 20px 50px color-mix(in srgb, var(--neutral-black) 75%, transparent);
+}
+
+@theme {
+  --breakpoint-sm: 40rem;
+  --breakpoint-md: 48rem;
+  --breakpoint-lg: 64rem;
+  --breakpoint-xl: 80rem;
+  --breakpoint-2xl: 96rem;
+  --breakpoint-xs: 23.75rem;
+  --breakpoint-wide: 37.5rem;
+}
+
+/* `inline` keeps the var() references, so utilities re-theme live. */
+@theme inline {
+  --spacing: var(--space-unit);
+  --font-weight-normal: var(--weight-regular);
+  --font-weight-medium: var(--weight-medium);
+  --font-weight-semibold: var(--weight-semibold);
+  --font-weight-bold: var(--weight-bold);
+  --font-weight-extrabold: var(--weight-heavy);
+  --font-weight-black: var(--weight-black);
+  --tracking-tight: var(--tracking-display);
+  --tracking-wide: var(--tracking-label);
+  --tracking-widest: .1em;
+  --leading-tight: var(--leading-title);
+  --leading-normal: var(--leading-body);
+  --leading-relaxed: 1.625;
+  --shadow-xs: var(--shadow-control);
+  --shadow-sm: var(--shadow-control);
+  --shadow-md: var(--card-shadow);
+  --shadow-lg: var(--lift-shadow);
+  --inset-shadow-sm: inset 0 var(--stroke-width) calc(var(--space-unit) * 2) color-mix(in srgb, var(--ink) 5%, transparent);
+  --font-sans: var(--font-body);
+  --font-display: var(--font-heading);
+  --font-serif: var(--font-editorial);
+  --text-micro: var(--type-micro);
+  --text-caption: var(--type-caption);
+  --text-compact: var(--type-compact);
+  --text-body: var(--type-body);
+  --text-control: var(--type-control);
+  --text-body-lg: var(--type-body-lg);
+  --text-lead: var(--type-lead);
+  --text-title-sm: var(--type-title-sm);
+  --text-title: var(--type-title);
+  --text-heading: var(--type-heading);
+  --text-display: var(--type-display);
+  --text-hero: var(--type-hero);
+  --text-showcase: var(--type-showcase);
+  --text-xs: var(--type-caption);
+  --text-sm: var(--type-body);
+  --text-base: var(--type-body-lg);
+  --text-lg: var(--type-lead);
+  --text-xl: var(--type-title-sm);
+  --text-2xl: var(--type-title);
+  --text-3xl: var(--type-display);
+  --text-4xl: var(--type-hero);
+  --text-5xl: var(--type-showcase);
+  --radius-control: var(--radius-control);
+  --radius-card: var(--radius-card);
+  --radius-media: var(--radius-media);
+  --radius-panel: var(--radius-panel);
+  --radius-dialog: var(--radius-dialog);
+  --radius-pill: var(--radius-pill);
+  --radius-xs: calc(.125rem * var(--radius-scale));
+  --radius-sm: calc(.25rem * var(--radius-scale));
+  --radius-md: calc(.375rem * var(--radius-scale));
+  --radius-lg: calc(.5rem * var(--radius-scale));
+  --radius-xl: calc(.75rem * var(--radius-scale));
+  --radius-2xl: var(--radius-control);
+  --radius-3xl: var(--radius-panel);
+  --radius-4xl: var(--radius-dialog);
+  --color-white: var(--neutral-white);
+  --color-black: var(--neutral-black);
+  --color-telegram: var(--brand-telegram);
+  --color-cold: var(--cold);
+  --color-cold-ink: var(--cold-ink);
+  --color-order-making: var(--order-making-bg);
+  --color-order-ready: var(--order-ready-bg);
+  --color-on-dark: var(--on-dark);
+  --color-on-light: var(--on-light);
+  --shadow-control: var(--shadow-control);
+  --shadow-action: var(--shadow-action);
+  --shadow-selected: var(--shadow-selected);
+  --shadow-success: var(--shadow-success);
+  --shadow-ready: var(--shadow-ready);
+  --shadow-header: var(--shadow-header);
+  --shadow-sticky: var(--shadow-sticky);
+  --shadow-footer: var(--shadow-footer);
+  --shadow-pending: var(--shadow-pending);
+  --shadow-accent-glow: var(--shadow-accent-glow);
+  --shadow-open-glow: var(--shadow-open-glow);
+  --shadow-white-glow: var(--shadow-white-glow);
+  --shadow-status-dot: var(--shadow-status-dot);
+
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-surface-3: color-mix(in srgb, var(--surface-2) 90%, var(--ink));
+  --color-ink: var(--ink);
+  --color-ink-2: var(--ink-2);
+  --color-muted: var(--muted);
+  --color-faint: var(--faint);
+  --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
+  --color-accent: var(--accent);
+  --color-accent-2: var(--accent-2);
+  --color-accent-soft: var(--accent-soft);
+  --color-accent-ink: var(--accent-ink);
+  --color-inverse: var(--inverse);
+  --color-inverse-ink: var(--inverse-ink);
+  --color-crema: var(--crema);
+  --color-clay: var(--clay);
+  --color-sage: var(--sage);
+  --color-glass: var(--glass);
+  --color-glass-strong: var(--glass-strong);
+  --color-glass-border: var(--glass-border);
+  --color-glass-edge: var(--glass-edge);
+  --color-glow: var(--glow);
+  --color-sticky: var(--sticky);
+  --color-dock: var(--dock);
+  --color-panel: var(--panel);
+  --color-danger: var(--danger);
+  --color-error: var(--error);
+  --color-open: var(--open);
+  --color-pending: var(--pending);
+  --color-pd-ink: var(--pd-ink);
+  --color-pd-ink-2: var(--pd-ink-2);
+  --color-pd-muted: var(--pd-muted);
+  --color-pd-faint: var(--pd-faint);
+  --color-pd-glass: var(--pd-glass);
+  --color-pd-glass-hover: var(--pd-glass-hover);
+  --color-pd-glass-strong: var(--pd-glass-strong);
+  --color-pd-line: var(--pd-line);
+  --color-pd-line-strong: var(--pd-line-strong);
+  --color-pd-panel: var(--pd-panel);
+  --color-pd-scrim: var(--pd-scrim);
+  --color-pd-tile: var(--pd-tile);
+  --color-pd-tile-hover: var(--pd-tile-hover);
+  --color-pd-tile-on: var(--pd-tile-on);
+  --color-pd-tile-on-line: var(--pd-tile-on-line);
+  --color-pd-step: var(--pd-step);
+  --color-pd-step-on: var(--pd-step-on);
+  --color-pd-track: var(--pd-track);
+
+  --shadow-card: var(--card-shadow);
+  --shadow-lift: var(--lift-shadow);
+  --shadow-glass: var(--glass-shadow);
+  --ease-soft: var(--ease-soft);
+  --spring: var(--spring);
+
+  --animate-float: float 6s ease-in-out infinite;
+  --animate-fade-in: fade-in 0.25s var(--ease-soft);
+  --animate-rise: rise 0.3s var(--ease-soft);
+  --animate-sheet-in: sheet-in 0.34s var(--spring);
+  --animate-pop: pop 0.3s var(--spring);
+  --animate-toast-in: toast-island-in 0.34s var(--spring);
+  --animate-spin-in: spin-in 0.4s var(--ease-soft);
+  --animate-pulse-dot: pulse-dot 1.6s ease-in-out 6;
+}
+
+
+/* Resolve API tint and per-level parameters at the component boundary. */
+.brand-product {
+  --background-product: radial-gradient(ellipse 90% 55% at 50% 25%, color-mix(in srgb, var(--tint, var(--art-fallback)) var(--pd-spot-mix), var(--pd-spot-base)) 0%, transparent 75%), linear-gradient(180deg, var(--pd-bg-from) 0%, var(--pd-bg-to) 100%);
+}
+.art-glow {
+  --background-card-art: radial-gradient(ellipse 85% 65% at 50% 48%, color-mix(in srgb, var(--tint, var(--art-fallback)) var(--pd-spot-mix), var(--pd-spot-base)) 0%, transparent 75%), linear-gradient(180deg, var(--pd-bg-from) 0%, var(--pd-bg-to) 100%);
+}
+.brand-promo {
+  --background-promo: radial-gradient(110% 90% at 75% 35%, var(--glow) 0%, transparent 60%), radial-gradient(80% 60% at 20% 80%, color-mix(in srgb, var(--accent) 10%, transparent) 0%, transparent 60%), var(--tinted);
+}
+.brand-article {
+  --background-article: radial-gradient(ellipse 90% 45% at 50% 15%, color-mix(in srgb, var(--tint, var(--promo-fallback)) 18%, transparent) 0%, transparent 75%), var(--bg);
+}
+.brand-level {
+  --background-level: radial-gradient(120% 120% at 90% 10%, color-mix(in srgb, var(--neutral-white) 25%, transparent), transparent 60%), linear-gradient(135deg, var(--level-start), var(--level-end));
+}
+.brand-level[data-level="2"] { --level-start: var(--accent); --level-end: var(--level-second-end); }
+.brand-level[data-level="3"] { --level-start: var(--accent-2); --level-end: var(--level-third-end); }
+.brand-level[data-level="4"] { --level-start: var(--level-last-start); --level-end: var(--level-last-end); }
+
+.brand-promo-placeholder {
+  --background-promo-placeholder: linear-gradient(135deg, color-mix(in srgb, var(--tint) 25%, var(--surface)) 0%, var(--surface) 100%);
+}

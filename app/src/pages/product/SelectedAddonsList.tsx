@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 
+import { Button } from '../../components/Button'
 import { IngredientArt } from '../../components/ItemArt'
 import type { Ingredient, IngredientGroup } from '../../domain'
 import { cx } from '../../utils/cx'
@@ -299,14 +300,14 @@ export function SelectedAddonsList({ items, onRemoveAll, className }: Props) {
           <div
             key={`${item.group.id}-${item.ingredient.id}`}
             className={cx(
-              'snap-start group/row flex items-center justify-between gap-1.5 px-3 py-2 rounded-[16px]',
-              'bg-pd-glass hover:bg-pd-glass-hover text-pd-ink border border-pd-line/70 hover:border-accent/35 backdrop-blur-xl shadow-md hover:shadow-lg',
+              'snap-start group/row flex items-center justify-between gap-1.5 px-3 py-2 rounded-control',
+              'bg-pd-glass hover:bg-pd-glass-hover text-pd-ink border-(length:--stroke-width) border-pd-line/70 hover:border-accent/35 backdrop-blur-xl shadow-md hover:shadow-lg',
               'transition-all duration-150 select-none animate-[slide-in-right_0.22s_var(--ease-soft)_both]',
             )}
           >
             {/* Left: Icon & Name */}
             <div className="flex items-center gap-1.5 min-w-0 flex-1">
-              <div className="size-4.5 xs:size-5 shrink-0 grid place-items-center rounded-full bg-pd-tile border border-pd-line/50 overflow-hidden">
+              <div className="size-4.5 xs:size-5 shrink-0 grid place-items-center rounded-pill bg-pd-tile border-(length:--stroke-width) border-pd-line/50 overflow-hidden">
                 {item.ingredient.imageUrl ? (
                   <img
                     src={optimizedImageUrl(item.ingredient.imageUrl)}
@@ -317,7 +318,7 @@ export function SelectedAddonsList({ items, onRemoveAll, className }: Props) {
                   <IngredientArt color={item.ingredient.color} className="size-3 xs:size-3.5" />
                 )}
               </div>
-              <span className="text-[11px] xs:text-[11.5px] wide:text-[12.5px] font-semibold text-pd-ink truncate leading-tight">
+              <span className="text-micro xs:text-caption wide:text-caption font-semibold text-pd-ink truncate leading-tight">
                 {item.ingredient.name}
               </span>
             </div>
@@ -327,20 +328,20 @@ export function SelectedAddonsList({ items, onRemoveAll, className }: Props) {
               {item.group.counter && (
                 <span
                   key={item.qty}
-                  className="text-[10px] xs:text-[10.5px] wide:text-[11px] font-black text-pd-muted tabular-nums animate-pop"
+                  className="text-micro xs:text-micro wide:text-micro font-black text-pd-muted tabular-nums animate-pop"
                   title={`Количество: ${item.qty}`}
                 >
                   ×{item.qty}
                 </span>
               )}
-              <button
+              <Button
                 type="button"
                 onClick={() => onRemoveAll(item.group, item.ingredient.id)}
                 aria-label={`Удалить ${item.ingredient.name}`}
-                className="size-5 xs:size-5.5 grid place-items-center rounded-full text-pd-muted hover:text-error hover:bg-error/15 transition-colors cursor-pointer text-[12px] font-bold leading-none active:scale-90"
+                className="size-5 xs:size-5.5 grid place-items-center rounded-pill text-pd-muted hover:text-error hover:bg-error/15 transition-colors cursor-pointer text-caption font-bold leading-none active:scale-90"
               >
                 ✕
-              </button>
+              </Button>
             </div>
           </div>
         ))}
@@ -349,14 +350,14 @@ export function SelectedAddonsList({ items, onRemoveAll, className }: Props) {
       {/* Vertical Carousel Scroll Dots Indicator - Strictly reflects reachable scroll stops, not item count */}
       {canScroll && scrollStops.length > 1 && (
         <div
-          className="absolute left-[calc(100%+3px)] xs:left-[calc(100%+4px)] top-1/2 -translate-y-1/2 flex flex-col items-center justify-center gap-1 select-none pointer-events-auto max-h-full overflow-hidden animate-[fade-in_0.2s_ease_both]"
+          className="absolute left-[calc(100%+calc(var(--space-unit)*0.75))] xs:left-[calc(100%+calc(var(--space-unit)*1))] top-1/2 -translate-y-1/2 flex flex-col items-center justify-center gap-1 select-none pointer-events-auto max-h-full overflow-hidden animate-[fade-in_0.2s_ease_both]"
           role="tablist"
           aria-label="Индикатор прокрутки добавок"
         >
           {scrollStops.map((_, idx) => {
             const isCurrent = idx === activeScrollIdx
             return (
-              <button
+              <Button
                 key={`scroll-stop-${idx}`}
                 type="button"
                 onClick={() => scrollToStop(idx)}
@@ -365,13 +366,13 @@ export function SelectedAddonsList({ items, onRemoveAll, className }: Props) {
               >
                 <span
                   className={cx(
-                    'transition-all duration-300 ease-soft rounded-full block',
+                    'transition-all duration-300 ease-soft rounded-pill block',
                     isCurrent
                       ? 'w-1.5 h-3.5 bg-accent shadow-xs'
                       : 'size-1 bg-pd-ink/30 group-hover:bg-pd-ink/60 dark:bg-crema/30 dark:group-hover:bg-crema/60',
                   )}
                 />
-              </button>
+              </Button>
             )
           })}
         </div>

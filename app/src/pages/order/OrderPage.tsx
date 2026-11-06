@@ -2,10 +2,12 @@ import { useEffect, useState } from 'react'
 import { useParams } from 'react-router'
 
 import { api } from '../../api'
+import { Button } from '../../components/Button'
 import { ConfirmBox } from '../../components/ConfirmBox'
 import { EmptyState } from '../../components/EmptyState'
 import { Sheet, SheetBody } from '../../components/Sheet'
-import { block, blockTitle, openDot, panel, textBtn } from '../../components/ui'
+import { Surface } from '../../components/Surface'
+import { block, blockTitle, openDot, textBtn } from '../../components/ui'
 import { useAppNavigate } from '../../hooks/useAppNavigate'
 import { useNow } from '../../hooks/useNow'
 import { useShop } from '../../queries/useShop'
@@ -32,10 +34,10 @@ function OrderLoadingSkeleton() {
     <Sheet label="Заказ" title="Заказ" onBack={back} backLabel="Назад">
       <SheetBody>
         <div className="space-y-4 pt-1" role="status" aria-label="Загружаем заказ">
-          <div className="h-32 rounded-[22px] bg-surface-2 animate-pulse" />
+          <div className="h-32 rounded-card bg-surface-2 animate-pulse" />
           <div className="space-y-2.5">
             {[1, 2].map((i) => (
-              <div key={i} className="h-14 rounded-[18px] bg-surface-2 animate-pulse" />
+              <div key={i} className="h-14 rounded-media bg-surface-2 animate-pulse" />
             ))}
           </div>
         </div>
@@ -175,21 +177,21 @@ function OrderView({ order }: { order: Order }) {
       <SheetBody className="pt-1">
         <section className={block}>
           <h2 className={blockTitle}>Забрать</h2>
-          <div className={cx('flex items-center gap-3 rounded-[18px] px-4 py-3.5', panel)}>
+          <Surface className={cx('flex items-center gap-3 rounded-media px-4 py-3.5')}>
             <span className={openDot} aria-hidden="true" />
             <div>
-              <div className="text-[15px] font-semibold">{shop ? `${shop.name} · ${shop.address}` : 'shit кофе'}</div>
-              <div className="mt-0.5 text-[12px] text-muted">
+              <div className="text-control font-semibold">{shop ? `${shop.name} · ${shop.address}` : 'shit кофе'}</div>
+              <div className="mt-0.5 text-caption text-muted">
                 {order.pickup.kind === 'asap' ? 'Как можно скорее' : `К ${clockTime(order.readyAt)}`} · заказ от {clockTime(order.createdAt)}
               </div>
             </div>
-          </div>
+          </Surface>
         </section>
 
         <OrderLines order={order} status={status} />
 
         {canCancel(order, now) && (
-          <div className="mt-[22px] text-center">
+          <div className="mt-5.5 text-center">
             {confirming ? (
               <ConfirmBox
                 title="Точно отменить?"
@@ -203,9 +205,9 @@ function OrderView({ order }: { order: Order }) {
                 onCancel={() => setConfirming(false)}
               />
             ) : (
-              <button className={textBtn(true)} onClick={() => setConfirming(true)}>
+              <Button className={textBtn(true)} onClick={() => setConfirming(true)}>
                 Отменить заказ
-              </button>
+              </Button>
             )}
           </div>
         )}

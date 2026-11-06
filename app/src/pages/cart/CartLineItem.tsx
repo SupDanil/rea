@@ -1,7 +1,9 @@
 import { type CSSProperties,useRef, useState } from 'react'
 
+import { Button } from '../../components/Button'
 import { TrashIcon } from '../../components/icons'
 import { ItemArt } from '../../components/ItemArt'
+import { QuantityStepper } from '../../components/QuantityStepper'
 import { addonLabel, countAddons, itemImage } from '../../domain'
 import type { ResolvedLine } from '../../state/cart'
 import { cx } from '../../utils/cx'
@@ -9,7 +11,6 @@ import { formatPrice } from '../../utils/format'
 import { artProps } from '../../utils/morph'
 
 const sizeText = { S: 'S', M: 'M', L: 'L', ONE: '' } as const
-const stepBtn = 'grid size-[32px] sm:size-[34px] place-items-center rounded-full text-[17px] font-bold text-ink hover:bg-surface active:scale-90 transition-all disabled:opacity-30 cursor-pointer'
 
 type Props = {
   line: ResolvedLine
@@ -72,7 +73,7 @@ export function CartLineItem({ line, disabled, onOpen, onQty, onRemove }: Props)
   return (
     <li
       ref={rowRef}
-      className="relative overflow-hidden rounded-[22px] bg-surface/90 border border-line shadow-card transition-all"
+      className="relative overflow-hidden rounded-card bg-surface/90 border-(length:--stroke-width) border-line shadow-card transition-all"
     >
       {/* Background delete trigger revealed on swipe only */}
       <div
@@ -98,56 +99,34 @@ export function CartLineItem({ line, disabled, onOpen, onQty, onRemove }: Props)
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
-        className="relative z-1 w-full rounded-[22px] grid grid-cols-[76px_1fr] gap-3 p-2.5 bg-surface/95 dark:bg-surface/95 "
+        className="relative z-1 w-full rounded-card grid grid-cols-[calc(var(--space-unit)*19)_1fr] gap-3 p-2.5 bg-surface/95 dark:bg-surface/95"
       >
-        <button
-          className="art-glow mesh-grain grid size-[76px] place-items-center rounded-[18px] cursor-pointer hover:opacity-90 active:scale-96 transition-all overflow-hidden"
+        <Button
+          className="art-glow mesh-grain grid size-19 place-items-center rounded-media cursor-pointer hover:opacity-90 active:scale-96 transition-all overflow-hidden"
           style={{ '--tint': line.item.art.bg } as CSSProperties}
           onClick={onOpen}
           aria-label={`Открыть ${line.item.name}`}
         >
           <ItemArt art={cartArt} imageUrl={cartImage} className="relative z-10 size-[86%]" {...artProps(line.item.id, line.key)} />
-        </button>
+        </Button>
 
         <div className="flex min-w-0 flex-col pt-0.5 pr-1">
-          <div className="font-display text-[15px] sm:text-[16px] font-bold text-ink tracking-tight truncate">
+          <div className="font-display text-control sm:text-body-lg font-bold text-ink tracking-tight truncate">
             {line.item.name}
           </div>
-          <div className="mt-1 text-[12px] leading-[1.35] text-muted line-clamp-2">
+          <div className="mt-1 text-caption leading-(--leading-copy) text-muted line-clamp-2">
             {meta}
           </div>
 
           <div className="mt-auto flex items-center justify-between pt-2">
-            <span className="font-display text-[15px] sm:text-[16px] font-bold text-ink">
+            <span className="font-display text-control sm:text-body-lg font-bold text-ink">
               {formatPrice(line.unitPrice * line.qty)}
             </span>
 
-            {/* Stepper Capsule */}
-            <div
-              className="flex items-center rounded-full bg-surface-2/90 border border-line/60 p-0.5 shadow-xs"
-              role="group"
-              aria-label={`Количество: ${line.qty}`}
-            >
-              <button
-                className={stepBtn}
-                onClick={() => (line.qty === 1 ? onRemove(rowRef.current) : onQty(line.qty - 1))}
-                aria-label={line.qty === 1 ? 'Удалить' : 'Меньше'}
-                disabled={disabled}
-              >
-                {line.qty === 1 ? <TrashIcon /> : '−'}
-              </button>
-              <span className="min-w-5 text-center font-display text-[14px] font-bold text-ink tabular-nums">
-                {line.qty}
-              </span>
-              <button
-                className={stepBtn}
-                onClick={() => onQty(line.qty + 1)}
-                aria-label="Больше"
-                disabled={disabled || line.qty >= 20}
-              >
-                +
-              </button>
-            </div>
+            <QuantityStepper size="sm" value={line.qty} disabled={disabled} increaseDisabled={line.qty >= 20}
+              onDecrease={() => line.qty === 1 ? onRemove(rowRef.current) : onQty(line.qty - 1)}
+              onIncrease={() => onQty(line.qty + 1)} decreaseLabel={line.qty === 1 ? 'Удалить' : 'Меньше'} increaseLabel="Больше"
+              decreaseIcon={line.qty === 1 ? <TrashIcon /> : '−'} />
           </div>
         </div>
       </div>

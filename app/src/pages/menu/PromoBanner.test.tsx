@@ -83,4 +83,17 @@ describe('PromoBanner (2026 Bento Liquid Glass Design)', () => {
     fireEvent.click(card)
     expect(onOpen).toHaveBeenCalledTimes(1)
   })
+
+  it('keeps the shadow off the art, on a layer that stays while the cup is away', () => {
+    const { container } = render(
+      <AppProvider>
+        <PromoBanner promo={productPromo} product={dummyProduct} onOpen={() => {}} />
+      </AppProvider>,
+    )
+    const art = container.querySelector('[data-art-of]')!
+
+    expect(art.getAttribute('class')).not.toContain('drop-shadow')
+    expect(container.querySelector('[data-art-glow]')).toBeInTheDocument()
+    expect(container.querySelector('[data-art-glow]')).not.toContainElement(art as unknown as HTMLElement)
+  })
 })

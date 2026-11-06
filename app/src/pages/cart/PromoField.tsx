@@ -1,7 +1,9 @@
 import { useState } from 'react'
 
 import { api } from '../../api'
-import { block, blockTitle, btn, field, hint } from '../../components/ui'
+import { Button } from '../../components/Button'
+import { TextField } from '../../components/TextField'
+import { block, blockTitle, hint } from '../../components/ui'
 import { normalizePromo } from '../../state/cart'
 import { cx } from '../../utils/cx'
 import type { AppliedPromo } from './cartPricing'
@@ -40,8 +42,8 @@ export function PromoField({ applied, onApply }: { applied: AppliedPromo | null;
     <section className={block}>
       <h2 className={blockTitle}>Промокод</h2>
       <div className="flex gap-2">
-        <input
-          className={field(!!error)}
+        <TextField
+           error={!!error} fieldSize="md"
           value={input}
           placeholder="Например, ЗЕРНО10"
           autoCapitalize="characters"
@@ -52,22 +54,22 @@ export function PromoField({ applied, onApply }: { applied: AppliedPromo | null;
           }}
           onKeyDown={(e) => e.key === 'Enter' && void apply()}
         />
-        <button
-          className={cx(btn('secondary'), 'h-[50px] flex-none px-5')}
+        <Button
+          className={cx('h-12.5 flex-none px-5')} variant="secondary" size="md"
           onClick={() => void apply()}
           disabled={!input.trim() || checking}
           aria-busy={checking}
         >
           {checking ? 'Проверяем…' : 'Применить'}
-        </button>
+        </Button>
       </div>
 
       {applied && (
-        <div className="mt-2.5 flex items-center gap-2 p-2.5 rounded-[14px] bg-accent/10 border border-accent/25 text-accent animate-[coupon-snap_0.35s_var(--spring)]">
-          <span className="font-display text-[13px] font-bold">
+        <div className="mt-2.5 flex items-center gap-2 p-2.5 rounded-control bg-accent/10 border-(length:--stroke-width) border-accent/25 text-accent animate-[coupon-snap_0.35s_var(--spring)]">
+          <span className="font-display text-compact font-bold">
             {applied.code}: {applied.label ?? `−${applied.percent}%`}
           </span>
-          <span className="text-[11px] font-medium ml-auto">применён</span>
+          <span className="text-micro font-medium ml-auto">применён</span>
         </div>
       )}
 

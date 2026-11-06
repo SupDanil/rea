@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react'
 
+import { Button } from '../../components/Button'
 import { IngredientArt } from '../../components/ItemArt'
 import type { Ingredient, IngredientGroup, Variant } from '../../domain'
 import { countAddons } from '../../domain'
@@ -51,36 +52,36 @@ export function RecipeTagChip({
   return (
     <div
       className={cx(
-        'group/tag shrink-0 flex items-center gap-1.5 rounded-full pl-2.5 pr-1.5 py-1 text-[11px] xs:text-[11.5px] font-bold text-pd-ink border shadow-xs transition-all duration-150 animate-pop select-none whitespace-nowrap',
+        'group/tag shrink-0 flex items-center gap-1.5 rounded-pill pl-2.5 pr-1.5 py-1 text-micro xs:text-caption font-bold text-pd-ink border-(length:--stroke-width) shadow-xs transition-all duration-150 animate-pop select-none whitespace-nowrap',
         'bg-pd-glass hover:bg-pd-glass-hover border-pd-line/70',
       )}
     >
       {/* Clickable info area */}
-      <button
+      <Button
         onClick={() => onGroupClick?.(group.id)}
         className="flex items-center gap-1.5 cursor-pointer hover:opacity-85 transition-opacity"
         title={`Нажмите, чтобы настроить ${group.name.toLowerCase()}`}
       >
         <IngredientArt color={ingredient.color} className="size-3.5 shrink-0" />
         <span>{ingredient.name}</span>
-      </button>
+      </Button>
 
       {/* Multiplier pill */}
       {qty > 1 && (
-        <span className="shrink-0 rounded-full bg-accent/18 text-accent dark:bg-accent/28 dark:text-crema px-1.5 py-0.2 text-[9.5px] font-black leading-none">
+        <span className="shrink-0 rounded-pill bg-accent/18 text-accent dark:bg-accent/28 dark:text-crema px-1.5 py-0.2 text-micro font-black leading-none">
           ×{qty}
         </span>
       )}
 
       {/* Quick remove button */}
       {onRemove && (
-        <button
+        <Button
           onClick={() => onRemove(group, ingredient)}
           aria-label={`Убрать ${ingredient.name}`}
-          className="shrink-0 grid size-4 place-items-center rounded-full text-pd-muted hover:text-error hover:bg-black/5 dark:hover:bg-white/10 text-[10px] font-bold transition-colors cursor-pointer ml-0.5"
+          className="shrink-0 grid size-4 place-items-center rounded-pill text-pd-muted hover:text-error hover:bg-black/5 dark:hover:bg-white/10 text-micro font-bold transition-colors cursor-pointer ml-0.5"
         >
           ✕
-        </button>
+        </Button>
       )}
     </div>
   )
@@ -152,8 +153,8 @@ export function RecipeLiveTags({
       aria-label="Текущий состав напитка"
     >
       {items.length === 0 ? (
-        <span className="flex items-center gap-1.5 rounded-full bg-pd-glass/70 px-3.5 py-1 text-[11px] font-medium text-pd-muted border border-pd-line/50 backdrop-blur-xs whitespace-nowrap shadow-xs animate-fade-in">
-          <span className="size-1.5 rounded-full bg-accent/70" aria-hidden="true" />
+        <span className="flex items-center gap-1.5 rounded-pill bg-pd-glass/70 px-3.5 py-1 text-micro font-medium text-pd-muted border-(length:--stroke-width) border-pd-line/50 backdrop-blur-xs whitespace-nowrap shadow-xs animate-fade-in">
+          <span className="size-1.5 rounded-pill bg-accent/70" aria-hidden="true" />
           <span>Базовый рецепт</span>
         </span>
       ) : (

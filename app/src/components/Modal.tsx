@@ -30,12 +30,12 @@ const stack: object[] = []
 
 const panels = {
   sheet: cx(
-    'flex w-full max-w-[480px] flex-col overflow-hidden bg-surface',
-    'rounded-t-[32px] wide:rounded-[32px] border-t border-glass-border wide:border shadow-lift shadow-black/25',
+    'flex w-full max-w-(--layout-phone) flex-col overflow-hidden bg-surface',
+    'rounded-t-dialog wide:rounded-dialog border-t-(length:--stroke-width) border-glass-border wide:border-(length:--stroke-width) shadow-lift shadow-black/25',
   ),
   screen: cx(
-    'flex h-full w-full max-w-[480px] flex-col overflow-hidden select-none',
-    'wide:max-w-[640px] md:max-w-[700px] wide:h-[min(880px,94dvh)] wide:rounded-[36px] wide:border wide:border-glass-border wide:shadow-lift',
+    'flex h-full w-full max-w-(--layout-phone) flex-col overflow-hidden select-none',
+    'wide:max-w-(--layout-product) md:max-w-(--layout-product-wide) wide:h-[min(calc(var(--space-unit)*220),94dvh)] wide:rounded-dialog wide:border-(length:--stroke-width) wide:border-glass-border wide:shadow-lift',
   ),
 }
 
@@ -145,7 +145,7 @@ export function Modal({ label, onClose, locked = false, kind = 'sheet', panelRef
             onTouchEnd={onTouchEnd}
             aria-hidden="true"
           >
-            <div className="w-11 h-1.5 rounded-full bg-ink/15 dark:bg-white/20" />
+            <div className="w-11 h-1.5 rounded-pill bg-ink/15 dark:bg-white/20" />
           </div>
         )}
         {children}

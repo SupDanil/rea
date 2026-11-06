@@ -1,5 +1,6 @@
 /// <reference types="vitest/config" />
 import { fileURLToPath, URL } from 'node:url'
+import { readFileSync } from 'node:fs'
 import tailwindcss from '@tailwindcss/vite'
 import react from '@vitejs/plugin-react'
 import { defineConfig } from 'vite'
@@ -8,6 +9,10 @@ import { VitePWA } from 'vite-plugin-pwa'
 // GitHub Pages serves the app from /<repo>/; the deploy workflow passes it in.
 // Locally it stays at the root.
 const base = process.env.BASE_PATH ?? '/'
+// PWA install/splash colour follows the same light palette as the app.
+const tokens = readFileSync(new URL('./src/styles/tokens.css', import.meta.url), 'utf8')
+const themeBackground = tokens.match(/--bg:\s*(#[\da-f]{3,8})\s*;/i)?.[1]
+if (!themeBackground) throw new Error('tokens.css: --bg must be a hex colour for the PWA manifest')
 
 // https://vite.dev/config/
 export default defineConfig({
@@ -57,8 +62,8 @@ export default defineConfig({
         scope: './',
         display: 'standalone',
         orientation: 'portrait',
-        background_color: '#f3efe9',
-        theme_color: '#f3efe9',
+        background_color: themeBackground,
+        theme_color: themeBackground,
         icons: [
           { src: 'icon-192.png', sizes: '192x192', type: 'image/png' },
           { src: 'icon-512.png', sizes: '512x512', type: 'image/png' },

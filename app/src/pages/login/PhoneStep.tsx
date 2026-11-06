@@ -1,7 +1,9 @@
 import { type RefObject,useState } from 'react'
 
+import { Button } from '../../components/Button'
 import { LegalModal } from '../../components/LegalModal'
-import { btn, field, hint } from '../../components/ui'
+import { Checkbox,TextField } from '../../components/TextField'
+import { hint } from '../../components/ui'
 import { cx } from '../../utils/cx'
 import { formatPhone, phoneDigits } from '../../utils/format'
 import { stepBox, stepLead, stepTitle } from './steps'
@@ -32,8 +34,8 @@ export function PhoneStep({ digits, sending, inputRef, onChange, onSubmit }: Pro
           if (digits.length === 10 && agreed && !sending) onSubmit()
         }}
       >
-        <div className="relative mx-auto size-16 sm:size-20 rounded-full bg-accent/15 border border-accent/25 grid place-items-center mb-0.5">
-          <span className="text-[30px] sm:text-[36px] leading-none" aria-hidden="true">
+        <div className="relative mx-auto size-16 sm:size-20 rounded-pill bg-accent/15 border-(length:--stroke-width) border-accent/25 grid place-items-center mb-0.5">
+          <span className="text-display sm:text-display leading-none" aria-hidden="true">
             🎁
           </span>
         </div>
@@ -45,11 +47,11 @@ export function PhoneStep({ digits, sending, inputRef, onChange, onSubmit }: Pro
           Телефон
         </label>
         <div className="w-full">
-          <input
+          <TextField
             id="phone"
             ref={inputRef}
             data-autofocus
-            className={field(false, 'xl')}
+             error={false} fieldSize="xl"
             inputMode="tel"
             autoComplete="tel"
             placeholder="+7 (___) ___-__-__"
@@ -59,37 +61,37 @@ export function PhoneStep({ digits, sending, inputRef, onChange, onSubmit }: Pro
         </div>
 
         {/* Legal Agreements (152-FZ & Offer) */}
-        <div className="space-y-2 mt-2 text-left w-full text-[12px] text-ink/75">
+        <div className="space-y-2 mt-2 text-left w-full text-caption text-ink/75">
           <label className="flex items-start gap-2.5 cursor-pointer select-none">
-            <input
-              type="checkbox"
+            <Checkbox
+
               checked={agreed}
               onChange={(e) => setAgreed(e.target.checked)}
               className="mt-0.5 size-4 shrink-0 rounded accent-accent text-accent focus:ring-accent/20 cursor-pointer"
             />
             <span className="leading-tight">
               Согласен с{' '}
-              <button
+              <Button
                 type="button"
                 onClick={() => setModalType('terms')}
                 className="text-accent underline font-semibold hover:opacity-80 inline"
               >
                 Офертой
-              </button>{' '}
+              </Button>{' '}
               и{' '}
-              <button
+              <Button
                 type="button"
                 onClick={() => setModalType('privacy')}
                 className="text-accent underline font-semibold hover:opacity-80 inline"
               >
                 Политикой персданных
-              </button>
+              </Button>
             </span>
           </label>
 
           <label className="flex items-start gap-2.5 cursor-pointer select-none">
-            <input
-              type="checkbox"
+            <Checkbox
+
               checked={marketingAgreed}
               onChange={(e) => setMarketingAgreed(e.target.checked)}
               className="mt-0.5 size-4 shrink-0 rounded accent-accent text-accent focus:ring-accent/20 cursor-pointer"
@@ -100,8 +102,8 @@ export function PhoneStep({ digits, sending, inputRef, onChange, onSubmit }: Pro
           </label>
         </div>
 
-        <button
-          className={cx(btn('primary', 'lg'), 'mt-3 w-full')}
+        <Button
+          className={cx('mt-3 w-full')} variant="primary" size="lg" fullWidth
           type="submit"
           aria-label="Получить код"
           disabled={digits.length !== 10 || !agreed || sending}
@@ -114,9 +116,9 @@ export function PhoneStep({ digits, sending, inputRef, onChange, onSubmit }: Pro
               <span>Получить код в Telegram</span>
             </span>
           )}
-        </button>
+        </Button>
 
-        <p className={cx(hint(), 'text-center text-[11px] text-muted mt-1')}>
+        <p className={cx(hint(), 'text-center text-micro text-muted mt-1')}>
           Бесплатная доставка проверочного кода через официального Telegram-бота
         </p>
       </form>

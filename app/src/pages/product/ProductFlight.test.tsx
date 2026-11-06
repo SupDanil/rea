@@ -73,12 +73,13 @@ describe('Menu card ↔ product screen flight', () => {
     expect(artOf('cappuccino', sheet)!.closest('[class*="float-soft"]')!.className).toContain('float-soft_6s_ease-in-out_1s')
   })
 
-  it('does not blur the cup shadow on the element that keeps moving', async () => {
+  it('fades the cup shadow in on its own layer, so nothing pops in when the cup lands', async () => {
     const sheet = await openSheet()
-    const float = artOf('cappuccino', sheet)!.closest('[class*="float-soft"]')!
+    const shadow = sheet.querySelector('[data-art-glow]')!
 
-    expect(float.className).not.toContain('drop-shadow')
-    expect(float.querySelector('[class*="drop-shadow"]')).toContainElement(artOf('cappuccino', sheet) as HTMLElement)
+    expect(shadow.className).toContain('fade-only')
+    expect(shadow).not.toContainElement(artOf('cappuccino', sheet) as HTMLElement)
+    expect(sheet.querySelector('[class*="drop-shadow"]')).toBeNull()
   })
 
   it('swaps the slot for the toppings deck once the screen is up', async () => {

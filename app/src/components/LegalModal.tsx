@@ -1,7 +1,7 @@
 import { cx } from '../utils/cx'
+import { Button } from './Button'
 import { Presence } from './Presence'
 import { Sheet, SheetBody } from './Sheet'
-import { btn } from './ui'
 
 type LegalType = 'terms' | 'privacy'
 
@@ -21,7 +21,7 @@ function LegalSheet({ type, onClose }: { type: LegalType; onClose: () => void })
   return (
     <Sheet label={title} title={title} onBack={onClose}>
       <SheetBody>
-        <div className="space-y-4 text-[13px] leading-relaxed text-ink/80">
+        <div className="space-y-4 text-compact leading-relaxed text-ink/80">
           {isTerms ? (
             <>
               <p className="font-bold text-ink">
@@ -70,9 +70,9 @@ function LegalSheet({ type, onClose }: { type: LegalType; onClose: () => void })
           )}
         </div>
 
-        <button onClick={onClose} className={cx(btn('secondary', 'md'), 'w-full mt-4')}>
+        <Button onClick={onClose} className={cx('w-full mt-4')} variant="secondary" size="md">
           Понятно
-        </button>
+        </Button>
       </SheetBody>
     </Sheet>
   )

@@ -1,9 +1,11 @@
 import { type CSSProperties,useRef, useState } from 'react'
 import { Navigate, useParams } from 'react-router'
 
-import { CloseIcon, PlusIcon } from '../../components/icons'
+import { IconButton } from '../../components/Button'
+import { CloseIcon } from '../../components/icons'
 import { ItemArt } from '../../components/ItemArt'
 import { Modal } from '../../components/Modal'
+import { QuickAddButton } from '../../components/QuickAddButton'
 import { isSoldOut, itemImage,type MenuItem, minPrice } from '../../domain'
 import { useAppNavigate } from '../../hooks/useAppNavigate'
 import { useCatalog, useCatalogQuery } from '../../queries/useCatalog'
@@ -62,24 +64,23 @@ function PromoArticleView({ promo }: { promo: any }) {
       label={promo.title}
       onClose={back}
       kind="screen"
-      className="tinted mesh-grain text-ink bg-surface"
+      className="brand-article tinted mesh-grain text-ink bg-surface"
       style={{
-        '--tint': promo.bgColor || '#E88B4C',
-        background: `radial-gradient(ellipse 90% 45% at 50% 15%, color-mix(in srgb, var(--tint, #E88B4C) 18%, transparent) 0%, transparent 75%),
-                     var(--surface)`,
+        '--tint': promo.bgColor || 'var(--promo-fallback)',
+        background: 'var(--background-article)',
       } as CSSProperties}
     >
         {/* Header */}
-        <header className="flex-none z-30 flex items-center justify-between px-4 pt-[calc(12px+env(safe-area-inset-top))] pb-3 bg-transparent wide:px-6 wide:pt-4 border-b border-line/40">
-          <button
-            className="size-10 grid place-items-center rounded-full bg-surface border border-line hover:bg-surface-2 text-ink transition-all active:scale-95 cursor-pointer shadow-xs"
+        <header className="flex-none z-30 flex items-center justify-between px-4 pt-[calc(calc(var(--space-unit)*3)+env(safe-area-inset-top))] pb-3 bg-transparent wide:px-6 wide:pt-4 border-b-(length:--stroke-width) border-line/40">
+          <IconButton
+            className="grid border-(length:--stroke-width) hover:bg-surface-2 text-ink transition-all"
             onClick={back}
             aria-label="Закрыть"
           >
             <CloseIcon />
-          </button>
+          </IconButton>
 
-          <span className="font-display text-[13px] font-bold text-muted uppercase tracking-wider">
+          <span className="font-display text-compact font-bold text-muted uppercase tracking-wider">
             Акция & Спешл
           </span>
 
@@ -90,31 +91,31 @@ function PromoArticleView({ promo }: { promo: any }) {
         <div className="flex-1 overflow-y-auto overscroll-contain px-4 pt-4 pb-12 wide:px-6 space-y-5">
           {/* Hero Cover Image or Graphic */}
           {promo.imageUrl ? (
-            <div className="relative aspect-[16/9] w-full overflow-hidden rounded-[24px] border border-line shadow-card">
+            <div className="relative aspect-[16/9] w-full overflow-hidden rounded-panel border-(length:--stroke-width) border-line shadow-card">
               <img
                 src={promo.imageUrl}
                 alt={promo.title}
                 className="h-full w-full object-cover"
               />
               {promo.badge && (
-                <span className="absolute top-3 left-3 rounded-full bg-accent text-accent-ink font-display font-bold px-3 py-1 text-[11px] uppercase tracking-wider shadow-sm">
+                <span className="absolute top-3 left-3 rounded-pill bg-accent text-accent-ink font-display font-bold px-3 py-1 text-micro uppercase tracking-wider shadow-sm">
                   {promo.badge}
                 </span>
               )}
             </div>
           ) : (
             <div
-              className="relative p-6 rounded-[24px] border border-line/50 overflow-hidden shadow-card"
+              className="brand-promo-placeholder relative p-6 rounded-panel border-(length:--stroke-width) border-line/50 overflow-hidden shadow-card"
               style={{
-                background: `linear-gradient(135deg, color-mix(in srgb, var(--tint) 25%, var(--surface)) 0%, var(--surface) 100%)`,
+                background: 'var(--background-promo-placeholder)',
               }}
             >
               {promo.badge && (
-                <span className="inline-block rounded-full bg-accent text-accent-ink font-display font-bold px-3 py-1 text-[11px] uppercase tracking-wider mb-2 shadow-sm">
+                <span className="inline-block rounded-pill bg-accent text-accent-ink font-display font-bold px-3 py-1 text-micro uppercase tracking-wider mb-2 shadow-sm">
                   {promo.badge}
                 </span>
               )}
-              <h2 className="font-display text-[22px] font-bold text-ink tracking-tight">
+              <h2 className="font-display text-title font-bold text-ink tracking-tight">
                 {promo.title}
               </h2>
             </div>
@@ -122,11 +123,11 @@ function PromoArticleView({ promo }: { promo: any }) {
 
           {/* Title & Tagline */}
           <div className="space-y-1.5">
-            <h1 className="font-display text-[24px] xs:text-[26px] sm:text-[30px] font-bold text-ink tracking-tight leading-[1.12]">
+            <h1 className="font-display text-title xs:text-heading sm:text-display font-bold text-ink tracking-tight leading-(--leading-title)">
               {promo.title}
             </h1>
             {promo.subtitle && (
-              <p className="font-serif text-[17px] sm:text-[19px] italic text-ink-2/90 leading-tight">
+              <p className="font-serif text-body-lg sm:text-lead italic text-ink-2/90 leading-tight">
                 {promo.subtitle}
               </p>
             )}
@@ -134,15 +135,15 @@ function PromoArticleView({ promo }: { promo: any }) {
 
           {/* Formatted Text Content */}
           {promo.content && (
-            <div className="text-[14px] sm:text-[15px] leading-relaxed text-muted whitespace-pre-line border-t border-line/40 pt-4">
+            <div className="text-body sm:text-control leading-relaxed text-muted whitespace-pre-line border-t-(length:--stroke-width) border-line/40 pt-4">
               {promo.content}
             </div>
           )}
 
           {/* Linked Products Section */}
           {linkedItems.length > 0 && (
-            <div className="border-t border-line/40 pt-5 space-y-3">
-              <h3 className="font-display text-[16px] sm:text-[18px] font-bold text-ink tracking-tight">
+            <div className="border-t-(length:--stroke-width) border-line/40 pt-5 space-y-3">
+              <h3 className="font-display text-body-lg sm:text-lead font-bold text-ink tracking-tight">
                 Товары из акции
               </h3>
               <div className="space-y-2.5">
@@ -197,13 +198,13 @@ function PromoLinkedProductRow({
     <div
       onClick={onOpen}
       className={cx(
-        'group relative flex items-center justify-between p-3 rounded-[20px] border border-line bg-surface-2/60 hover:bg-surface-2 transition-all cursor-pointer',
+        'group relative flex items-center justify-between p-3 rounded-card border-(length:--stroke-width) border-line bg-surface-2/60 hover:bg-surface-2 transition-all cursor-pointer',
         soldOut && 'opacity-60 grayscale-50',
       )}
     >
       <div className="flex items-center gap-3 min-w-0 pr-2">
         <div
-          className="size-14 rounded-2xl flex-none grid place-items-center overflow-hidden border border-line/50"
+          className="size-14 rounded-2xl flex-none grid place-items-center overflow-hidden border-(length:--stroke-width) border-line/50"
           style={{ '--tint': item.art.bg } as CSSProperties}
         >
           <ItemArt
@@ -216,39 +217,22 @@ function PromoLinkedProductRow({
         </div>
 
         <div className="min-w-0">
-          <div className="font-display text-[15px] font-bold text-ink truncate">
+          <div className="font-display text-control font-bold text-ink truncate">
             {item.name}
           </div>
-          <div className="text-[12px] text-muted line-clamp-1 mt-0.5">
+          <div className="text-caption text-muted line-clamp-1 mt-0.5">
             {item.description}
           </div>
         </div>
       </div>
 
       <div className="flex items-center gap-2.5 flex-none">
-        <span className="font-display text-[14px] font-bold text-ink">
+        <span className="font-display text-body font-bold text-ink">
           {soldOut ? 'Закончилось' : `от ${formatPrice(minPrice(item))}`}
         </span>
 
         {!soldOut && (
-          <button
-            onClick={handleAdd}
-            className={cx(
-              'size-8 rounded-full grid place-items-center transition-all cursor-pointer active:scale-90',
-              justAdded
-                ? 'bg-accent text-accent-ink shadow-sm'
-                : 'bg-surface border border-line hover:bg-accent hover:text-accent-ink text-ink shadow-xs',
-            )}
-            aria-label={`Добавить ${item.name} в корзину`}
-          >
-            {justAdded ? (
-              <svg key="done" className="animate-pop" viewBox="0 0 24 24" width="14" height="14" aria-hidden="true">
-                <path d="M5 12.5l4.5 4.5L19 7.5" fill="none" stroke="currentColor" strokeWidth="2.8" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            ) : (
-              <PlusIcon />
-            )}
-          </button>
+          <QuickAddButton added={justAdded} onClick={handleAdd} aria-label={`Добавить ${item.name} в корзину`} />
         )}
       </div>
     </div>

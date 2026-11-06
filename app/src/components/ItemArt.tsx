@@ -1,6 +1,7 @@
 import { type Ref, type SVGProps,useId, useState } from 'react'
 
 import type { Art } from '../domain'
+import { cx } from '../utils/cx'
 import { optimizedImageUrl, originalImageUrl } from '../utils/imageUrl'
 
 type Props = { art: Art; imageUrl?: string; ref?: Ref<SVGSVGElement> } & Omit<SVGProps<SVGSVGElement>, 'viewBox'>
@@ -302,6 +303,21 @@ export function ItemArt({ art, imageUrl, ...svgProps }: Props) {
         </g>
       )}
     </svg>
+  )
+}
+
+/**
+ * The soft shadow behind product art, as a layer of its own: a gradient, no filter. Art hands over
+ * to a flying copy and back, and a shadow on the art itself would pop in on that very frame.
+ */
+export function ArtGlow({ color, className }: { color: string; className?: string }) {
+  return (
+    <div
+      aria-hidden="true"
+      data-art-glow
+      className={cx('absolute pointer-events-none', className)}
+      style={{ background: `radial-gradient(closest-side, ${color}, transparent)` }}
+    />
   )
 }
 

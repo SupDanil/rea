@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <meta name="theme-color" content="#F0EEE9" />
+    <meta name="theme-color" content="" />
     <meta name="color-scheme" content="light dark" />
     <script>
       // Set the theme before first paint so dark mode never flashes light.
@@ -12,7 +12,6 @@
         try { t = localStorage.getItem('shit-coffee-theme') || localStorage.getItem('zerno-theme') } catch (e) {}
         if (t !== 'light' && t !== 'dark') t = matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
         document.documentElement.dataset.theme = t
-        document.querySelector('meta[name="theme-color"]').setAttribute('content', t === 'dark' ? '#0F0B09' : '#F0EEE9')
       })()
     </script>
     <meta name="description" content="shit кофе: кофе с компанией в Петербурге. Заяц на пене и мягкий спутник с собой." />
@@ -24,7 +23,11 @@
     <title>shit кофе — кофе и кое-кто ещё</title>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <div id="initial-splash" style="position:fixed;inset:0;display:grid;place-items:center;background:var(--bg,#f7f2e9);z-index:9999;">
+        <img src="/coffee-loader.svg" alt="Готовим кофе" style="width:min(48vw,190px);height:auto;user-select:none;pointer-events:none;" width="190" height="202" />
+      </div>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

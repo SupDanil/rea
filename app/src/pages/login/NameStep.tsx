@@ -1,6 +1,7 @@
 import type { RefObject } from 'react'
 
-import { btn, field } from '../../components/ui'
+import { Button } from '../../components/Button'
+import { TextField } from '../../components/TextField'
 import { cx } from '../../utils/cx'
 import { stepBox, stepLead, stepTitle } from './steps'
 
@@ -19,8 +20,8 @@ export function NameStep({ name, inputRef, onChange, onSubmit }: Props) {
         if (name.trim()) onSubmit()
       }}
     >
-      <div className="relative mx-auto size-20 rounded-full bg-accent/15 border border-accent/25 grid place-items-center mb-1">
-        <span className="text-[34px] leading-none" aria-hidden="true">
+      <div className="relative mx-auto size-20 rounded-pill bg-accent/15 border-(length:--stroke-width) border-accent/25 grid place-items-center mb-1">
+        <span className="text-display leading-none" aria-hidden="true">
           ☕
         </span>
       </div>
@@ -31,19 +32,19 @@ export function NameStep({ name, inputRef, onChange, onSubmit }: Props) {
       <label className="sr-only" htmlFor="profile-name">
         Имя
       </label>
-      <input
+      <TextField
         id="profile-name"
         ref={inputRef}
-        className={cx(field(false, 'xl'), 'text-center')}
+        className={cx('text-center')} error={false} fieldSize="xl"
         autoComplete="given-name"
         maxLength={20}
         value={name}
         onChange={(e) => onChange(e.target.value)}
       />
 
-      <button className={cx(btn('primary', 'lg'), 'mt-1')} type="submit" disabled={!name.trim()}>
+      <Button className={cx('mt-1')} variant="primary" size="lg" fullWidth type="submit" disabled={!name.trim()}>
         Готово
-      </button>
+      </Button>
     </form>
   )
 }
