@@ -37,12 +37,7 @@ interface ProductCardProps {
   isWide?: boolean
 }
 
-/**
- * 2026 Bento ProductCard:
- * Hits and featured items expand to 2 bento cells with horizontal layout.
- * Standard cards feature soft tinted drink spots, Unbounded typography, and a liquid glass quick-add "+".
- * Supports hot/cold switching and photo swapping based on user choice.
- */
+/** Menu product card with its admin-controlled glow and quick-add action. */
 export const ProductCard = memo(function ProductCard({ item, onOpen }: ProductCardProps) {
   const { cart } = useApp()
   const soldOut = isSoldOut(item)
@@ -98,10 +93,10 @@ export const ProductCard = memo(function ProductCard({ item, onOpen }: ProductCa
   return (
     <div
       className={cx(
-        'group relative flex flex-col rounded-panel sm:rounded-panel p-2.5 pb-3.5 text-left transition-all duration-200 has-[[data-open]:active]:scale-97 hover:shadow-lift isolate',
+        'group relative flex flex-col rounded-panel sm:rounded-panel p-2 pb-3.5 text-left transition-all duration-200 has-[[data-open]:active]:scale-97 isolate',
         soldOut
           ? 'bg-surface/50 border-(length:--stroke-width) border-line/40 opacity-60'
-          : 'bg-surface/90 border-(length:--stroke-width) border-line shadow-card hover:border-line-strong',
+          : 'ui-product-card border-(length:--stroke-width) border-transparent',
       )}
     >
       <Button
@@ -124,31 +119,31 @@ export const ProductCard = memo(function ProductCard({ item, onOpen }: ProductCa
           ref={artRef}
           art={activeArt}
           imageUrl={activeImageUrl}
-          className="relative z-1 h-[84%] w-auto aspect-[200/220] transition-transform duration-300 ease-soft group-hover:-translate-y-1 group-hover:scale-105"
+          className="relative z-1 h-[90%] w-auto aspect-[200/220] transition-transform duration-300 ease-soft group-hover:-translate-y-1 group-hover:scale-105"
           {...artProps(item.id, CARD_SLOT)}
         />
         {item.badge && (
-          <span className="absolute top-2 left-2 rounded-pill bg-accent px-2 py-0.5 text-micro font-display font-bold tracking-wider text-accent-ink uppercase shadow-sm z-2">
+          <span className="absolute top-2 left-2 rounded-pill bg-accent px-2 py-0.5 text-micro font-display font-bold tracking-wider text-accent-ink uppercase z-2">
             {item.badge}
           </span>
         )}
         {isOnlyCold && (
-          <span className="absolute top-2 right-2 rounded-pill bg-cold/80 backdrop-blur-xs px-1.5 py-0.5 text-micro font-bold text-white shadow-xs z-2">
-            ❄️ Лёд
+          <span className="absolute top-2 right-2 rounded-pill bg-cold px-1.5 py-0.5 text-micro font-bold text-white z-2">
+            Лёд
           </span>
         )}
       </div>
 
-      <div className={cx('pointer-events-none mx-1.5 mt-2.5 font-display text-control sm:text-body-lg leading-(--leading-title) font-bold text-ink truncate', soldOut && 'opacity-60')}>
+      <div className={cx('pointer-events-none mx-1.5 mt-2.5 font-display text-control sm:text-body-lg leading-(--leading-title) font-bold text-ink line-clamp-2', soldOut && 'opacity-60')}>
         {item.name}
       </div>
 
-      <div className={cx('pointer-events-none mx-1.5 mt-1 line-clamp-2 flex-1 text-caption sm:text-compact leading-(--leading-copy) text-muted', soldOut && 'opacity-60')}>
+      <div className={cx('pointer-events-none mx-1.5 mt-1 line-clamp-2 flex-1 text-compact leading-(--leading-copy) text-muted', soldOut && 'opacity-60')}>
         {item.description}
       </div>
 
       <div className="mt-2.5 mr-1 ml-1.5 flex items-center justify-between">
-        <span className={cx('pointer-events-none font-display text-body sm:text-control font-bold text-ink', soldOut && 'text-caption font-normal text-muted')}>
+        <span className={cx('pointer-events-none font-display whitespace-nowrap text-caption xs:text-body sm:text-control font-bold text-ink', soldOut && 'text-caption font-normal text-muted')}>
           {soldOut ? 'Закончилось' : `${item.variants.length > 1 ? 'от ' : ''}${formatPrice(minPrice(item))}`}
         </span>
         {!soldOut && (

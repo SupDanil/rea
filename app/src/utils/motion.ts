@@ -11,6 +11,26 @@ export const SOFT = 'cubic-bezier(0.2, 0.8, 0.2, 1)'
  * shadows and loops would be repainted on every frame of the flight.
  */
 export function floatingCopy(source: Element, { width, height }: { width: number; height: number }, zIndex: number) {
+  const box = document.createElement('div')
+  box.dataset.flight = ''
+  Object.assign(box.style, {
+    position: 'fixed',
+    left: '0',
+    top: '0',
+    width: `${width}px`,
+    height: `${height}px`,
+    zIndex: `${zIndex}`,
+    pointerEvents: 'none',
+    transformOrigin: '0 0',
+    willChange: 'transform',
+  })
+  box.appendChild(plainCopy(source))
+  document.body.appendChild(box)
+  return box
+}
+
+/** A copy of `source` that fills its box, free of how the original is sized, shaded and animated. */
+export function plainCopy(source: Element) {
   const copy = source.cloneNode(true) as SVGElement | HTMLElement
   Object.assign(copy.style, {
     display: 'block',
@@ -25,22 +45,7 @@ export function floatingCopy(source: Element, { width, height }: { width: number
     transition: 'none',
     visibility: 'visible',
   })
-  const box = document.createElement('div')
-  box.dataset.flight = ''
-  Object.assign(box.style, {
-    position: 'fixed',
-    left: '0',
-    top: '0',
-    width: `${width}px`,
-    height: `${height}px`,
-    zIndex: `${zIndex}`,
-    pointerEvents: 'none',
-    transformOrigin: '0 0',
-    willChange: 'transform',
-  })
-  box.appendChild(copy)
-  document.body.appendChild(box)
-  return box
+  return copy
 }
 
 /**

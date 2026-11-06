@@ -174,6 +174,34 @@ describe('ProductPage Component', () => {
     expect(item.temperature).toBe('cold')
   })
 
+  it('cycles selected controls and displays current portion nutrition inside info', async () => {
+    vi.spyOn(api, 'getCatalog').mockResolvedValue(catalogData)
+    renderAt('/product/latte')
+    const hot = await screen.findByRole('radio', { name: 'Горячий' })
+    fireEvent.click(hot)
+    expect(screen.getByRole('radio', { name: 'Холодный' })).toHaveAttribute('aria-checked', 'true')
+    fireEvent.click(screen.getByRole('radio', { name: 'Холодный' }))
+    expect(hot).toHaveAttribute('aria-checked', 'true')
+    expect(screen.queryByRole('region', { name: 'Пищевая ценность' })).not.toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'О напитке' }))
+    const details = screen.getByRole('region', { name: 'О напитке' })
+    expect(within(details).getByLabelText('энергия: 150 ккал')).toBeInTheDocument()
+    expect(within(details).getByText('Мягкий кофе с молоком')).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'Закрыть описание' }))
+    fireEvent.click(screen.getByRole('radio', { name: 'M 300 мл' }))
+    expect(screen.getByRole('radio', { name: 'L 400 мл' })).toHaveAttribute('aria-checked', 'true')
+    fireEvent.click(screen.getByRole('button', { name: /Сиропы/ }))
+    fireEvent.click(await screen.findByRole('button', { name: 'Ваниль: добавить порцию' }))
+    fireEvent.click(screen.getByRole('button', { name: 'О напитке' }))
+    expect(screen.getByLabelText('энергия: 220 ккал')).toBeInTheDocument()
+    expect(screen.getByLabelText('белки: 9 г')).toBeInTheDocument()
+    expect(screen.getByLabelText('жиры: 9 г')).toBeInTheDocument()
+    expect(screen.getByLabelText('углеводы: 20 г')).toBeInTheDocument()
+    fireEvent.keyDown(document, { key: 'Escape' })
+    expect(screen.queryByRole('region', { name: 'О напитке' })).not.toBeInTheDocument()
+    expect(hot).toBeInTheDocument()
+  })
+
   it('displays snowflake indicator when item has temperatureMode="cold" and nothing when temperatureMode="hot"', async () => {
     const coldOnlyCatalog = {
       ...catalogData,

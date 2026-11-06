@@ -1,117 +1,20 @@
-import { useState } from 'react'
-
-import { Button } from '../../components/Button'
 import { RollingNumber } from '../../components/RollingNumber'
 import type { Nutrition } from '../../domain'
-import { cx } from '../../utils/cx'
 import { formatAmount } from '../../utils/format'
 
-/**
- * 2026 Interactive Nutrition Pill Button:
- * Compact button showing total KCAL that smoothly unfolds full BJU breakdown on tap.
- * Rolling digits and animated delta badges (+40 kcal) provide tactile feedback.
- */
+/** Values for the configured portion, shared with the product price calculation. */
 export function NutritionBar({ nutrition }: { nutrition: Nutrition }) {
-  const [isOpen, setIsOpen] = useState(false)
-  const [last, setLast] = useState(nutrition.kcal)
-  const [delta, setDelta] = useState<number | null>(null)
-
-  if (last !== nutrition.kcal) {
-    setDelta(Math.round(nutrition.kcal - last))
-    setLast(nutrition.kcal)
-  }
-
   return (
-    <div className="relative z-30 flex flex-col items-center">
-      {/* Delta float below KCAL button so it never overlaps temperature/size buttons above */}
-      {delta !== null && delta !== 0 && (
-        <span
-          key={delta}
-          className={cx(
-            'pointer-events-none absolute top-[calc(100%+calc(var(--space-unit)*1))] left-1/2 -translate-x-1/2 whitespace-nowrap rounded-pill px-2 py-0.5 text-micro font-extrabold leading-tight tabular-nums animate-[delta-float-down_1.1s_var(--ease-soft)_both] shadow-xs z-20',
-            delta > 0 ? 'bg-accent text-white shadow-sm' : 'bg-pd-glass text-pd-ink border-(length:--stroke-width) border-pd-line',
-          )}
-          aria-hidden="true"
-        >
-          {delta > 0 ? '+' : ''}{delta} ккал
-        </span>
-      )}
-
-      {/* Main KCAL & BJU Toggle Button */}
-      <Button
-        onClick={() => setIsOpen((v) => !v)}
-        className={cx(
-          'group relative flex items-center gap-1.5 h-8 rounded-pill px-3.5 text-caption font-bold transition-all duration-200 active:scale-95 cursor-pointer shadow-xs box-border',
-          isOpen
-            ? 'bg-ink text-surface dark:bg-surface-2 dark:text-crema border-(length:--stroke-width) border-transparent shadow-sm'
-            : 'bg-pd-glass hover:bg-pd-glass-hover text-pd-ink border-(length:--stroke-width) border-pd-line',
-        )}
-        aria-expanded={isOpen}
-        aria-label={`Пищевая ценность: ${Math.round(nutrition.kcal)} ккал. Нажмите, чтобы открыть БЖУ`}
-      >
-        <span className="text-compact" aria-hidden="true">⚡️</span>
-        <span className="font-display font-extrabold tracking-tight tabular-nums">
-          <RollingNumber text={formatAmount(Math.round(nutrition.kcal))} />
-        </span>
-        <span className="text-pd-muted font-normal text-micro">ккал</span>
-        <span className="mx-0.5 text-pd-line-strong font-light">·</span>
-        <span className="text-micro font-bold text-pd-muted tracking-wide uppercase">БЖУ</span>
-        <span
-          className={cx(
-            'text-micro text-pd-muted transition-transform duration-200',
-            isOpen ? 'rotate-180' : '',
-          )}
-          aria-hidden="true"
-        >
-          ▾
-        </span>
-      </Button>
-
-      {/* Unfolded Detailed BJU Card: strictly centered on the screen */}
-      {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-start justify-center pt-[calc(calc(var(--space-unit)*25)+env(safe-area-inset-top))] px-4 pointer-events-none animate-[fade-only_0.2s_ease_both]">
-          {/* Backdrop */}
-          <div
-            className="fixed inset-0 bg-black/40 pointer-events-auto"
-            onClick={() => setIsOpen(false)}
-            aria-hidden="true"
-          />
-
-          {/* Centered Modal Card */}
-          <div
-            className={cx(
-              'relative z-10 w-full max-w-(--layout-dialog-sm) p-3.5 rounded-card',
-              'bg-pd-panel/98 text-pd-ink border-(length:--stroke-width) border-pd-line shadow-lift',
-              'pointer-events-auto animate-[rise_0.22s_var(--ease-soft)_both]',
-            )}
-            role="region"
-            aria-label="Подробный состав БЖУ"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex items-center justify-between pb-1.5 mb-2.5 border-b-(length:--stroke-width) border-pd-line text-micro font-medium text-pd-muted">
-              <div className="flex items-center gap-1.5">
-                <span className="font-display font-bold text-pd-ink text-compact">Пищевая ценность</span>
-                <span className="text-micro text-pd-muted">· на порцию</span>
-              </div>
-              <Button
-                type="button"
-                onClick={() => setIsOpen(false)}
-                className="size-6 grid place-items-center rounded-pill text-pd-muted hover:text-pd-ink hover:bg-black/5 dark:hover:bg-white/10 transition-colors text-caption font-bold cursor-pointer"
-                aria-label="Закрыть БЖУ"
-              >
-                ✕
-              </Button>
-            </div>
-            <div className="grid grid-cols-4 gap-1 text-center">
-              <Cell label="энергия" value={Math.round(nutrition.kcal)} unit="ккал" />
-              <Cell label="жиры" value={round1(nutrition.fat)} unit="г" />
-              <Cell label="углеводы" value={round1(nutrition.carbs)} unit="г" />
-              <Cell label="белки" value={round1(nutrition.protein)} unit="г" />
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
+    <section className="my-4 border-y-(length:--stroke-width) border-pd-line py-3" aria-label="Пищевая ценность" aria-live="polite" aria-atomic="true">
+      <h2 className="font-bold text-pd-ink">Пищевая ценность</h2>
+      <p className="mb-3 text-caption text-pd-muted">На порцию с учётом размера и добавок</p>
+      <dl className="grid grid-cols-4 gap-1 text-center">
+        <Cell label="энергия" value={Math.round(nutrition.kcal)} unit="ккал" />
+        <Cell label="белки" value={round1(nutrition.protein)} unit="г" />
+        <Cell label="жиры" value={round1(nutrition.fat)} unit="г" />
+        <Cell label="углеводы" value={round1(nutrition.carbs)} unit="г" />
+      </dl>
+    </section>
   )
 }
 
@@ -119,12 +22,11 @@ const round1 = (v: number) => Math.round(v * 10) / 10
 
 function Cell({ label, value, unit }: { label: string; value: number; unit: string }) {
   return (
-    <div className="relative flex flex-col items-center">
-      <span className="text-compact xs:text-body font-bold tracking-tight text-pd-ink tabular-nums whitespace-nowrap">
-        <RollingNumber text={formatAmount(value)} />
-        &nbsp;{unit}
-      </span>
-      <span className="text-micro xs:text-micro font-normal text-pd-muted">{label}</span>
+    <div className="flex flex-col items-center">
+      <dt className="order-1 text-caption text-pd-muted">{label}</dt>
+      <dd className="text-compact xs:text-body font-bold tracking-tight text-pd-ink tabular-nums whitespace-nowrap" aria-label={`${label}: ${formatAmount(value)} ${unit}`}>
+        <RollingNumber text={formatAmount(value)} />&nbsp;{unit}
+      </dd>
     </div>
   )
 }

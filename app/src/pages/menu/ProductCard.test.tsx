@@ -94,7 +94,7 @@ describe('ProductCard Component', () => {
 
       expect(screen.queryByRole('button', { name: 'Горячий' })).toBeNull()
       expect(screen.queryByRole('button', { name: 'Холодный' })).toBeNull()
-      expect(screen.getByText('❄️ Лёд')).toBeInTheDocument()
+      expect(screen.getByText('Лёд')).toBeInTheDocument()
 
       const img = container.querySelector('image')
       expect(decodeURIComponent(img!.getAttribute('href')!)).toContain('/uploads/cold-brew.webp')

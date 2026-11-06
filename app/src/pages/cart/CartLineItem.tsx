@@ -30,7 +30,7 @@ export function CartLineItem({ line, disabled, onOpen, onQty, onRemove }: Props)
   const [isSwiping, setIsSwiping] = useState(false)
   const touchStartX = useRef(0)
 
-  const tempLabel = line.temperature ? (line.temperature === 'hot' ? '☕ Горячий' : '🧊 Холодный') : null
+  const tempLabel = line.temperature ? (line.temperature === 'hot' ? 'Горячий' : 'Холодный') : null
   const meta = [tempLabel, line.variant.size !== 'ONE' && `${sizeText[line.variant.size]} · ${line.variant.volume}`, ...countAddons(line.ingredients).map((a) => `+ ${addonLabel(a)}`)]
     .filter(Boolean)
     .join(', ')

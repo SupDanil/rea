@@ -15,7 +15,7 @@ export function ItemArt({ art, imageUrl, ...svgProps }: Props) {
 
   if (imageUrl) {
     return (
-      <svg viewBox="0 0 200 220" role="img" aria-hidden="true" {...svgProps}>
+      <svg viewBox="0 0 200 220" role="img" aria-hidden="true" data-art-look={imageUrl} {...svgProps}>
         <defs>
           <radialGradient id={id('floor')}>
             <stop offset="0" stopColor="#000" stopOpacity="0.3" />
@@ -39,7 +39,7 @@ export function ItemArt({ art, imageUrl, ...svgProps }: Props) {
   const { kind, fill, top = '#fff6ea' } = art
 
   return (
-    <svg viewBox="0 0 200 220" role="img" aria-hidden="true" {...svgProps}>
+    <svg viewBox="0 0 200 220" role="img" aria-hidden="true" data-art-look={kind} {...svgProps}>
       <defs>
         {/* Cylindrical shading laid over any body */}
         <linearGradient id={id('round')} x1="0" x2="1">

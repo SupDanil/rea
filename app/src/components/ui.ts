@@ -3,8 +3,8 @@ import { cx } from '../utils/cx'
 
 export const avatar = (small = false) =>
   cx(
-    'grid flex-none place-items-center rounded-pill bg-accent text-accent-ink font-display font-extrabold shadow-action',
-    small ? 'size-8.5 text-compact' : 'size-14 text-title',
+    'grid flex-none place-items-center rounded-pill bg-accent text-accent-ink font-display font-extrabold',
+    small ? 'size-8.5 text-compact' : 'size-14 text-title shadow-action',
   )
 
 export const sheetTitle = 'text-title-sm sm:text-title font-display font-bold tracking-tight text-ink'

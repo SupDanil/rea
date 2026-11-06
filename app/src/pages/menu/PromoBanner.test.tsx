@@ -6,7 +6,7 @@ import { AppProvider } from '../../state/AppProvider'
 import { catalogData } from '../../test/catalogFixture'
 import { PromoBanner } from './PromoBanner'
 
-describe('PromoBanner (2026 Bento Liquid Glass Design)', () => {
+describe('PromoBanner', () => {
   const dummyProduct: MenuItem = catalogData.items[0] // cappuccino
 
   const productPromo: Promotion = {
@@ -58,7 +58,7 @@ describe('PromoBanner (2026 Bento Liquid Glass Design)', () => {
     expect(onOpen).not.toHaveBeenCalled()
 
     // Clicking card triggers onOpen
-    const card = screen.getByText('Капучино с кроликом').closest('[data-promo-id]')!
+    const card = screen.getByRole('button', { name: 'Подробнее: Капучино с кроликом' })
     fireEvent.click(card)
     expect(onOpen).toHaveBeenCalledTimes(1)
   })
@@ -79,8 +79,22 @@ describe('PromoBanner (2026 Bento Liquid Glass Design)', () => {
     // No quick-add button for article promo
     expect(screen.queryByLabelText(/Быстро добавить/)).toBeNull()
 
-    const card = screen.getByText('Осеннее меню напитков').closest('[data-promo-id]')!
+    const card = screen.getByRole('button', { name: 'Подробнее: Осеннее меню напитков' })
     fireEvent.click(card)
+    expect(onOpen).toHaveBeenCalledTimes(1)
+  })
+
+  it('uses a related product as article artwork without turning it into a product purchase', () => {
+    const onOpen = vi.fn()
+    const { container } = render(
+      <AppProvider>
+        <PromoBanner promo={{ ...articlePromo, imageUrl: undefined }} product={dummyProduct} onOpen={onOpen} />
+      </AppProvider>,
+    )
+    expect(container.querySelector('[data-art-of]')).toBeInTheDocument()
+    expect(screen.queryByLabelText(/Быстро добавить/)).toBeNull()
+    expect(container.querySelector('button button')).toBeNull()
+    fireEvent.click(screen.getByRole('button', { name: 'Подробнее', exact: true }))
     expect(onOpen).toHaveBeenCalledTimes(1)
   })
 

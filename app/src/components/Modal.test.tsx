@@ -117,6 +117,20 @@ describe('Modal', () => {
     expect(onClose).not.toHaveBeenCalled()
   })
 
+  it('rises when it opens over a calm page, dissolves in when it takes over from a leaving screen', () => {
+    const { unmount } = render(<Modal label="Окно" onClose={() => {}}>x</Modal>)
+    expect(document.querySelector('[data-modal]')).not.toHaveAttribute('data-modal-swap')
+    unmount()
+
+    render(
+      <>
+        <ScreenEntry leaving onLeft={() => {}}><Modal label="Товар" onClose={() => {}}>x</Modal></ScreenEntry>
+        <Modal label="Корзина" onClose={() => {}}>y</Modal>
+      </>,
+    )
+    expect(screen.getByRole('dialog', { name: 'Корзина' })).toHaveAttribute('data-modal-swap')
+  })
+
   it('does not follow an upward drag', () => {
     render(<Modal label="Окно" onClose={() => {}}>x</Modal>)
     swipe(-80)

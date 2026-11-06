@@ -1,3 +1,5 @@
+import { useLocation } from 'react-router'
+
 import { Button } from '../../components/Button'
 import { useAppNavigate } from '../../hooks/useAppNavigate'
 import { useNow } from '../../hooks/useNow'
@@ -17,19 +19,18 @@ const short: Record<OrderStatus, string> = {
   cancelled: 'отменён',
 }
 
-/**
- * 2026 Liquid Glass MenuDock:
- * Floating glass capsule with status-colored badge, bubble-popping droplet count badge,
- * and adaptive scroll compression.
- */
+/** Persistent cart and order actions, styled by the shared Button. */
 export function MenuDock() {
   const { cart, orders } = useApp()
   const { go } = useAppNavigate()
+  const { pathname } = useLocation()
   const now = useNow(2000)
   const catalog = useCatalog()
   const count = countOf(cart.lines)
   const total = subtotalOf(cart.lines, catalog)
   const activeOrder = orders.orders.find((o) => isActive(o, now))
+
+  const isMenu = pathname === '/' || pathname === '/menu'
 
   if (!count && !activeOrder) return null
   const status = activeOrder && statusOf(activeOrder, now)
@@ -37,14 +38,16 @@ export function MenuDock() {
 
   return (
     <div
+      aria-hidden={!isMenu || undefined}
       className={cx(
-        'pointer-events-none fixed z-40 flex gap-2.5 sm:gap-3 items-center *:pointer-events-auto',
+        'pointer-events-none fixed z-20 flex gap-2.5 sm:gap-3 items-center *:pointer-events-auto',
         hasActiveOrder ? 'justify-center' : '',
         // Mobile: centered floating dock separated from screen edges
         'right-0 bottom-0 left-0 mx-auto max-w-(--layout-dock) px-3 sm:px-3.5 pb-[calc(calc(var(--space-unit)*3.5)+env(safe-area-inset-bottom))]',
         // Desktop: bottom-right corner with elegant float
         'wide:right-8 wide:bottom-8 wide:left-auto wide:mx-0 wide:max-w-none wide:w-auto wide:p-0',
-        'transition-transform duration-300 ease-soft',
+        'transition-all duration-300 ease-soft',
+        !isMenu && 'translate-y-24 opacity-0 pointer-events-none *:pointer-events-none',
       )}
     >
       {/* Active Order Button */}
@@ -78,14 +81,14 @@ export function MenuDock() {
             hasActiveOrder
               ? 'shrink-0 pr-4 sm:pr-5'
               : 'flex-1 wide:flex-none wide:min-w-67.5 pr-5 sm:pr-6',
-            'border-(length:--stroke-width) border-white/25 backdrop-blur-2xl transition-transform duration-200 active:scale-96 cursor-pointer',
+            'transition-transform duration-200 active:scale-96 cursor-pointer',
           )}
         >
-          {/* Bubbling Droplet Count Badge with high-contrast dark espresso text */}
+          {/* Flat count badge keeps the purchase action visually dominant. */}
           <span
             key={count}
             data-cart-badge
-            className="grid size-10 sm:size-11 shrink-0 place-items-center rounded-pill bg-white text-on-light font-display font-black text-control shadow-sm animate-[pop_0.4s_var(--spring)_both]"
+            className="grid size-10 sm:size-11 shrink-0 place-items-center rounded-pill ui-cart-count text-on-light font-display font-black text-control animate-[pop_0.4s_var(--spring)_both]"
           >
             {count}
           </span>

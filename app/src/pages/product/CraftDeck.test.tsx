@@ -93,7 +93,8 @@ describe('CraftDeck selection and quantities', () => {
 
       const oatCard = container.querySelector('[data-card-index="0"]')!
       expect(oatCard).toHaveTextContent('Выбрано')
-      expect(oatCard.querySelector('.bg-accent.text-white')).toBeInTheDocument() // Checkmark badge ✓
+      expect(oatCard).toHaveAttribute('aria-pressed', 'true')
+      expect(oatCard.querySelector('svg')).toBeInTheDocument() // Checkmark badge ✓
 
       const almondCard = container.querySelector('[data-card-index="1"]')!
       expect(almondCard).toHaveTextContent('Выбрать')

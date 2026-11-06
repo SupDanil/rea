@@ -246,7 +246,7 @@ describe('CartPage', () => {
     seedCart([coldLine, hotLine])
     renderCart()
 
-    expect(await screen.findByText('🧊 Холодный, M · 300 мл')).toBeInTheDocument()
-    expect(screen.getByText('☕ Горячий, M · 300 мл')).toBeInTheDocument()
+    expect(await screen.findByText('Холодный, M · 300 мл')).toBeInTheDocument()
+    expect(screen.getByText('Горячий, M · 300 мл')).toBeInTheDocument()
   })
 })

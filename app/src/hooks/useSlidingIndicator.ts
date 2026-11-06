@@ -20,8 +20,14 @@ export function useSlidingIndicator(rowRef: RefObject<HTMLDivElement | null>, ac
       const tab = row.querySelector<HTMLElement>(selector)
       if (!tab) return
       indicator.style.transition = animate ? '' : 'none'
-      indicator.style.width = `${tab.offsetWidth}px`
-      indicator.style.transform = `translateX(${tab.offsetLeft}px)`
+      // offsetWidth/offsetLeft round to whole pixels and make the end inset uneven.
+      // Normalize viewport measurements so entrance scaling does not alter layout.
+      const rowRect = row.getBoundingClientRect()
+      const tabRect = tab.getBoundingClientRect()
+      const layoutWidth = Number.parseFloat(getComputedStyle(row).width)
+      const scale = rowRect.width && layoutWidth ? rowRect.width / layoutWidth : 1
+      indicator.style.width = `${tabRect.width / scale}px`
+      indicator.style.transform = `translateX(${(tabRect.left - rowRect.left) / scale - row.clientLeft + row.scrollLeft}px)`
       indicator.style.opacity = '1'
     }
     // First placement (and a freshly shown row) snaps; later switches glide.

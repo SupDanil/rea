@@ -76,6 +76,22 @@ describe('MenuPage (API-driven menu)', () => {
     await waitFor(() => expect(document.querySelector('[data-cart-target="dock"]')).toHaveTextContent(/1\s*Корзина\s*160/))
   })
 
+  it('hides the cart dock when navigating to the cart page so it does not stay on screen', async () => {
+    const { router } = renderApp('/')
+    fireEvent.click(await screen.findByRole('button', { name: 'Добавить «Круассан» в корзину' }))
+    await waitFor(() => expect(document.querySelector('[data-cart-target="dock"]')).toBeInTheDocument())
+    const dockButton = document.querySelector<HTMLElement>('[data-cart-target="dock"]')!
+    const dockContainer = dockButton.parentElement!
+    expect(dockContainer).not.toHaveClass('opacity-0')
+    expect(dockContainer).toHaveClass('z-20')
+
+    fireEvent.click(dockButton)
+    await waitFor(() => expect(router.state.location.pathname).toBe('/cart'))
+    expect(dockContainer).toHaveClass('opacity-0')
+    expect(dockContainer).toHaveClass('translate-y-24')
+    expect(dockContainer).toHaveAttribute('aria-hidden', 'true')
+  })
+
   it('opens the product screen from a card', async () => {
     const { router } = renderApp('/')
     fireEvent.click(await screen.findByRole('button', { name: /^Латте, от/ }))
@@ -91,7 +107,9 @@ describe('MenuPage (API-driven menu)', () => {
 
   it('shows the shop address and hours from /api/v1/shops in the header', async () => {
     renderApp('/')
-    const status = await screen.findByText(/Невский проспект, 12 · до 23:59/)
+    const shop = await screen.findByRole('button', { name: 'shit кофе: Невский проспект, 12, до 23:59' })
+    expect(within(shop).getByText('Невский проспект, 12')).toBeInTheDocument()
+    const status = within(shop).getByText('до 23:59')
     expect(status).toHaveAttribute('data-shop-status', 'open')
   })
 

@@ -52,13 +52,13 @@
   --radius-panel: calc(1.5rem * var(--radius-scale));
   --radius-dialog: calc(2rem * var(--radius-scale));
   --radius-pill: 9999px;
-  --control-sm: calc(var(--space-unit) * 9);
+  --control-sm: calc(var(--space-unit) * 11);
   --control-md: calc(var(--space-unit) * 12);
   --control-lg: calc(var(--space-unit) * 14);
-  --control-icon: calc(var(--space-unit) * 10);
+  --control-icon: calc(var(--space-unit) * 11);
   --control-icon-lg: calc(var(--space-unit) * 11);
   --control-pad: calc(var(--space-unit) * 6);
-  --button-radius: var(--radius-pill);
+  --button-radius: var(--radius-card);
   --button-font: var(--font-body);
   --button-weight: var(--weight-semibold);
   --button-bg: var(--accent);
@@ -72,14 +72,18 @@
   --field-bg: var(--surface);
   --field-ink: var(--ink);
   --field-border: var(--line);
-  --stepper-radius: var(--radius-pill);
+  --stepper-radius: var(--radius-control);
   --stepper-bg: var(--surface-2);
-  --segment-inset: var(--space-unit);
+  --segment-inset: calc(var(--space-unit) * 1.5);
   --segment-height: calc(var(--space-unit) * 10.5);
-  --segment-height-compact: calc(var(--space-unit) * 6.5);
-  --segment-radius: var(--radius-pill);
-  --segment-bg: var(--surface-2);
-  --segment-selected-bg: var(--surface);
+  --segment-height-compact: calc(var(--space-unit) * 11);
+  --segment-radius: var(--radius-card);
+  --segment-bg: var(--surface);
+  /* A centred shell shadow keeps the visible top/bottom rim equally thick. */
+  --segment-shell-shadow: inset 0 0 0 var(--stroke-width) color-mix(in srgb, var(--ceramic-light) 45%, transparent), 0 0 6px color-mix(in srgb, var(--ceramic-shade) 80%, transparent);
+  --segment-selected-shadow: inset 0 0 0 var(--stroke-width) color-mix(in srgb, var(--ceramic-shade) 35%, transparent), inset 1px 2px 3px var(--ceramic-shade), inset -1px -1px 2px color-mix(in srgb, var(--ceramic-light) 25%, transparent);
+  --selection-surface: var(--surface-2);
+  --product-stage-min: calc(var(--space-unit) * 50);
   --segment-selected-ink: var(--ink);
   --switch-width: calc(var(--space-unit) * 12);
   --switch-height: calc(var(--space-unit) * 7);
@@ -124,9 +128,9 @@
   --level-last-start: #341e14;
   --level-last-end: #120906;
   /* Palette: Warm Specialty Espresso Glass Light */
-  --bg: #F4F1EB;
-  --surface: #FCFAF7;
-  --surface-2: #EAE3D8;
+  --bg: #EDE8DF;
+  --surface: #F0EAE2;
+  --surface-2: #E3DBCF;
   --ink: #1C140F;
   --ink-2: #3D2F26;
   --muted: #7D6D63;
@@ -148,25 +152,40 @@
   --error: var(--danger);
   --danger: #D6453D;
 
-  /* Liquid Glass tokens (warm amber/espresso reflection) */
-  --glass: color-mix(in srgb, var(--surface) 72%, transparent);
-  --glass-strong: color-mix(in srgb, var(--neutral-white) 90%, transparent);
-  --glass-border: color-mix(in srgb, var(--neutral-white) 65%, transparent);
+  /* Ceramic relief follows the existing espresso palette; product glow stays separate. */
+  --ceramic-light: color-mix(in srgb, var(--neutral-white) 55%, transparent);
+  --ceramic-lift: color-mix(in srgb, var(--neutral-white) 35%, transparent);
+  --ceramic-shade: color-mix(in srgb, var(--ink) 14%, transparent);
+  --ceramic-raised: inset 0 1px 1px var(--ceramic-light), -2px -2px 5px var(--ceramic-lift), 1px 2px 3px color-mix(in srgb, var(--ceramic-shade) 60%, transparent), 3px 5px 8px color-mix(in srgb, var(--ceramic-shade) 80%, transparent);
+  --ceramic-selected: inset 0 0 0 var(--stroke-width) color-mix(in srgb, var(--ceramic-shade) 35%, transparent), inset 2px 2px 4px var(--ceramic-shade), inset -2px -2px 4px color-mix(in srgb, var(--ceramic-light) 60%, transparent);
+  --ceramic-inset: var(--ceramic-selected);
+  --ceramic-edge: inset 0 1px 1px var(--ceramic-light), inset 0 -1px 1px var(--ceramic-shade);
+  --ceramic-action: inset 0 1px 1px color-mix(in srgb, var(--neutral-white) 22%, transparent), inset 0 -1px 1px color-mix(in srgb, var(--neutral-black) 10%, transparent), 0 2px 3px color-mix(in srgb, var(--ceramic-shade) 60%, transparent), 2px 5px 9px var(--ceramic-shade);
+  --ceramic-footer: 0 -3px 12px var(--ceramic-shade);
+  --cart-badge-bg: #F1E7D8;
+  --product-card-shadow: inset 0 1px 1px color-mix(in srgb, var(--ceramic-light) 55%, transparent), 1px 3px 6px color-mix(in srgb, var(--ceramic-shade) 65%, transparent);
+  --product-card-hover-shadow: var(--ceramic-raised);
+
+  /* Warm, solid surfaces for the ceramic finish. */
+  --glass: var(--surface);
+  --glass-strong: var(--surface);
+  --glass-border: color-mix(in srgb, var(--ink) 7%, transparent);
   --glass-edge: color-mix(in srgb, var(--neutral-white) 85%, transparent);
-  --glass-shadow: inset 0 1px 0 color-mix(in srgb, var(--neutral-white) 80%, transparent), inset 0 -1px 0 color-mix(in srgb, var(--ink) 5%, transparent), 0 18px 48px color-mix(in srgb, var(--ink) 10%, transparent);
-  --glass-panel: color-mix(in srgb, var(--surface) 88%, transparent);
+  --glass-shadow: var(--ceramic-raised);
+  --glass-panel: var(--surface);
   --glow: color-mix(in srgb, var(--neutral-white) 65%, transparent);
-  --sticky: color-mix(in srgb, var(--bg) 90%, transparent);
-  --dock: color-mix(in srgb, var(--surface) 88%, transparent);
-  --panel: color-mix(in srgb, var(--surface) 96%, transparent);
+  --sticky: var(--bg);
+  --dock: var(--surface);
+  --panel: var(--surface);
 
   /* Item tints */
   --tint-base: #F4F1EB;
   --tint-amount: 22%;
   --header-h: 68px;
   --tabs-h: 96px;
-  --card-shadow: 0 2px 10px color-mix(in srgb, var(--ink) 4%, transparent), 0 12px 30px color-mix(in srgb, var(--ink) 5%, transparent);
-  --lift-shadow: 0 4px 16px color-mix(in srgb, var(--ink) 6%, transparent), 0 22px 50px color-mix(in srgb, var(--ink) 10%, transparent);
+  --nav-join-distance: 12px;
+  --card-shadow: inset 0 1px 1px var(--ceramic-light), 0 2px 3px color-mix(in srgb, var(--ceramic-shade) 60%, transparent), 3px 6px 12px color-mix(in srgb, var(--ceramic-shade) 70%, transparent);
+  --lift-shadow: inset 0 1px 1px var(--ceramic-light), 0 3px 5px var(--ceramic-shade), 4px 10px 20px var(--ceramic-shade);
   --ease-soft: cubic-bezier(0.2, 0.8, 0.2, 1);
   --ease-sheet: cubic-bezier(0.32, 0.72, 0, 1);
   --ease-sheet-out: cubic-bezier(0.4, 0, 0.8, 0.4);
@@ -181,12 +200,12 @@
   --pd-ink-2: var(--ink-2);
   --pd-muted: var(--muted);
   --pd-faint: var(--faint);
-  --pd-glass: color-mix(in srgb, var(--neutral-white) 72%, transparent);
-  --pd-glass-hover: color-mix(in srgb, var(--neutral-white) 92%, transparent);
-  --pd-glass-strong: #FFFFFF;
+  --pd-glass: color-mix(in srgb, var(--surface) 88%, var(--bg));
+  --pd-glass-hover: var(--surface);
+  --pd-glass-strong: var(--surface);
   --pd-line: color-mix(in srgb, var(--ink) 8%, transparent);
   --pd-line-strong: color-mix(in srgb, var(--ink) 18%, transparent);
-  --pd-panel: color-mix(in srgb, var(--surface) 96%, transparent);
+  --pd-panel: var(--surface);
   --pd-scrim: color-mix(in srgb, var(--ink) 25%, transparent);
   --pd-tile: color-mix(in srgb, var(--ink) 4%, transparent);
   --pd-tile-hover: color-mix(in srgb, var(--ink) 7%, transparent);
@@ -196,10 +215,10 @@
   --pd-step-on: color-mix(in srgb, var(--accent) 14%, transparent);
   --pd-track: color-mix(in srgb, var(--ink) 7%, transparent);
   --pd-cup-shadow: color-mix(in srgb, var(--ink) 18%, transparent);
-  --pd-panel-shadow: 0 20px 50px color-mix(in srgb, var(--ink) 12%, transparent);
+  --pd-panel-shadow: var(--lift-shadow);
   /* Semantic effects: every accent effect follows the same brand hue. */
-  --shadow-control: 0 2px 8px color-mix(in srgb, var(--neutral-black) 12%, transparent);
-  --shadow-action: 0 8px 28px color-mix(in srgb, var(--accent) 32%, transparent);
+  --shadow-control: var(--ceramic-raised);
+  --shadow-action: var(--ceramic-action);
   --shadow-selected: 0 4px 24px color-mix(in srgb, var(--accent) 20%, transparent);
   --shadow-success: 0 6px 22px color-mix(in srgb, var(--open) 35%, transparent);
   --shadow-ready: 0 8px 32px -4px color-mix(in srgb, var(--open) 30%, transparent);
@@ -220,17 +239,17 @@
 
 }
 
-/* Dark Palette: "Тёмная обжарка" (Dark Roast Velvet) */
+/* Warm charcoal leaves room for both the lit edge and the cast shadow. */
 :root[data-theme='dark'] {
   color-scheme: dark;
   --order-making-bg: #20140d;
-  --bg: #0C0806;
-  --surface: #18110D;
-  --surface-2: #241A14;
+  --bg: #16120F;
+  --surface: #231D18;
+  --surface-2: #2D251F;
   --ink: #F7F1EB;
   --ink-2: #D8CBC0;
-  --muted: #998A7E;
-  --faint: #544439;
+  --muted: #B5A79C;
+  --faint: #AD9D90;
   --line: color-mix(in srgb, var(--ink) 8%, transparent);
   --line-strong: color-mix(in srgb, var(--ink) 18%, transparent);
   /* Glowing amber crema accent */
@@ -248,22 +267,28 @@
   --error: var(--danger);
   --danger: #E05349;
 
-  /* Liquid Glass tokens - dark */
-  --glass: color-mix(in srgb, var(--surface) 72%, transparent);
-  --glass-strong: color-mix(in srgb, var(--surface-2) 85%, transparent);
+  --selection-surface: color-mix(in srgb, var(--bg) 70%, var(--surface));
+  --ceramic-light: color-mix(in srgb, var(--ink) 16%, transparent);
+  --ceramic-lift: color-mix(in srgb, var(--ink) 5%, transparent);
+  --ceramic-shade: color-mix(in srgb, var(--neutral-black) 52%, transparent);
+  --ceramic-raised: inset 0 1px 1px var(--ceramic-light), -3px -3px 6px var(--ceramic-lift), 1px 2px 3px color-mix(in srgb, var(--ceramic-shade) 60%, transparent), 4px 6px 10px color-mix(in srgb, var(--ceramic-shade) 85%, transparent);
+
+  /* Dark espresso ceramic surfaces. */
+  --glass: var(--surface);
+  --glass-strong: var(--surface-2);
   --glass-border: color-mix(in srgb, var(--neutral-white) 14%, transparent);
   --glass-edge: color-mix(in srgb, var(--neutral-white) 22%, transparent);
-  --glass-shadow: inset 0 1px 0 color-mix(in srgb, var(--neutral-white) 18%, transparent), inset 0 -1px 0 color-mix(in srgb, var(--neutral-black) 40%, transparent), 0 18px 48px color-mix(in srgb, var(--neutral-black) 60%, transparent);
-  --glass-panel: color-mix(in srgb, var(--surface) 92%, transparent);
+  --glass-shadow: var(--ceramic-raised);
+  --glass-panel: var(--surface);
   --glow: color-mix(in srgb, var(--crema) 28%, transparent);
-  --sticky: color-mix(in srgb, var(--bg) 90%, transparent);
-  --dock: color-mix(in srgb, var(--surface) 88%, transparent);
-  --panel: color-mix(in srgb, var(--surface) 96%, transparent);
+  --sticky: var(--bg);
+  --dock: var(--surface);
+  --panel: var(--surface);
 
   --tint-base: #140E0A;
   --tint-amount: 28%;
-  --card-shadow: 0 2px 8px color-mix(in srgb, var(--neutral-black) 45%, transparent), 0 12px 28px color-mix(in srgb, var(--neutral-black) 50%, transparent);
-  --lift-shadow: 0 4px 16px color-mix(in srgb, var(--neutral-black) 50%, transparent), 0 24px 56px color-mix(in srgb, var(--neutral-black) 70%, transparent);
+  --card-shadow: inset 0 1px 1px var(--ceramic-light), 0 2px 3px color-mix(in srgb, var(--ceramic-shade) 60%, transparent), 3px 6px 12px color-mix(in srgb, var(--ceramic-shade) 70%, transparent);
+  --lift-shadow: inset 0 1px 1px var(--ceramic-light), 0 3px 5px var(--ceramic-shade), 4px 10px 20px var(--ceramic-shade);
 
   /* Product screen: dark espresso studio */
   --pd-bg-from: #1C130D;
@@ -274,12 +299,12 @@
   --pd-ink-2: color-mix(in srgb, var(--ink) 90%, transparent);
   --pd-muted: color-mix(in srgb, var(--ink) 65%, transparent);
   --pd-faint: color-mix(in srgb, var(--ink) 38%, transparent);
-  --pd-glass: color-mix(in srgb, var(--neutral-white) 8%, transparent);
-  --pd-glass-hover: color-mix(in srgb, var(--neutral-white) 14%, transparent);
-  --pd-glass-strong: color-mix(in srgb, var(--neutral-white) 20%, transparent);
+  --pd-glass: var(--surface-2);
+  --pd-glass-hover: color-mix(in srgb, var(--surface-2) 92%, var(--ink));
+  --pd-glass-strong: color-mix(in srgb, var(--surface-2) 85%, var(--ink));
   --pd-line: color-mix(in srgb, var(--ink) 9%, transparent);
   --pd-line-strong: color-mix(in srgb, var(--ink) 24%, transparent);
-  --pd-panel: color-mix(in srgb, var(--surface) 95%, transparent);
+  --pd-panel: var(--surface);
   --pd-scrim: color-mix(in srgb, var(--neutral-black) 60%, transparent);
   --pd-tile: color-mix(in srgb, var(--neutral-white) 6%, transparent);
   --pd-tile-hover: color-mix(in srgb, var(--neutral-white) 10%, transparent);
@@ -289,7 +314,7 @@
   --pd-step-on: color-mix(in srgb, var(--accent) 25%, transparent);
   --pd-track: color-mix(in srgb, var(--neutral-white) 10%, transparent);
   --pd-cup-shadow: color-mix(in srgb, var(--neutral-black) 50%, transparent);
-  --pd-panel-shadow: 0 20px 50px color-mix(in srgb, var(--neutral-black) 75%, transparent);
+  --pd-panel-shadow: var(--lift-shadow);
 }
 
 @theme {

@@ -64,8 +64,15 @@ export function Modal({ label, onClose, locked = false, kind = 'sheet', panelRef
   const [settled] = useState(() => !!entrance?.played())
   useLayoutEffect(() => entrance?.markPlayed(), [entrance])
 
+  const root = useRef<HTMLDivElement>(null)
   const panel = useRef<HTMLDivElement>(null)
   useImperativeHandle(panelRef, () => panel.current as HTMLDivElement)
+
+  // Taking over from a screen on its way out (back to the cart from a product): nothing to rise
+  // from, it dissolves in on the spot, and art can fly straight to its place in it.
+  useLayoutEffect(() => {
+    root.current?.toggleAttribute('data-modal-swap', !!document.querySelector('[data-leaving] [data-modal]'))
+  }, [])
 
   // Focus moves in, and back to where it was on close, never by scrolling anything. A field
   // asks for it with `data-autofocus`, but on touch screens it waits for a tap: focusing it
@@ -116,6 +123,7 @@ export function Modal({ label, onClose, locked = false, kind = 'sheet', panelRef
 
   return (
     <div
+      ref={root}
       className={cx(
         'fixed inset-0 z-30 flex flex-col items-center overscroll-contain',
         kind === 'sheet' ? 'justify-end wide:justify-center wide:p-4 md:wide:p-6' : 'justify-center',

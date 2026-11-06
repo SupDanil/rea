@@ -124,7 +124,7 @@ describe('Menu card ↔ product screen flight', () => {
     })
     const openFrom = async (name: RegExp | string) => {
       renderApp('/', { getCatalog: async () => catalog() })
-      const target = typeof name === 'string' ? await screen.findByText(name) : await screen.findByRole('button', { name })
+      const target = await screen.findByRole('button', { name: typeof name === 'string' ? `Подробнее: ${name}` : name })
       fireEvent.click(target)
       return screen.findByRole('dialog', { name: 'Капучино' })
     }

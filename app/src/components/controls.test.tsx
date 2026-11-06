@@ -3,6 +3,7 @@ import { createRef, useState } from 'react'
 import { afterEach, describe, expect, it, vi } from 'vitest'
 
 import { Button, IconButton } from './Button'
+import { ChoiceButton } from './ChoiceButton'
 import { QuantityStepper } from './QuantityStepper'
 import { QuickAddButton } from './QuickAddButton'
 import { SegmentedControl } from './SegmentedControl'
@@ -56,6 +57,16 @@ describe('shared native controls', () => {
 })
 
 describe('shared composed controls', () => {
+  it('choice buttons expose selection and keep disabled actions inert', () => {
+    const choose = vi.fn()
+    const { rerender } = render(<ChoiceButton selected onClick={choose}>Молоко</ChoiceButton>)
+    fireEvent.click(screen.getByRole('button', { name: 'Молоко', pressed: true }))
+    expect(choose).toHaveBeenCalledOnce()
+    rerender(<ChoiceButton selected={false} disabled onClick={choose}>Молоко</ChoiceButton>)
+    fireEvent.click(screen.getByRole('button', { name: 'Молоко', pressed: false }))
+    expect(choose).toHaveBeenCalledOnce()
+  })
+
   it('stepper enforces caller limits without suppressing removal at quantity one', () => {
     const decrease = vi.fn(), increase = vi.fn()
     const { rerender } = render(<QuantityStepper value={1} decreaseLabel="Удалить" increaseLabel="Больше" onDecrease={decrease} onIncrease={increase} increaseDisabled />)
@@ -89,6 +100,30 @@ describe('shared composed controls', () => {
     fireEvent.keyDown(small, { key: 'ArrowLeft' })
     expect(large).toHaveFocus()
     expect(screen.getAllByRole('radio').filter((radio) => radio.tabIndex === 0)).toHaveLength(1)
+  })
+
+  it('selected taps cycle only when opted in, skip disabled options and wrap', () => {
+    function Example({ cycle = true }: { cycle?: boolean }) {
+      const [value, setValue] = useState('s')
+      return <SegmentedControl label="Размер" value={value} onChange={setValue} cycleOnSelected={cycle} options={[
+        { value: 's', label: 'S' }, { value: 'm', label: 'M', disabled: true }, { value: 'l', label: 'L' },
+      ]} />
+    }
+    const { rerender } = render(<Example />)
+    const small = screen.getByRole('radio', { name: 'S' }), large = screen.getByRole('radio', { name: 'L' })
+    fireEvent.click(small)
+    expect(large).toHaveAttribute('aria-checked', 'true')
+    fireEvent.click(large)
+    expect(small).toHaveAttribute('aria-checked', 'true')
+    fireEvent.click(large)
+    expect(large).toHaveAttribute('aria-checked', 'true')
+    fireEvent.keyDown(large, { key: ' ' })
+    expect(large).toHaveAttribute('aria-checked', 'true')
+    fireEvent.keyDown(large, { key: 'ArrowRight' })
+    expect(small).toHaveAttribute('aria-checked', 'true')
+    rerender(<Example cycle={false} />)
+    fireEvent.click(small)
+    expect(small).toHaveAttribute('aria-checked', 'true')
   })
 
   it('segments provide one enabled tab stop when the selection is no longer available', () => {

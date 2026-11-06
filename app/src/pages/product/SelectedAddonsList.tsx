@@ -278,7 +278,8 @@ export function SelectedAddonsList({ items, onRemoveAll, className }: Props) {
     <div
       className={cx('relative flex items-center w-full h-full max-h-full', className)}
     >
-      {/* Scrollable vertical list with edge masking and smooth scrolling */}
+      {/* Expand the scroll viewport sideways for shadows; matching padding keeps
+          the rows at their original width and position. Vertical masking stays. */}
       <div
         ref={scrollRef}
         onScroll={handleScroll}
@@ -291,7 +292,7 @@ export function SelectedAddonsList({ items, onRemoveAll, className }: Props) {
           WebkitMaskImage: 'linear-gradient(to bottom, transparent 0%, black 14px, black calc(100% - 14px), transparent 100%)',
         }}
         className={cx(
-          'no-scrollbar relative w-full h-full max-h-full flex flex-col gap-1.5 overflow-y-auto overscroll-contain snap-y snap-proximity scroll-py-2 touch-pan-y py-1',
+          'no-scrollbar relative w-[calc(100%+calc(var(--space-unit)*12))] -mx-6 px-6 shrink-0 h-full max-h-full flex flex-col gap-1.5 overflow-y-auto overscroll-contain snap-y snap-proximity scroll-py-2 touch-pan-y py-1',
           'cursor-grab active:cursor-grabbing select-none',
           !canScroll && 'justify-center',
         )}
@@ -300,14 +301,14 @@ export function SelectedAddonsList({ items, onRemoveAll, className }: Props) {
           <div
             key={`${item.group.id}-${item.ingredient.id}`}
             className={cx(
-              'snap-start group/row flex items-center justify-between gap-1.5 px-3 py-2 rounded-control',
-              'bg-pd-glass hover:bg-pd-glass-hover text-pd-ink border-(length:--stroke-width) border-pd-line/70 hover:border-accent/35 backdrop-blur-xl shadow-md hover:shadow-lg',
+              'snap-start group/row flex items-center justify-between gap-1.5 pl-3 pr-1 rounded-control',
+              'bg-pd-glass text-pd-ink shadow-xs',
               'transition-all duration-150 select-none animate-[slide-in-right_0.22s_var(--ease-soft)_both]',
             )}
           >
             {/* Left: Icon & Name */}
             <div className="flex items-center gap-1.5 min-w-0 flex-1">
-              <div className="size-4.5 xs:size-5 shrink-0 grid place-items-center rounded-pill bg-pd-tile border-(length:--stroke-width) border-pd-line/50 overflow-hidden">
+              <div className="size-4.5 xs:size-5 shrink-0 grid place-items-center rounded-pill overflow-hidden">
                 {item.ingredient.imageUrl ? (
                   <img
                     src={optimizedImageUrl(item.ingredient.imageUrl)}
@@ -318,7 +319,7 @@ export function SelectedAddonsList({ items, onRemoveAll, className }: Props) {
                   <IngredientArt color={item.ingredient.color} className="size-3 xs:size-3.5" />
                 )}
               </div>
-              <span className="text-micro xs:text-caption wide:text-caption font-semibold text-pd-ink truncate leading-tight">
+              <span className="text-caption font-semibold text-pd-ink truncate leading-tight">
                 {item.ingredient.name}
               </span>
             </div>
@@ -328,7 +329,7 @@ export function SelectedAddonsList({ items, onRemoveAll, className }: Props) {
               {item.group.counter && (
                 <span
                   key={item.qty}
-                  className="text-micro xs:text-micro wide:text-micro font-black text-pd-muted tabular-nums animate-pop"
+                  className="text-caption font-black text-pd-muted tabular-nums animate-pop"
                   title={`Количество: ${item.qty}`}
                 >
                   ×{item.qty}
@@ -338,7 +339,7 @@ export function SelectedAddonsList({ items, onRemoveAll, className }: Props) {
                 type="button"
                 onClick={() => onRemoveAll(item.group, item.ingredient.id)}
                 aria-label={`Удалить ${item.ingredient.name}`}
-                className="size-5 xs:size-5.5 grid place-items-center rounded-pill text-pd-muted hover:text-error hover:bg-error/15 transition-colors cursor-pointer text-caption font-bold leading-none active:scale-90"
+                className="size-11 grid place-items-center rounded-control text-pd-muted hover:text-error hover:bg-error/15 transition-colors cursor-pointer text-caption font-bold leading-none active:scale-90"
               >
                 ✕
               </Button>

@@ -186,7 +186,10 @@ export function HeroBuilderArea({
   )
 
   const sizeScale = variant.size === 'L' ? 1.05 : variant.size === 'S' ? 0.94 : 1
-  const currentScale = isBuilder ? sizeScale * builderScale : sizeScale * heroScale
+  const preferredScale = isBuilder ? sizeScale * builderScale : sizeScale * heroScale
+  // A short viewport gives controls priority; scale only the artwork to the measured stage.
+  const visibleHeight = Math.max(110 - bounds.y, bounds.y + bounds.height - 110) * 2 * baseHeight / 220
+  const currentScale = H < 200 ? Math.min(preferredScale, Math.max(0.65, (H - 12) / visibleHeight)) : preferredScale
 
   const rightMargin = sideMargin
 
@@ -206,7 +209,7 @@ export function HeroBuilderArea({
   return (
     <div
       ref={containerRef}
-      className="relative w-full h-full min-h-50 flex items-center justify-center overflow-visible"
+      className="relative w-full h-full min-h-(--product-stage-min) flex items-center justify-center overflow-visible"
     >
       {/* 1. DRINK CUP: Center in State A, shifted left in State B (z-10, sits UNDER the carousel) */}
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">

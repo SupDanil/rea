@@ -1,4 +1,4 @@
-import { floatingCopy, prefersReducedMotion } from './motion'
+import { floatingCopy, plainCopy, prefersReducedMotion } from './motion'
 
 /**
  * Shared-element flights between a product thumbnail (menu card, hero, cart
@@ -13,6 +13,7 @@ export const TO_CART = { duration: 560, easing: 'cubic-bezier(0.4, 0, 0.2, 1)' }
 
 const ART_ATTR = 'data-art-of'
 const SLOT_ATTR = 'data-art-slot'
+const LOOK_ATTR = 'data-art-look'
 
 /**
  * Attributes for product art, so flights can find it. The same product can show in
@@ -36,11 +37,14 @@ export function findThumb(
   itemId: string,
   { exclude, slot, leaving }: { exclude?: Element | null; slot?: string; leaving?: boolean } = {},
 ): Element | null {
+  // A flight lands on what can be seen: with a modal open, nothing underneath it counts.
+  const onTop = leaving ? null : [...document.querySelectorAll('[data-modal]')].filter((m) => !m.closest('[data-leaving]')).at(-1)
   let best: Element | null = null
   let bestArea = 0
   for (const el of document.querySelectorAll(`[${ART_ATTR}="${CSS.escape(itemId)}"]`)) {
     if (exclude?.contains(el)) continue
     if (!leaving && el.closest('[data-leaving]')) continue
+    if (onTop && !onTop.contains(el)) continue
     const area = visibleArea(el.getBoundingClientRect())
     if (area && slot && el.getAttribute(SLOT_ATTR) === slot) return el
     if (area > bestArea) {
@@ -122,6 +126,19 @@ export function flyArt(
     fill: 'forwards',
   }
   const animation = clone.animate(keyframes(b), timing)
+
+  // Different photos at the two ends (a cup made iced, back to its hot card): dissolve from one
+  // to the other on the way, or the swap happens in one frame on landing.
+  const nextLook = target?.getAttribute(LOOK_ATTR)
+  if (nextLook && nextLook !== from.getAttribute(LOOK_ATTR)) {
+    const next = plainCopy(target as Element)
+    next.removeAttribute(ART_ATTR)
+    Object.assign(next.style, { position: 'absolute', inset: '0' })
+    clone.appendChild(next)
+    const fade = { duration: timing.duration, fill: 'forwards' } as const
+    clone.firstElementChild?.animate([{ opacity: 1 }, { opacity: 0 }], fade)
+    next.animate([{ opacity: 0 }, { opacity: 1 }], fade)
+  }
 
   // A clip-path can't run on the compositor: its own animation keeps it from dragging the flight along.
   const startCover = covered(from, a)

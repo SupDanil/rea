@@ -1,5 +1,6 @@
 import { type CSSProperties,useRef, useState } from 'react'
 
+import { Button } from '../../components/Button'
 import { ArtGlow, ItemArt } from '../../components/ItemArt'
 import { QuickAddButton } from '../../components/QuickAddButton'
 import { isSoldOut, itemImage, type MenuItem, minPrice, type Promotion } from '../../domain'
@@ -34,13 +35,7 @@ interface PromoBannerProps {
   variant?: 'hero' | 'category'
 }
 
-/**
- * 2026 Liquid Glass Bento PromoBanner:
- * Unified design system for both main hero and category promo cards.
- * Supports:
- * 1) Target === 'product': Product art, auto background tint, price, and interactive '+' quick-buy.
- * 2) Target === 'article': Uploaded photo / brand tint, teaser text, and 'Подробнее →' action.
- */
+/** Shared promotional surface; artwork and tint come from the catalog. */
 export function PromoBanner({
   promo,
   product,
@@ -78,14 +73,14 @@ export function PromoBanner({
   }
 
   const isHero = variant === 'hero'
+  const hasArtwork = Boolean(product || promo.imageUrl)
   const artHeight = isHero ? 'max-h-42.5 sm:max-h-52.5 wide:max-h-67.5 lg:max-h-80' : 'max-h-40 sm:max-h-50 wide:max-h-65 lg:max-h-75'
 
   return (
     <div
       ref={rootRef}
-      onClick={onOpen}
       className={cx(
-        'tinted mesh-grain group relative flex flex-col justify-center overflow-hidden rounded-dialog sm:rounded-dialog text-left text-ink border-(length:--stroke-width) border-white/20 shadow-lift transition-transform active:scale-[0.99] cursor-pointer isolate',
+        'tinted mesh-grain group relative flex flex-col justify-center overflow-hidden rounded-dialog sm:rounded-dialog text-left text-ink shadow-card transition-transform active:scale-[0.99] cursor-pointer isolate',
         'brand-promo [background:var(--background-promo)]',
         isHero
           ? 'mx-2.5 sm:mx-3 mt-1 w-[calc(100%-calc(var(--space-unit)*5))] sm:w-[calc(100%-calc(var(--space-unit)*6))] wide:max-w-(--layout-hero) wide:mx-auto'
@@ -94,17 +89,19 @@ export function PromoBanner({
       style={{ '--tint': tint } as CSSProperties}
       data-promo-id={promo.id}
     >
+      <Button onClick={onOpen} aria-label={`Подробнее: ${promo.title}`} className="ui-promo-open absolute inset-0 z-10 rounded-dialog" />
       <div
         className={cx(
-          'grid h-full items-center px-4 sm:px-6 wide:px-7 lg:px-8 py-4 sm:py-5 wide:py-6 animate-[fade-in_0.4s_var(--ease-soft)]',
+          'pointer-events-none grid h-full items-center px-4 sm:px-6 wide:px-7 lg:px-8 py-4 sm:py-5 wide:py-6 animate-[fade-in_0.4s_var(--ease-soft)]',
           isHero
-            ? 'min-h-55 sm:min-h-65 wide:min-h-75 lg:min-h-85 grid-cols-2'
-            : 'min-h-50 sm:min-h-57.5 wide:min-h-full grid-cols-2',
+            ? 'min-h-52 sm:min-h-60 wide:min-h-75 lg:min-h-85'
+            : 'min-h-50 sm:min-h-57.5 wide:min-h-full',
+          hasArtwork ? (isHero ? 'grid-cols-[minmax(0,1.25fr)_minmax(0,1fr)]' : 'grid-cols-[minmax(0,2.4fr)_minmax(0,1fr)]') : 'grid-cols-1',
         )}
       >
         {/* Right Art or Photo */}
-        <div className="relative flex h-full justify-center items-center py-2">
-          {isProduct && product ? (
+        {hasArtwork && <div className="relative flex h-full justify-center items-center py-2">
+          {product && (isProduct || !promo.imageUrl) ? (
             <div data-ambient className="relative flex h-full w-full items-center justify-center animate-[float_6s_ease-in-out_2]">
               {/* Stays while the art is away, so it is already there when the cup flies back. */}
               <ArtGlow color="var(--art-glow)" className={cx('left-1/2 top-[56%] -translate-1/2 aspect-square h-full', artHeight)} />
@@ -120,26 +117,22 @@ export function PromoBanner({
               />
             </div>
           ) : promo.imageUrl ? (
-            <div data-ambient className="relative aspect-[4/3] w-full max-w-50 sm:max-w-65 wide:max-w-75 lg:max-w-(--layout-dialog-sm) rounded-card overflow-hidden border-(length:--stroke-width) border-white/30 shadow-card animate-[float_6s_ease-in-out_2]">
+            <div data-ambient className="relative aspect-[4/3] w-full max-w-50 sm:max-w-65 wide:max-w-75 lg:max-w-(--layout-dialog-sm) rounded-card overflow-hidden animate-[float_6s_ease-in-out_2]">
               <img
                 src={promo.imageUrl}
                 alt={promo.title}
                 className="h-full w-full object-cover"
               />
             </div>
-          ) : (
-            <div data-ambient className="size-28 sm:size-36 wide:size-44 lg:size-48 rounded-pill bg-white/20 border-(length:--stroke-width) border-white/30 flex items-center justify-center animate-[float_6s_ease-in-out_2]">
-              <span className="text-display sm:text-hero lg:text-showcase">✨</span>
-            </div>
-          )}
-        </div>
+          ) : null}
+        </div>}
 
         {/* Left Copy & Actions */}
         <div className="-order-1 flex flex-col justify-center h-full py-2 pr-3 sm:pr-4 wide:pr-6">
           {/* Badge */}
           <div>
-            <div className="inline-flex items-center gap-1.5 rounded-pill bg-white/70 dark:bg-black/40 px-3 py-1 text-micro sm:text-caption font-display font-bold tracking-wider text-accent uppercase border-(length:--stroke-width) border-white/30 shadow-xs">
-              <span data-ambient className="size-1.5 rounded-pill bg-accent animate-[pulse_2s_ease-in-out_3]" />
+            <div className="inline-flex items-center gap-1.5 text-caption font-semibold tracking-wide text-accent uppercase">
+              <span className="size-1.5 rounded-pill bg-accent" />
               {badgeText}
             </div>
           </div>
@@ -147,44 +140,39 @@ export function PromoBanner({
           {/* Title */}
           <div
             className={cx(
-              'mt-2.5 font-display leading-(--leading-display) font-bold tracking-tight text-ink animate-[title-breathe_0.5s_var(--spring)]',
+              'mt-2.5 font-display leading-(--leading-title) font-bold tracking-tight text-balance text-ink animate-[title-breathe_0.5s_var(--spring)]',
               isHero
-                ? 'text-title-sm xs:text-title sm:text-heading wide:text-display lg:text-hero'
-                : 'text-lead xs:text-title-sm sm:text-title wide:text-heading lg:text-heading',
+                ? 'text-body-lg xs:text-title-sm sm:text-heading wide:text-display lg:text-hero'
+                : 'text-body xs:text-body-lg sm:text-title wide:text-heading lg:text-heading',
             )}
           >
             {promo.title}
           </div>
 
-          {/* Subtitle / Tagline */}
-          {promo.subtitle && (
-            <div className="mt-1.5 font-serif text-body sm:text-body-lg wide:text-body-lg italic text-ink-2/90 leading-tight line-clamp-1">
-              {promo.subtitle}
-            </div>
+          {/* One concise preview; full admin copy remains in the product/article. */}
+          {(promo.subtitle || product?.description || promo.content) && (
+            <p className="mt-2 line-clamp-2 text-compact sm:text-body wide:text-body-lg text-ink-2 leading-(--leading-copy)">
+              {promo.subtitle || (isProduct && product ? product.description : promo.content)}
+            </p>
           )}
-
-          {/* Description (from promo content or product) */}
-          <div className="mt-1.5 line-clamp-2 text-caption sm:text-compact wide:text-body leading-(--leading-copy) text-muted">
-            {isProduct && product ? product.description : promo.content || ''}
-          </div>
 
           {/* Action Row */}
           <div className="mt-4 flex items-center gap-2.5">
             {isProduct && product ? (
               <>
-                <span className="inline-block rounded-pill bg-accent text-accent-ink font-display font-bold px-3.5 sm:px-4 py-1.5 sm:py-2 text-compact sm:text-body wide:text-control shadow-sm">
+                <span className="inline-block font-display font-bold text-ink text-body sm:text-control wide:text-lead">
                   от {formatPrice(minPrice(product))}
                 </span>
 
                 {!soldOut && (
-                  <QuickAddButton added={justAdded} onClick={quickAdd} aria-label={`Быстро добавить «${product.name}» в корзину`} />
+                  <QuickAddButton className="pointer-events-auto relative z-20" added={justAdded} onClick={quickAdd} aria-label={`Быстро добавить «${product.name}» в корзину`} />
                 )}
               </>
             ) : (
-              <span className="inline-flex items-center gap-1.5 rounded-pill bg-accent text-accent-ink font-display font-bold px-4 sm:px-5 py-1.5 sm:py-2 text-caption sm:text-compact wide:text-body shadow-sm">
+              <Button variant="secondary" size="sm" onClick={onOpen} className="pointer-events-auto relative z-20 inline-flex items-center gap-2">
                 <span>Подробнее</span>
-                <span className="text-body leading-none">→</span>
-              </span>
+                <span aria-hidden="true" className="text-body leading-none">→</span>
+              </Button>
             )}
           </div>
         </div>

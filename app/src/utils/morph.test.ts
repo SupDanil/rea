@@ -104,6 +104,28 @@ describe('flyArt', () => {
     expect(clones()[0].style.willChange).toBe('transform')
   })
 
+  describe('between two different photos', () => {
+    const look = (el: HTMLElement, value: string) => (el.setAttribute('data-art-look', value), el)
+
+    it('dissolves from one into the other on the way', () => {
+      void flyArt(look(art(rect(10, 20, 100, 110)), 'iced.png'), look(art(rect(40, 50, 200, 220)), 'hot.png'))
+
+      expect(clones()[0].children).toHaveLength(2)
+      expect(animations[1].keyframes).toEqual([{ opacity: 1 }, { opacity: 0 }])
+      expect(animations[2].keyframes).toEqual([{ opacity: 0 }, { opacity: 1 }])
+    })
+
+    it('flies one picture when both ends match', () => {
+      void flyArt(look(art(rect(10, 20, 100, 110)), 'hot.png'), look(art(rect(40, 50, 200, 220)), 'hot.png'))
+      expect(clones()[0].children).toHaveLength(1)
+    })
+
+    it('flies one picture to something that is not art, like the cart badge', () => {
+      void flyArt(look(art(rect(10, 20, 100, 110)), 'hot.png'), art(rect(40, 50, 40, 40)))
+      expect(clones()[0].children).toHaveLength(1)
+    })
+  })
+
   it('is drawn at the larger end, so it never scales up', () => {
     void flyArt(art(rect(0, 0, 100, 110)), art(rect(0, 0, 200, 220)))
     expect((clones()[0] as HTMLElement).style.height).toBe('220px')
@@ -254,6 +276,19 @@ describe('findThumb', () => {
     for (const [name, value] of Object.entries(artProps('espresso', slot))) el.setAttribute(name, value!)
     return el
   }
+
+  it('does not land on art hidden under an open modal', () => {
+    document.body.innerHTML = ''
+    const modal = document.body.appendChild(document.createElement('div'))
+    modal.setAttribute('data-modal', '')
+    const line = place(rect(10, 10, 76, 76), 'cart-line')
+    modal.appendChild(line)
+    place(rect(10, 200, 300, 300), 'card')
+
+    expect(findThumb('espresso')).toBe(line)
+    line.getBoundingClientRect = () => rect(10, 5000, 76, 76)
+    expect(findThumb('espresso')).toBeNull()
+  })
 
   it('picks the art in the slot it was opened from, even when a bigger one is on screen', () => {
     document.body.innerHTML = ''

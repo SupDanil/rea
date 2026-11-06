@@ -101,6 +101,12 @@
 [data-modal-settled]:not([data-leaving] *) > * {
   animation: none;
 }
+[data-modal-swap]:not([data-leaving] *) > [data-modal-backdrop] {
+  animation: none;
+}
+[data-modal-swap]:not([data-leaving] *) > [data-modal-panel='sheet'] {
+  animation: fade-only 0.25s ease backwards;
+}
 
 [data-leaving] [data-modal] {
   pointer-events: none;

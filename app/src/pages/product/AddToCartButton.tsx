@@ -5,11 +5,7 @@ import { formatPrice } from '../../utils/format'
 
 type Props = { price: number; soldOut: boolean; added: boolean; onAdd: () => void }
 
-/**
- * 2026 Liquid Glass AddToCartButton:
- * Floating pill button with rich roasted caramel / crema amber accent (NOT Drinkit blue!),
- * animated price roll, spring reaction, and luminous confirm checkmark.
- */
+/** Main purchase action; the shared Button owns its material and states. */
 export function AddToCartButton({ price, soldOut, added, onAdd }: Props) {
   const shown = useAnimatedNumber(price, 400)
   return (
@@ -44,8 +40,8 @@ export function AddToCartButton({ price, soldOut, added, onAdd }: Props) {
           <span className="text-control sm:text-body-lg tracking-tight">В корзине</span>
         </span>
       ) : (
-        <span className="flex items-center gap-1.5 sm:gap-2 whitespace-nowrap">
-          <span className="text-lead sm:text-title-sm font-light leading-none" aria-hidden="true">+</span>
+        <span className="flex w-full items-center justify-between gap-3 whitespace-nowrap">
+          <span className="text-body-lg font-semibold">В корзину</span>
           <span className="text-body-lg sm:text-lead font-extrabold tracking-tight tabular-nums">
             {formatPrice(Math.round(shown))}
           </span>

@@ -14,11 +14,7 @@ import { countOf } from '../../state/cart'
 import { cx } from '../../utils/cx'
 import { COVER_ATTR } from '../../utils/morph'
 
-/**
- * 2026 Liquid Glass MenuHeader:
- * Transparent at the top, turns into a sleek frosted liquid glass bar when scrolled.
- * Selected coffee shop rendered as an elegant capsule button.
- */
+/** Shop identity and actions; an opaque surface joins the sticky navigation. */
 export function MenuHeader() {
   const { cart, profile, loyalty, theme, toggleTheme } = useApp()
   const { go } = useAppNavigate()
@@ -34,7 +30,7 @@ export function MenuHeader() {
   useLayoutEffect(() => {
     const update = () => {
       if (!headerRef.current) return
-      const h = headerRef.current.offsetHeight
+      const h = headerRef.current.getBoundingClientRect().height
       document.documentElement.style.setProperty('--header-h', `${h}px`)
     }
     update()
@@ -60,9 +56,9 @@ export function MenuHeader() {
       <header
         ref={headerRef}
         className={cx(
-          'sticky top-0 z-30 flex items-center justify-between gap-2 px-3 sm:px-4 pt-[calc(calc(var(--space-unit)*2.5)+env(safe-area-inset-top))] pb-2.5 border-b-(length:--stroke-width) transition-[background-color,border-color,box-shadow] duration-200',
+          'sticky top-0 z-30 flex items-center justify-between gap-1.5 px-2 xs:px-3 sm:px-4 pt-[calc(calc(var(--space-unit)*2.5)+env(safe-area-inset-top))] pb-2.5 border-b-(length:--stroke-width) transition-[background-color,border-color,box-shadow] duration-200',
           scrolled
-            ? 'bg-bg/95 backdrop-blur-xl border-line/60 shadow-header'
+            ? 'bg-bg border-transparent'
             : 'bg-transparent border-line/0',
         )}
         {...{ [COVER_ATTR]: '' }}
@@ -70,31 +66,34 @@ export function MenuHeader() {
         {/* Coffee Shop Capsule Button */}
         <Button
           onClick={() => setShowShopPicker(true)}
-          className="flex min-w-0 items-center gap-2.5 rounded-pill bg-surface/90 border-(length:--stroke-width) border-line py-1.5 pl-1.5 pr-3.5 shadow-sm backdrop-blur-md text-left cursor-pointer hover:bg-surface active:scale-98 transition-all"
+          variant="secondary"
+          className="flex min-w-0 max-w-80 sm:max-w-96 flex-1 items-center gap-1.5 xs:gap-2 py-1.5 pl-1.5 pr-2.5 text-left"
           aria-label={shop && status ? `shit кофе: ${shop.address}, ${status.text}` : 'shit кофе'}
         >
-          <div className="grid size-9 place-items-center rounded-pill bg-ink text-surface dark:bg-surface-2 dark:text-crema shadow-xs flex-none">
+          <div className="grid size-7 xs:size-9 place-items-center rounded-pill bg-ink text-surface dark:bg-surface-2 dark:text-crema shadow-xs flex-none">
             <RabbitIcon size={20} className="size-5" />
           </div>
-          <div className="min-w-0">
-            <div className="flex items-center gap-1 font-display text-compact sm:text-body font-bold text-ink tracking-tight">
+          <div className="min-w-0 flex-1">
+            <div className="flex items-center gap-1 font-display text-caption xs:text-compact sm:text-body font-bold text-ink tracking-tight">
               <span>shit кофе</span>
               <ChevronDownIcon className="text-muted size-3" />
             </div>
             {shop && status && (
               <div
-                className="flex items-center gap-1.5 text-micro text-muted font-medium truncate"
-                data-shop-status={status.kind}
+                className="flex items-center gap-1 text-caption text-muted font-medium"
               >
-                <span className={status.kind === 'open' ? openDot : 'size-1.5 rounded-pill bg-danger'} aria-hidden="true" />
-                {shop.address} · {status.text}
+                <span className="min-w-0 truncate">{shop.address}</span>
+                <span data-shop-status={status.kind} className="flex shrink-0 items-center gap-1 whitespace-nowrap">
+                  <span className={cx('shrink-0', status.kind === 'open' ? openDot : 'size-1.5 rounded-pill bg-danger')} aria-hidden="true" />
+                  {status.text}
+                </span>
               </div>
             )}
           </div>
         </Button>
 
         {/* Action Controls */}
-        <div className="flex gap-2 items-center">
+        <div className="flex shrink-0 gap-1 xs:gap-2 items-center">
           <IconButton
 
             onClick={toggleTheme}
@@ -117,7 +116,7 @@ export function MenuHeader() {
             )}
             {gifts > 0 && (
               <span
-                className="absolute -top-1 -right-1 grid size-5 place-items-center rounded-pill bg-surface text-micro shadow-card animate-[pop_0.35s_var(--spring)]"
+                className="absolute -top-1 -right-1 grid size-5 place-items-center rounded-pill bg-surface text-micro animate-[pop_0.35s_var(--spring)]"
                 aria-hidden="true"
               >
                 🎁

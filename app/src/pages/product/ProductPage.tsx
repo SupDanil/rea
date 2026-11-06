@@ -2,7 +2,7 @@ import { type CSSProperties,useLayoutEffect, useRef, useState } from 'react'
 import { Navigate, useParams } from 'react-router'
 
 import { useIsLeaving } from '../../app/leaving'
-import { Button, IconButton } from '../../components/Button'
+import { IconButton } from '../../components/Button'
 import { CloseIcon, InfoIcon, SnowflakeIcon } from '../../components/icons'
 import { Modal } from '../../components/Modal'
 import { SegmentedControl } from '../../components/SegmentedControl'
@@ -94,8 +94,11 @@ function ProductView({ item }: { item: MenuItem }) {
       return
     }
     const exclude = sheetRef.current
-    const thumb = findThumb(item.id, { exclude, slot }) ?? findThumb(openedWith, { exclude, slot })
-    if (thumb) void flyArt(art, thumb, MORPH)
+    // After the commit, like the opening: the screen coming back settles in its own layout effect.
+    queueMicrotask(() => {
+      const thumb = findThumb(item.id, { exclude, slot }) ?? findThumb(openedWith, { exclude, slot })
+      if (thumb) void flyArt(art, thumb, MORPH)
+    })
   }, [leaving, item.id, openedWith, slot])
 
   const add = () => {
@@ -110,7 +113,7 @@ function ProductView({ item }: { item: MenuItem }) {
   return (
     <Modal
       label={item.name}
-      onClose={back}
+      onClose={showDetails ? () => setShowDetails(false) : back}
       kind="screen"
       panelRef={sheetRef}
       className="brand-product tinted mesh-grain text-pd-ink"
@@ -131,7 +134,7 @@ function ProductView({ item }: { item: MenuItem }) {
 
           <h1
             key={item.id}
-            className="text-center font-display text-lead xs:text-title-sm wide:text-title font-bold text-pd-ink tracking-tight truncate px-2"
+            className="text-center font-display text-lead xs:text-title-sm wide:text-title font-bold text-pd-ink tracking-tight leading-(--leading-title) line-clamp-2 text-balance px-2"
           >
             {item.name}
           </h1>
@@ -139,10 +142,12 @@ function ProductView({ item }: { item: MenuItem }) {
           <IconButton
             className={cx(
               ' grid   bg-pd-glass hover:bg-pd-glass-hover text-pd-ink border-(length:--stroke-width) border-pd-line transition-all    justify-self-end',
-              showDetails && 'bg-accent text-white border-transparent shadow-sm',
+              showDetails && 'ui-control-selected',
             )}
             onClick={() => setShowDetails((v) => !v)}
             aria-label="О напитке"
+            aria-expanded={showDetails}
+            aria-controls={showDetails ? 'product-details' : undefined}
           >
             <InfoIcon size={18} />
           </IconButton>
@@ -159,24 +164,25 @@ function ProductView({ item }: { item: MenuItem }) {
             <div
               className={cx(
                 'absolute top-[calc(calc(var(--space-unit)*14)+env(safe-area-inset-top))] right-3 left-3 sm:right-4 sm:left-4 z-50',
-                'p-4 rounded-panel bg-pd-panel text-pd-ink border-(length:--stroke-width) border-pd-line shadow-lift',
+                'max-h-[calc(100%-calc(var(--space-unit)*18)-env(safe-area-inset-top))] overflow-y-auto p-4 rounded-panel bg-pd-panel text-pd-ink border-(length:--stroke-width) border-pd-line shadow-lift',
                 'animate-[rise_0.22s_var(--ease-soft)_both] text-compact leading-relaxed',
               )}
+              id="product-details" role="region" aria-label="О напитке"
             >
               <div className="flex items-center justify-between pb-2 mb-2 border-b-(length:--stroke-width) border-pd-line">
                 <span className="font-display font-bold text-body">О напитке</span>
-                <Button
+                <IconButton variant="ghost"
                   onClick={() => setShowDetails(false)}
-                  className="grid size-7 place-items-center rounded-pill bg-pd-glass hover:bg-pd-glass-hover text-caption font-bold text-pd-muted hover:text-pd-ink transition-colors cursor-pointer"
                   aria-label="Закрыть описание"
                 >
-                  ✕
-                </Button>
+                  <CloseIcon />
+                </IconButton>
               </div>
               <p className="font-medium text-pd-ink">{item.description}</p>
               <p className="mt-2 text-pd-ink-2">
                 <b className="font-bold text-pd-ink">Состав:</b> {item.composition}
               </p>
+              <NutritionBar nutrition={config.nutrition} />
               {item.allergens && (
                 <p className="mt-1 text-pd-ink-2">
                   <b className="font-bold text-pd-ink">Аллергены:</b> {item.allergens}
@@ -188,12 +194,12 @@ function ProductView({ item }: { item: MenuItem }) {
 
         {/* ================= 2. СКРОЛЛИРУЕМОЕ ТЕЛО (МЕЖДУ ШАПКОЙ И ФИКСИРОВАННЫМ ФУТЕРОМ) ================= */}
         <div className="flex-1 min-h-0 flex flex-col overflow-x-hidden overflow-y-auto overscroll-contain no-scrollbar">
-          {/* Top Cockpit Bar: Size Selector + Nutrition Bar + Temperature selector */}
+          {/* Temperature and size selectors */}
           <div className="flex-none flex flex-wrap items-center justify-center gap-2 wide:gap-3 w-full pt-1 pb-1 px-4 wide:pt-2 wide:pb-1 z-30">
             {isBoth && (
-              <SegmentedControl label="Температура" tone="product" accent value={temperature ?? 'hot'}
+              <SegmentedControl label="Температура" tone="product" cycleOnSelected value={temperature ?? 'hot'}
                 onChange={(next) => { setTemperature(next); if (cupRef.current) bounce(cupRef.current, 0.4) }}
-                options={[{ value: 'hot' as const, label: '☕ Горячий', accessibleLabel: 'Горячий' }, { value: 'cold' as const, label: '🧊 Холодный', accessibleLabel: 'Холодный' }]} />
+                options={[{ value: 'hot' as const, label: 'Горячий', accessibleLabel: 'Горячий' }, { value: 'cold' as const, label: 'Холодный', accessibleLabel: 'Холодный' }]} />
             )}
             {isOnlyCold && (
               <div
@@ -214,11 +220,10 @@ function ProductView({ item }: { item: MenuItem }) {
                 }}
               />
             )}
-            <NutritionBar nutrition={config.nutrition} />
           </div>
 
           {/* Hero Stage: Cup + Addons List, absorbs the central space */}
-          <div className="flex-1 min-h-50 flex flex-col items-center justify-center w-full py-1 self-stretch">
+          <div className="flex-1 min-h-(--product-stage-min) flex flex-col items-center justify-center w-full py-1 self-stretch">
             <HeroBuilderArea
               item={item}
               variant={variant}
@@ -234,7 +239,7 @@ function ProductView({ item }: { item: MenuItem }) {
           </div>
 
           {/* Controls: Group Tabs + CoverFlow Carousel */}
-          <div className="flex-none flex flex-col items-center w-full pt-1 pb-2 wide:pt-2 wide:pb-3">
+          <div className="flex-none flex flex-col items-center w-full pt-1 wide:pt-2">
             {/* Category Tabs */}
             {config.groups.length > 0 && (
               <div className="w-full flex justify-center mb-1">
@@ -265,7 +270,7 @@ function ProductView({ item }: { item: MenuItem }) {
         </div>
 
         {/* ================= 3. ЖЕЛЕЗНО ЗАКРЕПЛЕННЫЙ ФУТЕР (ВНЕ СКРОЛЛА) ================= */}
-        <footer className="flex-none z-30 w-full p-3 sm:p-4 wide:p-5 pb-[calc(calc(var(--space-unit)*3.5)+env(safe-area-inset-bottom))] wide:pb-5 bg-pd-panel/95 dark:bg-surface/95 border-t-(length:--stroke-width) border-pd-line/40 shadow-lift">
+        <footer className="ui-product-footer flex-none z-30 w-full p-3 sm:p-4 wide:p-5 pb-[calc(calc(var(--space-unit)*3.5)+env(safe-area-inset-bottom))] wide:pb-5 bg-pd-panel/95 dark:bg-surface/95 border-t-(length:--stroke-width) border-pd-line/40">
           <AddToCartButton
             price={config.price}
             soldOut={config.soldOut}

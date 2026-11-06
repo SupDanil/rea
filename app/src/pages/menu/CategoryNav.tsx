@@ -29,6 +29,7 @@ export function CategoryNav({ catalog, navRef, activeTop, activeSub, activeSubs,
   const tabIndicator = useSlidingIndicator(tabsRef, activeTop.id)
   const subIndicator = useSlidingIndicator(subTabsRef, showSubtabs ? activeSub : '')
   const [isStuck, setIsStuck] = useState(false)
+  const [isJoining, setIsJoining] = useState(false)
 
   useEffect(() => {
     const checkStuck = () => {
@@ -37,6 +38,8 @@ export function CategoryNav({ catalog, navRef, activeTop, activeSub, activeSubs,
         ? parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--header-h') || '68')
         : 68
       const top = navRef.current.getBoundingClientRect().top
+      const joinDistance = parseFloat(getComputedStyle(navRef.current).getPropertyValue('--nav-join-distance')) || 0
+      setIsJoining(top <= headerH + joinDistance && window.scrollY > 10)
       setIsStuck(top <= headerH + 2 && window.scrollY > 10)
     }
     window.addEventListener('scroll', checkStuck, { passive: true })
@@ -57,10 +60,12 @@ export function CategoryNav({ catalog, navRef, activeTop, activeSub, activeSubs,
   return (
     <nav
       className={cx(
-        'sticky z-20 border-b-(length:--stroke-width) transition-all duration-200',
+        'sticky z-20 border-b-(length:--stroke-width) border-transparent transition-[padding,box-shadow] duration-200',
+        isJoining && 'ui-menu-nav--joining',
         isStuck
-          ? 'bg-bg/95 pt-4 sm:pt-4.5 pb-3.5 sm:pb-4 border-line/60 shadow-sticky backdrop-blur-2xl'
-          : 'mt-1 bg-bg/95 pt-3 pb-2.5 border-line/40 backdrop-blur-xl',
+          ? 'bg-bg pt-4 sm:pt-4.5 pb-3.5 sm:pb-4 shadow-sticky'
+          // Let the promo shadow fade through; the opaque cover is only needed when stuck.
+          : cx('mt-1 pt-3 pb-2.5', isJoining ? 'bg-bg' : 'bg-transparent'),
       )}
       style={{ top: 'var(--header-h)' }}
       aria-label="Категории меню"
@@ -70,7 +75,7 @@ export function CategoryNav({ catalog, navRef, activeTop, activeSub, activeSubs,
       {/* Top Categories */}
       <div className="no-scrollbar relative flex gap-4 sm:gap-6 overflow-x-auto px-3.5 sm:px-4" role="tablist" ref={tabsRef}>
         <span
-          className="pointer-events-none absolute bottom-0 left-0 h-0.75 rounded-pill bg-accent opacity-0 transition-[transform,scale,width] duration-350 ease-soft shadow-accent-glow"
+          className="pointer-events-none absolute bottom-0 left-0 h-0.75 rounded-pill bg-accent opacity-0 transition-[transform,scale,width] duration-350 ease-soft "
           ref={tabIndicator}
           aria-hidden="true"
         />
@@ -105,14 +110,15 @@ export function CategoryNav({ catalog, navRef, activeTop, activeSub, activeSubs,
       {showSubtabs && (
         <div
           className={cx(
-            'no-scrollbar relative flex gap-1.5 overflow-x-auto px-3.5 sm:px-4 animate-fade-in transition-all duration-200',
-            isStuck ? 'mt-3 sm:mt-3.5' : 'mt-2.5',
+            // Paint space for raised chips, compensated margins preserve the row position.
+            'no-scrollbar relative flex gap-1.5 overflow-x-auto px-3.5 sm:px-4 py-3 -mb-3 animate-fade-in transition-all duration-200',
+            isStuck ? 'mt-0 sm:mt-0.5' : '-mt-0.5',
           )}
           role="tablist"
           ref={subTabsRef}
         >
           <span
-            className="pointer-events-none absolute top-0 bottom-0 left-0 rounded-pill bg-accent opacity-0 transition-[transform,scale,width] duration-350 ease-soft shadow-sm"
+            className="ui-category-indicator pointer-events-none absolute top-3 bottom-3 left-0 rounded-control opacity-0 transition-[transform,scale,width] duration-350 ease-soft"
             ref={subIndicator}
             aria-hidden="true"
           />
@@ -124,12 +130,12 @@ export function CategoryNav({ catalog, navRef, activeTop, activeSub, activeSubs,
                 role="tab"
                 aria-selected={selected}
                 className={cx(
-                  'relative z-1 rounded-pill px-3.5 whitespace-nowrap transition-colors duration-250 cursor-pointer',
+                  'relative z-1 min-h-11 rounded-control px-3.5 whitespace-nowrap transition-colors duration-250 cursor-pointer',
                   isStuck ? 'py-1.5 text-compact sm:py-2' : 'py-1.5 text-compact',
                   'font-semibold',
                   selected
-                    ? 'text-accent-ink'
-                    : 'text-ink-2 bg-surface/80 border-(length:--stroke-width) border-line hover:border-accent/30',
+                    ? 'text-ink'
+                    : 'ui-category-chip text-ink-2 border-(length:--stroke-width) border-transparent',
                 )}
                 onClick={() => onSelect(sub.id)}
               >

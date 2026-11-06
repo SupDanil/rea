@@ -1,6 +1,8 @@
 import { type PointerEvent, useEffect, useLayoutEffect, useRef, useState } from 'react'
 
-import { Button } from '../../components/Button'
+import { Button, IconButton } from '../../components/Button'
+import { ChoiceFace } from '../../components/ChoiceButton'
+import { BackIcon } from '../../components/icons'
 import { IngredientArt } from '../../components/ItemArt'
 import { QuantityStepper } from '../../components/QuantityStepper'
 import type { Ingredient, IngredientGroup } from '../../domain'
@@ -18,9 +20,9 @@ type Props = {
   onRemove: (ingredient: Ingredient) => void
 }
 
-// 152px card + 8px bottom padding + optional 44px pagination. No loading jump.
+// 152px card + optional 44px pagination. No loading jump.
 export function CraftDeckSlot({ group }: { group: IngredientGroup }) {
-  return <div aria-hidden="true" className={group.ingredients.length > 1 ? 'h-51' : 'h-40'} />
+  return <div aria-hidden="true" className={group.ingredients.length > 1 ? 'h-49' : 'h-38'} />
 }
 
 function nearestCard(el: HTMLDivElement) {
@@ -163,10 +165,10 @@ export function CraftDeck({ group, qtyOf, canAdd, onPick, onRemove }: Props) {
           : e.key === 'Home' ? 0 : e.key === 'End' ? group.ingredients.length - 1 : null
         if (next !== null) { e.preventDefault(); centerCard(next) }
       }}
-      className="relative flex w-full min-w-0 flex-col items-center pb-2 focus-visible:outline-(length:--focus-width) focus-visible:outline-accent focus-visible:outline-offset-[calc(var(--space-unit)*0.5)]"
+      className="relative flex w-full min-w-0 flex-col items-center focus-visible:outline-(length:--focus-width) focus-visible:outline-accent focus-visible:outline-offset-[calc(var(--space-unit)*0.5)]"
     >
-      {activeIndex > 0 && <Button type="button" onClick={() => centerCard(activeRef.current - 1)} aria-label="Предыдущая добавка" className="absolute left-2 top-24 z-10 hidden size-11 place-items-center rounded-pill bg-pd-panel text-pd-ink sm:grid">‹</Button>}
-      {activeIndex < group.ingredients.length - 1 && <Button type="button" onClick={() => centerCard(activeRef.current + 1)} aria-label="Следующая добавка" className="absolute right-2 top-24 z-10 hidden size-11 place-items-center rounded-pill bg-pd-panel text-pd-ink sm:grid">›</Button>}
+      {activeIndex > 0 && <IconButton onClick={() => centerCard(activeRef.current - 1)} aria-label="Предыдущая добавка" className="absolute left-2 bottom-2 z-10 hidden sm:grid"><BackIcon /></IconButton>}
+      {activeIndex < group.ingredients.length - 1 && <IconButton onClick={() => centerCard(activeRef.current + 1)} aria-label="Следующая добавка" className="absolute right-2 bottom-2 z-10 hidden sm:grid"><span className="rotate-180"><BackIcon /></span></IconButton>}
       <div
         ref={containerRef}
         data-carousel-container="true"
@@ -178,7 +180,7 @@ export function CraftDeck({ group, qtyOf, canAdd, onPick, onRemove }: Props) {
         }}
         className={cx(
           'no-scrollbar relative flex w-full min-w-0 items-stretch gap-3 overflow-x-auto overscroll-x-contain snap-x snap-mandatory',
-          'px-[calc(50%-calc(var(--space-unit)*15))] touch-auto',
+          'px-[calc(50%-calc(var(--space-unit)*15))] py-4 -my-4 touch-auto',
           isDragging ? 'cursor-grabbing select-none' : 'cursor-grab',
         )}
       >
@@ -197,7 +199,7 @@ export function CraftDeck({ group, qtyOf, canAdd, onPick, onRemove }: Props) {
         ))}
       </div>
       {group.ingredients.length > 1 && (
-        <div className="flex h-11 max-w-full items-center justify-center overflow-x-auto" aria-label="Навигация по карусели добавок">
+        <div className="flex h-11 sm:my-2 max-w-full sm:max-w-[calc(100%-calc(var(--space-unit)*28))] items-center justify-center overflow-x-auto" aria-label="Навигация по карусели добавок">
           {group.ingredients.map((ingredient, index) => (
             <Button
               key={ingredient.id}
@@ -205,7 +207,7 @@ export function CraftDeck({ group, qtyOf, canAdd, onPick, onRemove }: Props) {
               aria-current={index === activeIndex ? 'true' : undefined}
               aria-label={`${ingredient.name} (${index + 1} из ${group.ingredients.length})`}
               onClick={() => centerCard(index)}
-              className="grid size-11 shrink-0 justify-items-center content-start pt-2 rounded-pill focus-visible:outline-(length:--focus-width) focus-visible:outline-accent"
+              className="grid size-11 shrink-0 place-items-center rounded-pill focus-visible:outline-(length:--focus-width) focus-visible:outline-accent"
             >
               <span className={cx('block h-1.5 rounded-pill', index === activeIndex ? 'w-5 bg-accent' : 'w-1.5 bg-pd-muted')} />
             </Button>
@@ -241,7 +243,7 @@ function IngredientCard({ ingredient, index, active, counter, qty, canAdd, onPic
             <span className="line-clamp-2 break-words">{ingredient.name}</span>
           </span>
         </span>
-        {selected && <span className="absolute right-1 top-0 grid min-w-5 h-5 place-items-center rounded-pill bg-accent px-1 text-micro font-bold text-white">{counter ? `×${qty}` : <svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true"><path d="m3 8 3 3 7-7" fill="none" stroke="currentColor" strokeWidth="var(--icon-stroke)" /></svg>}</span>}
+        {selected && <span className="absolute right-1 top-0 grid min-w-5 h-5 place-items-center rounded-pill ui-count-badge px-1 text-caption font-bold">{counter ? `×${qty}` : <svg viewBox="0 0 16 16" width="12" height="12" aria-hidden="true"><path d="m3 8 3 3 7-7" fill="none" stroke="currentColor" strokeWidth="var(--icon-stroke)" /></svg>}</span>}
       </div>
       <span className="text-caption font-medium leading-[calc(var(--space-unit)*4)] text-pd-ink-2 tabular-nums">
         {ingredient.stopped ? 'нет в наличии' : ingredient.price > 0 ? `+${formatPrice(ingredient.price)}` : counter ? 'бесплатно' : 'включено'}
@@ -254,12 +256,10 @@ function IngredientCard({ ingredient, index, active, counter, qty, canAdd, onPic
     ingredient.stopped && 'opacity-60',
   )
   const actionClass = 'group flex h-11 w-full items-center justify-center rounded-pill px-1 text-caption font-bold text-pd-ink focus-visible:outline-(length:--focus-width) focus-visible:outline-accent disabled:opacity-40'
-  const actionFillClass = 'flex h-8 w-full items-center justify-center rounded-pill transition-colors'
-  const idleFillClass = 'bg-pd-glass group-hover:bg-pd-glass-hover'
   if (!counter) return (
     <Button type="button" data-card-index={index} data-active={active} aria-label={ingredient.name} aria-pressed={selected} disabled={ingredient.stopped} onClick={() => onPick(artRef.current)} className={cx(cardClass, 'cursor-pointer focus-visible:outline-(length:--focus-width) focus-visible:outline-accent focus-visible:outline-offset-[calc(var(--space-unit)*0.5)]')}>
       {content}
-      <span className={actionClass}><span className={cx(actionFillClass, selected ? 'bg-accent text-white' : idleFillClass)}>{selected ? 'Выбрано' : 'Выбрать'}</span></span>
+      <span className={actionClass}><ChoiceFace tone="product" selected={selected} className="w-full">{selected ? 'Выбрано' : 'Выбрать'}</ChoiceFace></span>
     </Button>
   )
   return (
@@ -270,7 +270,7 @@ function IngredientCard({ ingredient, index, active, counter, qty, canAdd, onPic
           decreaseLabel={`${ingredient.name}: убрать порцию`} increaseLabel={`${ingredient.name}: добавить порцию`}
           increaseDisabled={!canAdd || ingredient.stopped} />
       ) : (
-        <Button type="button" aria-label={`${ingredient.name}: добавить порцию`} disabled={!canAdd || ingredient.stopped} onClick={() => onPick(artRef.current)} className={actionClass}><span className={cx(actionFillClass, idleFillClass)}>{ingredient.stopped ? 'Закончилось' : '+ Добавить'}</span></Button>
+        <Button type="button" aria-label={`${ingredient.name}: добавить порцию`} disabled={!canAdd || ingredient.stopped} onClick={() => onPick(artRef.current)} className={actionClass}><ChoiceFace tone="product" className="w-full">{ingredient.stopped ? 'Закончилось' : '+ Добавить'}</ChoiceFace></Button>
       )}
     </div>
   )

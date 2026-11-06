@@ -30,7 +30,7 @@ export function MenuPage() {
   const [loaderMounted, setLoaderMounted] = useState(true)
 
   const mainPromo = catalog.mainPromo
-  const mainPromoProduct = mainPromo?.targetProductId ? catalog.itemById.get(mainPromo.targetProductId) : undefined
+  const mainPromoProduct = catalog.itemById.get(mainPromo?.targetProductId ?? mainPromo?.productIds?.[0] ?? '')
 
   useEffect(() => {
     if (!catalog.items.length) return
@@ -115,7 +115,7 @@ export function MenuPage() {
           const categoryPromo =
             catalog.promoByCategory.get(sub.id) ||
             (sub.parentId ? catalog.promoByCategory.get(sub.parentId) : undefined)
-          const categoryPromoProduct = categoryPromo?.targetProductId ? catalog.itemById.get(categoryPromo.targetProductId) : undefined
+          const categoryPromoProduct = catalog.itemById.get(categoryPromo?.targetProductId ?? categoryPromo?.productIds?.[0] ?? '')
           const items = catalog.itemsOf(sub.id)
 
           return (

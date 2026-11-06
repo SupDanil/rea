@@ -35,7 +35,7 @@ export const Loader = memo(function Loader({
           isExiting ? 'opacity-0 scale-102 pointer-events-none' : 'opacity-100 scale-100',
           className,
         )}
-        style={{ background: 'var(--bg, #f7f2e9)' }}
+        style={{ background: 'var(--bg)' }}
       >
         <div className="flex flex-col items-center justify-center p-4 animate-[fade-in_0.3s_var(--ease-soft)]">
           <img
