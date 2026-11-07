@@ -32,6 +32,23 @@ describe('MenuPage (API-driven menu)', () => {
     expect(screen.getByRole('button', { name: 'Добавить «Круассан» в корзину' })).toBeInTheDocument()
   })
 
+  it('preserves server category and product order with promo pinned before products', async () => {
+    renderApp('/', { getCatalog: async () => ({
+      ...catalogData,
+      categories: [...catalogData.categories].reverse(),
+      items: [...catalogData.items].reverse(),
+      promos: [{ id: 'p-order', title: 'Промо кофе', placement: 'category', categoryId: 'milk-coffee', targetType: 'article', sort: 1 }],
+    }) })
+    const nav = await screen.findByRole('navigation', { name: 'Категории меню' })
+    expect(within(nav).getAllByRole('tablist')[0].textContent).toBe('ЕдаКофе')
+    expect(screen.getAllByRole('heading', { level: 2 }).map((heading) => heading.textContent)).toEqual(['Выпечка', 'Чёрный', 'С молоком'])
+    const section = screen.getByRole('heading', { name: 'С молоком' }).closest('section')!
+    const controls = within(section).getAllByRole('button')
+    expect(controls[0]).toHaveAccessibleName('Подробнее: Промо кофе')
+    expect(controls.filter((button) => /^(Латте|Капучино), от/.test(button.getAttribute('aria-label') ?? '')).map((button) => button.getAttribute('aria-label')))
+      .toEqual(['Латте, от 230 ₽', 'Капучино, от 210 ₽'])
+  })
+
   it('shows the main promo banner when provided by the API', async () => {
     const promoCatalog: typeof catalogData = {
       ...catalogData,

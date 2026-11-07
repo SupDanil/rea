@@ -9,7 +9,6 @@ const DISMISS_DISTANCE_PX = 120
 const DISMISS_MS = 180
 // Past the rise: focus repaints inside the moving panel.
 const FOCUS_DELAY_MS = 450
-const FOCUSABLE = 'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
 
 type Props = {
   /** Accessible name of the dialog */
@@ -74,15 +73,16 @@ export function Modal({ label, onClose, locked = false, kind = 'sheet', panelRef
     root.current?.toggleAttribute('data-modal-swap', !!document.querySelector('[data-leaving] [data-modal]'))
   }, [])
 
-  // Focus moves in, and back to where it was on close, never by scrolling anything. A field
-  // asks for it with `data-autofocus`, but on touch screens it waits for a tap: focusing it
-  // brings up the keyboard and Chrome's address bar, and the whole page jumps.
+  // Focus moves in, and back to where it was on close, never by scrolling anything. It lands on
+  // the panel, not its first button: that would light up the close button's focus ring for no
+  // reason. A field asks for it with `data-autofocus`, but on touch screens it waits for a tap:
+  // focusing it brings up the keyboard and Chrome's address bar, and the whole page jumps.
   useEffect(() => {
     const previous = document.activeElement as HTMLElement | null
     const timer = setTimeout(() => {
       if (panel.current?.contains(document.activeElement)) return
       const field = window.matchMedia('(pointer: fine)').matches && panel.current?.querySelector<HTMLElement>('[data-autofocus]')
-      const target = field || panel.current?.querySelector<HTMLElement>(FOCUSABLE)
+      const target = field || panel.current
       target?.focus({ preventScroll: true })
     }, settled ? 0 : FOCUS_DELAY_MS)
     return () => {
@@ -141,7 +141,8 @@ export function Modal({ label, onClose, locked = false, kind = 'sheet', panelRef
       />
       <div
         ref={panel}
-        className={cx('relative', panels[kind], className)}
+        tabIndex={-1}
+        className={cx('relative outline-none', panels[kind], className)}
         style={style}
         data-modal-panel={kind}
       >

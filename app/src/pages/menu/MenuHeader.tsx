@@ -1,23 +1,29 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 
 import { Button, IconButton } from '../../components/Button'
-import { BagIcon, ChevronDownIcon, PersonIcon, RabbitIcon } from '../../components/icons'
+import { BagIcon, ChevronDownIcon, InstallIcon, PersonIcon, RabbitIcon } from '../../components/icons'
 import { Presence } from '../../components/Presence'
 import { ShopPickerSheet } from '../../components/ShopPickerSheet'
 import { avatar, openDot } from '../../components/ui'
 import { shopStatus } from '../../domain'
 import { useAppNavigate } from '../../hooks/useAppNavigate'
 import { useNow } from '../../hooks/useNow'
+import { usePwaInstall } from '../../hooks/usePwaInstall'
 import { useShop } from '../../queries/useShop'
 import { useApp } from '../../state/AppContext'
 import { countOf } from '../../state/cart'
 import { cx } from '../../utils/cx'
 import { COVER_ATTR } from '../../utils/morph'
 
+type Props = {
+  onOpenInstallGuide?: () => void
+}
+
 /** Shop identity and actions; an opaque surface joins the sticky navigation. */
-export function MenuHeader() {
+export function MenuHeader({ onOpenInstallGuide }: Props = {}) {
   const { cart, profile, loyalty, theme, toggleTheme } = useApp()
   const { go } = useAppNavigate()
+  const { canInstall, promptInstall } = usePwaInstall()
   const [showShopPicker, setShowShopPicker] = useState(false)
   const [scrolled, setScrolled] = useState(false)
   const cartCount = countOf(cart.lines)
@@ -26,6 +32,13 @@ export function MenuHeader() {
   const now = useNow(60_000)
   const status = shop ? shopStatus(shop, now) : null
   const headerRef = useRef<HTMLElement>(null)
+
+  const handleInstallClick = async () => {
+    const outcome = await promptInstall()
+    if (outcome === 'guide') {
+      onOpenInstallGuide?.()
+    }
+  }
 
   useLayoutEffect(() => {
     const update = () => {
@@ -94,6 +107,16 @@ export function MenuHeader() {
 
         {/* Action Controls */}
         <div className="flex shrink-0 gap-1 xs:gap-2 items-center">
+          {canInstall && (
+            <IconButton
+              className="hidden sm:inline-grid text-accent"
+              onClick={() => void handleInstallClick()}
+              aria-label="Установить приложение"
+            >
+              <InstallIcon />
+            </IconButton>
+          )}
+
           <IconButton
 
             onClick={toggleTheme}

@@ -151,7 +151,7 @@ describe('2026 Interactive UI Patterns', () => {
       act(() => {
         vi.advanceTimersByTime(500)
       })
-      expect(document.activeElement).toHaveAccessibleName('Назад')
+      expect(document.activeElement).toBe(document.querySelector('[data-modal-panel]'))
 
       const grabber = document.querySelector('.cursor-grab')
       expect(grabber).toBeInTheDocument()

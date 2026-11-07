@@ -1,5 +1,5 @@
 import { type CSSProperties,useLayoutEffect, useRef, useState } from 'react'
-import { Navigate, useParams } from 'react-router'
+import { Navigate, useNavigationType, useParams } from 'react-router'
 
 import { useIsLeaving } from '../../app/leaving'
 import { IconButton } from '../../components/Button'
@@ -46,6 +46,9 @@ function ProductView({ item }: { item: MenuItem }) {
   const [openedWith] = useState(item.id)
   // Remembered, not read live: on its way out the screen already sees the next route's state.
   const [slot] = useState(artSlot)
+  // Only a tap flies. Reloaded on this screen, there is no tap, and a copy on the top layer would
+  // show through the loader.
+  const [tapped] = useState(useNavigationType() === 'PUSH')
 
   const isOnlyCold = item.temperatureMode === 'cold'
   const isBoth = item.temperatureMode === 'both'
@@ -78,11 +81,11 @@ function ProductView({ item }: { item: MenuItem }) {
     const art = artRef.current
     const sheet = sheetRef.current
     const thumb = findThumb(openedWith, { exclude: sheet, slot, leaving: true })
-    if (!art || !sheet || !thumb) return
+    if (!tapped || !art || !sheet || !thumb) return
     // After the commit: the hero sizes itself right behind this effect, and a flight planned
     // before that would head for the wrong size for as long as a slow phone stalls.
     queueMicrotask(() => void flyArt(thumb, art, { ...MORPH, rect: (el) => settledRect(el, sheet) }))
-  }, [openedWith, slot])
+  }, [openedWith, slot, tapped])
 
   // Closing: cup flies back to menu or into cart dock.
   useLayoutEffect(() => {

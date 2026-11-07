@@ -4,9 +4,15 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { RouterProvider } from 'react-router/dom'
+import { registerSW } from 'virtual:pwa-register'
 
 import { router } from './app/router'
 import { AppProvider } from './state/AppProvider'
+
+// Register Service Worker for PWA installability, caching, and push notifications
+if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
+  registerSW({ immediate: true })
+}
 
 const queryClient = new QueryClient({
   defaultOptions: {

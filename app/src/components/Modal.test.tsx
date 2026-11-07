@@ -50,12 +50,13 @@ describe('Modal', () => {
     expect(onClose).toHaveBeenCalledTimes(2)
   })
 
-  it('waits for the rise to finish before moving focus', () => {
-    render(<Modal label="Окно" onClose={() => {}}><input aria-label="Телефон" /></Modal>)
+  it('waits for the rise to finish, then focuses the panel and not its first button', () => {
+    render(<Modal label="Окно" onClose={() => {}}><button>Закрыть</button></Modal>)
     act(() => void vi.advanceTimersByTime(300))
-    expect(screen.getByLabelText('Телефон')).not.toHaveFocus()
+    expect(panel()).not.toHaveFocus()
     act(() => void vi.advanceTimersByTime(200))
-    expect(screen.getByLabelText('Телефон')).toHaveFocus()
+    expect(panel()).toHaveFocus()
+    expect(screen.getByRole('button', { name: 'Закрыть' })).not.toHaveFocus()
   })
 
   const fieldModal = <Modal label="Окно" onClose={() => {}}><button>Назад</button><input aria-label="Телефон" data-autofocus /></Modal>
@@ -76,7 +77,8 @@ describe('Modal', () => {
     withPointer(false)
     render(fieldModal)
     act(() => void vi.advanceTimersByTime(500))
-    expect(screen.getByRole('button', { name: 'Назад' })).toHaveFocus()
+    expect(screen.getByLabelText('Телефон')).not.toHaveFocus()
+    expect(panel()).toHaveFocus()
     vi.restoreAllMocks()
   })
 

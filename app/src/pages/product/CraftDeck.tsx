@@ -22,7 +22,7 @@ type Props = {
 
 // 152px card + optional 44px pagination. No loading jump.
 export function CraftDeckSlot({ group }: { group: IngredientGroup }) {
-  return <div aria-hidden="true" className={group.ingredients.length > 1 ? 'h-49' : 'h-38'} />
+  return <div aria-hidden="true" className={group.ingredients.length > 1 ? 'h-49 wide:h-53' : 'h-38 wide:h-42'} />
 }
 
 function nearestCard(el: HTMLDivElement) {

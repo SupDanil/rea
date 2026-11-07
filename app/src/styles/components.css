@@ -36,13 +36,22 @@
   .ui-stepper--sm .ui-icon-button { width: calc(var(--space-unit) * 8); height: calc(var(--space-unit) * 8); }
   .ui-stepper .ui-icon-button:disabled { opacity: var(--opacity-disabled); }
   .ui-stepper__value { min-width: calc(var(--space-unit) * 5); font-family: var(--font-heading); font-size: var(--type-body); font-weight: var(--weight-bold); text-align: center; font-variant-numeric: tabular-nums; }
-  .ui-segments { position: relative; display: flex; flex-shrink: 0; align-items: stretch; padding: var(--segment-inset); border-radius: var(--segment-radius); background: var(--segment-bg); box-shadow: var(--segment-shell-shadow); }
+  .ui-segments { position: relative; display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; flex-shrink: 0; align-items: stretch; padding: var(--segment-inset); border-radius: var(--segment-radius); background: var(--segment-bg); box-shadow: var(--segment-shell-shadow); }
   .ui-segments--product { --segment-bg: var(--pd-glass); --segment-height: var(--segment-height-compact); }
+  /* Two of these share a row on a 360px phone, each with room for its widest choice. */
+  .ui-segments--product .ui-segments__option { padding-inline: calc(var(--space-unit) * 1.5); }
   .ui-segments--stretch { width: 100%; }
-  .ui-segments--stretch .ui-segments__option { flex: 1; }
-  .ui-segments__indicator { pointer-events: none; position: absolute; inset: var(--segment-inset) auto var(--segment-inset) 0; border-radius: calc(var(--segment-radius) - var(--segment-inset)); background: var(--selection-surface); opacity: 0; box-shadow: var(--segment-selected-shadow); transition: transform var(--motion-swap) var(--ease-soft), width var(--motion-swap) var(--ease-soft); }
-  .ui-segments__option { position: relative; z-index: 1; display: flex; align-items: center; justify-content: center; gap: var(--space-unit); min-height: var(--segment-height); min-width: var(--control-icon-lg); padding-inline: calc(var(--space-unit) * 2.5); border-radius: var(--segment-radius); font-size: var(--type-compact); font-weight: var(--weight-semibold); color: var(--muted); }
-  .ui-segments__option[aria-checked=true] { color: var(--segment-selected-ink); font-weight: var(--weight-bold); }
+  .ui-segments__option { position: relative; z-index: 1; display: flex; align-items: center; justify-content: center; gap: var(--space-unit); min-height: var(--segment-height); min-width: var(--control-icon-lg); padding-inline: calc(var(--space-unit) * 2.5); border-radius: var(--segment-radius); font-size: var(--type-compact); font-weight: var(--weight-bold); color: var(--muted); isolation: isolate; transition: color var(--motion-swap) var(--ease-soft); }
+  /* The recess of a pressed choice: painted once, only its opacity moves. It sinks slowly and rises quicker. */
+  .ui-segments__option::before { content: ''; position: absolute; inset: 0; z-index: -1; border-radius: calc(var(--segment-radius) - var(--segment-inset)); background: var(--selection-surface); box-shadow: var(--segment-selected-shadow); opacity: 0; transition: opacity var(--motion-press) var(--ease-soft); }
+  .ui-segments__option:active::before { opacity: .55; }
+  .ui-segments__option[aria-checked=true] { color: var(--segment-selected-ink); }
+  .ui-segments__option[aria-checked=true]::before { opacity: 1; transition-duration: var(--motion-swap); }
+  .ui-segments__face { display: grid; place-items: center; }
+  .ui-segments__short, .ui-segments__full { grid-area: 1 / 1; transition: opacity var(--motion-swap) var(--ease-soft), transform var(--motion-swap) var(--ease-soft); }
+  .ui-segments__full { display: flex; align-items: center; gap: var(--space-unit); opacity: 0; transform: scale(.92); }
+  [aria-checked=true] .ui-segments__short { opacity: 0; transform: scale(.92); }
+  [aria-checked=true] .ui-segments__full { opacity: 1; transform: none; }
   .ui-segments__detail { font-size: var(--type-caption); font-weight: var(--weight-semibold); white-space: nowrap; }
   .ui-segments__option:disabled { opacity: var(--opacity-disabled); }
   .ui-switch-row { display: flex; width: 100%; align-items: center; gap: calc(var(--space-unit) * 3); min-height: var(--control-lg); padding: calc(var(--space-unit) * 2.5) var(--panel-padding); text-align: left; }

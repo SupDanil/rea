@@ -109,6 +109,7 @@
   --motion-fast: 150ms;
   --motion-control: 200ms;
   --motion-swap: 300ms;
+  --motion-press: 180ms;
   --motion-sheet: 340ms;
   --neutral-white: #ffffff;
   --neutral-black: #000000;

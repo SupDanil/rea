@@ -102,6 +102,22 @@ describe('shared composed controls', () => {
     expect(screen.getAllByRole('radio').filter((radio) => radio.tabIndex === 0)).toHaveLength(1)
   })
 
+  it('segments keep their layout whatever is selected', () => {
+    function Example() {
+      const [value, setValue] = useState('m')
+      return <SegmentedControl label="Размер" value={value} onChange={setValue} options={[
+        { value: 'm', label: 'M', detail: '300 мл', accessibleLabel: 'M 300 мл' },
+        { value: 'l', label: 'L', detail: '400 мл', accessibleLabel: 'L 400 мл' },
+      ]} />
+    }
+    const { container } = render(<Example />)
+    const details = () => [...container.querySelectorAll('.ui-segments__detail')].map((el) => el.textContent)
+
+    expect(details()).toEqual(['300 мл', '400 мл'])
+    fireEvent.click(screen.getByRole('radio', { name: 'L 400 мл' }))
+    expect(details()).toEqual(['300 мл', '400 мл'])
+  })
+
   it('selected taps cycle only when opted in, skip disabled options and wrap', () => {
     function Example({ cycle = true }: { cycle?: boolean }) {
       const [value, setValue] = useState('s')

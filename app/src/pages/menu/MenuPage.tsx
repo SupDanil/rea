@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useState } from 'react'
 
 import { EmptyState } from '../../components/EmptyState'
+import { InstallGuideSheet } from '../../components/InstallGuideSheet'
 import { Loader } from '../../components/Loader'
+import { Presence } from '../../components/Presence'
 import type { Promotion } from '../../domain'
 import { useAppNavigate } from '../../hooks/useAppNavigate'
 import { useCatalog, useCatalogQuery } from '../../queries/useCatalog'
@@ -10,6 +12,7 @@ import { cx } from '../../utils/cx'
 import { preloadCriticalImages } from '../../utils/imagePreload'
 import { PAGE_ATTR } from '../../utils/morph'
 import { CategoryNav } from './CategoryNav'
+import { InstallBanner } from './InstallBanner'
 import { MenuHeader } from './MenuHeader'
 import { CARD_SLOT, ProductCard } from './ProductCard'
 import { PromoBanner } from './PromoBanner'
@@ -28,6 +31,7 @@ export function MenuPage() {
     return false
   })
   const [loaderMounted, setLoaderMounted] = useState(true)
+  const [showInstallGuide, setShowInstallGuide] = useState(false)
 
   const mainPromo = catalog.mainPromo
   const mainPromoProduct = catalog.itemById.get(mainPromo?.targetProductId ?? mainPromo?.productIds?.[0] ?? '')
@@ -92,7 +96,8 @@ export function MenuPage() {
   return (
     <div {...{ [PAGE_ATTR]: '' }}>
       {loaderMounted && <Loader isExiting={imagesReady} />}
-      <MenuHeader />
+      <MenuHeader onOpenInstallGuide={() => setShowInstallGuide(true)} />
+      <InstallBanner onOpenGuide={() => setShowInstallGuide(true)} />
       {mainPromo && (
         <PromoBanner
           promo={mainPromo}
@@ -151,6 +156,7 @@ export function MenuPage() {
           {shop ? `Цены указаны для кофейни: ${shop.address}. ` : ''}Состав и аллергены — в карточке товара.
         </p>
       </main>
+      <Presence>{showInstallGuide && <InstallGuideSheet onClose={() => setShowInstallGuide(false)} />}</Presence>
     </div>
   )
 }

@@ -132,7 +132,7 @@ const product = await page.evaluate(`[...document.querySelectorAll('[data-art-sl
 if (!product) throw new Error('Needs a product that is both in a promo and in the feed')
 const promoSlot = await page.evaluate(`[...document.querySelectorAll('[data-art-of="${product}"]')]
   .map((el) => el.getAttribute('data-art-slot')).find((slot) => slot !== 'card')`)
-const promoTap = `document.querySelector('${artSelector(product, promoSlot)}').closest('[data-promo-id]').click()`
+const promoTap = `document.querySelector('${artSelector(product, promoSlot)}').closest('[data-promo-id]').querySelector('.ui-promo-open').click()`
 const cardTap = `document.querySelector('${artSelector(product, 'card')}').closest('.group').querySelector('[data-open]').click()`
 
 const problems = []

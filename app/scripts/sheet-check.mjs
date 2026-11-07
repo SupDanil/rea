@@ -129,7 +129,7 @@ async function addressBarStaysHidden(page) {
   execSync('adb shell input swipe 640 2000 640 1100 300')
   await sleep(900)
   execSync('adb shell input swipe 640 2000 640 1500 300')
-  await sleep(900)
+  await sleep(2000) // the bar finishes hiding, and innerHeight follows, a while after the finger is gone
   const height = await page.evaluate('innerHeight')
   for (const { name, open } of MODALS) {
     await page.evaluate(open)

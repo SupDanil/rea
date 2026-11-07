@@ -60,6 +60,14 @@ describe('Menu card ↔ product screen flight', () => {
     expect(stageAtTakeOff).toContain('scale(2.04)')
   })
 
+  it('does not fly when the page is loaded straight onto the product, as on a reload', async () => {
+    renderApp('/product/cappuccino')
+    await screen.findByRole('dialog', { name: 'Капучино' })
+    await act(() => Promise.resolve())
+
+    expect(flyArt).not.toHaveBeenCalled()
+  })
+
   it('sizes the cup from the measured stage before the first paint, not from the fallback', async () => {
     const sheet = await openSheet()
     const stage = artOf('cappuccino', sheet)!.closest<HTMLElement>('.will-change-transform')!

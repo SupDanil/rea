@@ -28,9 +28,18 @@ export async function connect(url) {
   const { port, origin } = new URL(url)
   execSync(`adb reverse tcp:${port} tcp:${port} && adb forward tcp:9333 localabstract:chrome_devtools_remote`)
   const pages = await (await fetch('http://localhost:9333/json')).json()
-  const page = pages.find((p) => p.type === 'page' && new URL(p.url).origin === origin)
-  if (!page) throw new Error(`Open ${url} in the emulator's Chrome first`)
+  const candidates = pages.filter((p) => p.type === 'page' && new URL(p.url).origin === origin)
+  if (!candidates.length) throw new Error(`Open ${url} in the emulator's Chrome first`)
+  // The tab on screen: a background one runs no animations.
+  for (const page of candidates) {
+    const tab = await attach(page, url)
+    if ((await tab.evaluate('document.visibilityState')) === 'visible') return tab
+    tab.close()
+  }
+  throw new Error('The app is not the tab on screen')
+}
 
+async function attach(page, url) {
   const socket = new WebSocket(page.webSocketDebuggerUrl)
   await new Promise((resolve, reject) => Object.assign(socket, { onopen: resolve, onerror: reject }))
   let lastId = 0

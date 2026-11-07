@@ -50,11 +50,14 @@ export default defineConfig({
     tailwindcss(),
     VitePWA({
       registerType: 'autoUpdate',
+      devOptions: {
+        enabled: true,
+      },
       includeAssets: ['icon.svg', 'apple-touch-icon.png'],
       manifest: {
-        name: 'Зерно — кофе и еда',
-        short_name: 'Зерно',
-        description: 'Меню кофейни: напитки, добавки и еда',
+        name: 'shit кофе — кофе и кое-кто ещё',
+        short_name: 'shit кофе',
+        description: 'Кофе с компанией в Петербурге. Заяц на пене и мягкий спутник с собой.',
         lang: 'ru',
         // Relative to the manifest, so it follows `base`.
         id: './',
