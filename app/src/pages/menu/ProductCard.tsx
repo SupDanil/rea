@@ -1,35 +1,14 @@
-import { type CSSProperties,memo, useMemo, useRef, useState } from 'react'
-import { flushSync } from 'react-dom'
+import { type CSSProperties, memo, useMemo, useRef } from 'react'
 
 import { Button } from '../../components/Button'
 import { ItemArt } from '../../components/ItemArt'
-import { QuickAddButton } from '../../components/QuickAddButton'
-import { isDrink, isSoldOut, itemImage, type MenuItem,minPrice } from '../../domain'
-import { useApp } from '../../state/AppContext'
+import { isSoldOut, itemImage, type MenuItem, minPrice } from '../../domain'
 import { cx } from '../../utils/cx'
 import { formatPrice } from '../../utils/format'
 import { artProps } from '../../utils/morph'
-import { bounce, flyTo } from '../../utils/motion'
 
 /** Where a product sits in the menu feed, as opposed to a promo of the same product. */
 export const CARD_SLOT = 'card'
-
-function getCartTarget(): Element | DOMRect {
-  const badge = document.querySelector('[data-cart-badge]')
-  if (badge) return badge
-  const dock = document.querySelector('[data-cart-target="dock"]')
-  if (dock) return dock
-  const isDesktop = typeof window !== 'undefined' && window.innerWidth >= 600
-  if (isDesktop) {
-    const left = (typeof window !== 'undefined' ? window.innerWidth : 1000) - 240
-    const top = (typeof window !== 'undefined' ? window.innerHeight : 800) - 68
-    return new DOMRect(left, top, 44, 44)
-  }
-  const maxW = Math.min(typeof window !== 'undefined' ? window.innerWidth : 480, 480)
-  const left = ((typeof window !== 'undefined' ? window.innerWidth : 480) - maxW) / 2 + 16
-  const top = (typeof window !== 'undefined' ? window.innerHeight : 800) - 68
-  return new DOMRect(left, top, 44, 44)
-}
 
 interface ProductCardProps {
   item: MenuItem
@@ -37,16 +16,12 @@ interface ProductCardProps {
   isWide?: boolean
 }
 
-/** Menu product card with its admin-controlled glow and quick-add action. */
+/** Menu product card with soft tinted drink spots, tight balanced typography and right-aligned price. */
 export const ProductCard = memo(function ProductCard({ item, onOpen }: ProductCardProps) {
-  const { cart } = useApp()
   const soldOut = isSoldOut(item)
   const artRef = useRef<SVGSVGElement>(null)
-  const [justAdded, setJustAdded] = useState(false)
 
-  const isDrinkItem = isDrink(item)
   const isOnlyCold = item.temperatureMode === 'cold'
-
   const activeImageUrl = itemImage(item)
 
   const activeArt = useMemo(() => {
@@ -56,44 +31,23 @@ export const ProductCard = memo(function ProductCard({ item, onOpen }: ProductCa
     return item.art
   }, [isOnlyCold, item.art, activeImageUrl])
 
-  const quickAdd = () => {
-    const variant = item.variants.find((v) => !v.stopped)
-    if (!variant) return
-    setJustAdded(true)
-    window.setTimeout(() => setJustAdded(false), 1100)
-
-    // При нажатии на +: если напиток имеет хол/гор или только гор — летит 'hot', если только холодный — 'cold'
-    const chosenTemp = isDrinkItem ? (isOnlyCold ? 'cold' : 'hot') : undefined
-    const isFirstItem = cart.lines.length === 0
-    if (isFirstItem) {
-      flushSync(() => {
-        cart.add(item.id, variant.id, [], 1, chosenTemp)
-      })
-      const target = getCartTarget()
-      if (artRef.current && target) {
-        void flyTo(artRef.current, target, { duration: 520, endScale: 0.2 }).then(() =>
-          bounce(document.querySelector('[data-cart-target="dock"]'), 0.5),
-        )
-      }
-    } else {
-      const target = getCartTarget()
-      const land = () => {
-        cart.add(item.id, variant.id, [], 1, chosenTemp)
-        bounce(document.querySelector('[data-cart-target="dock"]'), 0.5)
-      }
-      if (artRef.current && target) {
-        void flyTo(artRef.current, target, { duration: 520, endScale: 0.2 }).then(land)
-      } else {
-        land()
-      }
+  // Extract clean volume or size range info: e.g. "300 мл" or "200–400 мл"
+  const volumeInfo = useMemo(() => {
+    const volumes = item.variants.map((v) => v.volume).filter(Boolean) as string[]
+    if (volumes.length === 0) return null
+    if (volumes.length === 1) return volumes[0]
+    const first = volumes[0]
+    const last = volumes[volumes.length - 1]
+    if (first && last && first !== last) {
+      return `${first.replace(/\s*мл/i, '')}–${last}`
     }
-  }
+    return `${item.variants.length} размера`
+  }, [item.variants])
 
-  // Все товары на главном экране отображаются как стандартные 1-колоночные карточки (широкие только промики из админки)
   return (
     <div
       className={cx(
-        'group relative flex flex-col rounded-panel sm:rounded-panel p-2 pb-3.5 text-left transition-all duration-200 has-[[data-open]:active]:scale-97 isolate',
+        'group relative flex flex-col rounded-panel p-2 pb-2.5 sm:p-2.5 sm:pb-3 text-left transition-all duration-200 has-[[data-open]:active]:scale-97 isolate',
         soldOut
           ? 'bg-surface/50 border-(length:--stroke-width) border-line/40 opacity-60'
           : 'ui-product-card border-(length:--stroke-width) border-transparent',
@@ -101,11 +55,12 @@ export const ProductCard = memo(function ProductCard({ item, onOpen }: ProductCa
     >
       <Button
         data-open
-        className="absolute inset-0 rounded-panel sm:rounded-panel cursor-pointer"
+        className="absolute inset-0 rounded-panel cursor-pointer"
         onClick={() => onOpen(item.id)}
         aria-label={`${item.name}, от ${formatPrice(minPrice(item))}${soldOut ? ', закончилось' : ''}`}
       />
 
+      {/* 1. Media Artwork Container */}
       <div
         className={cx(
           'art-glow mesh-grain pointer-events-none relative grid aspect-square place-items-center overflow-hidden rounded-media sm:rounded-card isolate',
@@ -134,21 +89,36 @@ export const ProductCard = memo(function ProductCard({ item, onOpen }: ProductCa
         )}
       </div>
 
-      <div className={cx('pointer-events-none mx-1.5 mt-2.5 font-display text-control sm:text-body-lg leading-(--leading-title) font-bold text-ink line-clamp-2', soldOut && 'opacity-60')}>
+      {/* 2. Title & Description */}
+      <div className={cx('pointer-events-none mx-1 mt-2 font-display text-control sm:text-body-lg leading-(--leading-title) font-bold text-ink line-clamp-1 xs:line-clamp-2', soldOut && 'opacity-60')}>
         {item.name}
       </div>
 
-      <div className={cx('pointer-events-none mx-1.5 mt-1 line-clamp-2 flex-1 text-compact leading-(--leading-copy) text-muted', soldOut && 'opacity-60')}>
-        {item.description}
-      </div>
+      {item.description ? (
+        <div className={cx('pointer-events-none mx-1 mt-0.5 line-clamp-2 flex-1 text-compact leading-(--leading-copy) text-muted', soldOut && 'opacity-60')}>
+          {item.description}
+        </div>
+      ) : (
+        <div className="flex-1" />
+      )}
 
-      <div className="mt-2.5 mr-1 ml-1.5 flex items-center justify-between">
-        <span className={cx('pointer-events-none font-display whitespace-nowrap text-caption xs:text-body sm:text-control font-bold text-ink', soldOut && 'text-caption font-normal text-muted')}>
+      {/* 3. Bottom Row: Volume on left (if any), Price on right */}
+      <div className="mt-2 mx-1 flex items-baseline justify-between gap-1.5 pt-0.5">
+        {volumeInfo ? (
+          <span className="pointer-events-none text-caption font-medium text-muted truncate">
+            {volumeInfo}
+          </span>
+        ) : (
+          <span />
+        )}
+        <span
+          className={cx(
+            'pointer-events-none font-display whitespace-nowrap text-caption xs:text-body sm:text-control font-bold text-ink shrink-0 ml-auto',
+            soldOut && 'text-caption font-normal text-muted',
+          )}
+        >
           {soldOut ? 'Закончилось' : `${item.variants.length > 1 ? 'от ' : ''}${formatPrice(minPrice(item))}`}
         </span>
-        {!soldOut && (
-          <QuickAddButton added={justAdded} onClick={quickAdd} aria-label={`Добавить «${item.name}» в корзину`} />
-        )}
       </div>
     </div>
   )

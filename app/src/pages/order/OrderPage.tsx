@@ -18,6 +18,7 @@ import { cx } from '../../utils/cx'
 import { clockTime } from '../../utils/format'
 import { LoginPage } from '../login/LoginPage'
 import { OrderLines } from './OrderLines'
+import { OrderNotificationPrompt } from './OrderNotificationPrompt'
 import { OrderStatusCard } from './OrderStatusCard'
 
 export function OrderPage() {
@@ -175,6 +176,9 @@ function OrderView({ order }: { order: Order }) {
 
       {/* Scrollable details: only content beneath the card scrolls */}
       <SheetBody className="pt-1">
+        <div className="mb-4">
+          <OrderNotificationPrompt orderId={order.id} status={status} />
+        </div>
         <section className={block}>
           <h2 className={blockTitle}>Забрать</h2>
           <Surface className={cx('flex items-center gap-3 rounded-media px-4 py-3.5')}>

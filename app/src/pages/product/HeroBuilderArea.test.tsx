@@ -105,7 +105,7 @@ describe('HeroBuilderArea Adaptive Scaling', () => {
     expect(screen.getByText('Овсяное')).toBeInTheDocument()
   })
 
-  it('matches the left cup margin to the right list margin on desktop', () => {
+  it('centers the cup in the left 50% half of the stage when toppings are chosen', () => {
     let observerCallback: (entries: unknown[]) => void = () => {}
     vi.stubGlobal('ResizeObserver', class {
       constructor(callback: (entries: unknown[]) => void) {
@@ -144,10 +144,12 @@ describe('HeroBuilderArea Adaptive Scaling', () => {
     })
 
     const desktopTransform = transformWrapper.style.transform
-    const scale = Number(/scale\(([\d.]+)\)/.exec(desktopTransform)![1])
     const shift = Number(/translate3d\((-?[\d.]+)px/.exec(desktopTransform)![1])
-    const visibleLeft = 700 / 2 + shift - 38 * scale
-    expect(visibleLeft).toBeCloseTo(20)
+    // On a 700px wide stage, stage center is 350px.
+    // The left half is [0, 350px], so its midpoint is 175px.
+    // The cup center (350px + shift) should align with 175px (accounting for optical offset).
+    const cupCenter = 700 / 2 + shift
+    expect(cupCenter).toBeCloseTo(175, 0)
 
     vi.unstubAllGlobals()
   })

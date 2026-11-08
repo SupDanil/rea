@@ -1,5 +1,5 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react'
-import { afterEach,beforeEach, describe, expect, it, vi } from 'vitest'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import type { Order } from '../../domain'
 import { renderApp } from '../../test/renderApp'
@@ -35,17 +35,57 @@ describe('ProfilePage', () => {
     expect(await screen.findByText('Вход по номеру')).toBeInTheDocument()
   })
 
-  it('shows the server profile, loyalty and order history', async () => {
+  it('shows profile info, hides loyalty & stamps temporarily, and renders orders', async () => {
     renderApp('/profile', {
       getProfile: async () => profile,
       getOrders: async () => [order('o1', 31), order('o2', 32, { status: 'cancelled', cancelledAt: Date.now() })],
     })
     expect((await screen.findAllByText('+79990001122')).length).toBeGreaterThan(0)
-    expect(screen.getByRole('region', { name: 'Уровень лояльности' })).toBeInTheDocument()
-    expect(screen.getByRole('region', { name: 'Штампы' })).toBeInTheDocument()
+    // Loyalty and stamp cards are temporarily hidden per requirements
+    expect(screen.queryByRole('region', { name: 'Уровень лояльности' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('region', { name: 'Штампы' })).not.toBeInTheDocument()
     expect(await screen.findByText('№ 31')).toBeInTheDocument()
     expect(screen.getByText('№ 32')).toBeInTheDocument()
     expect(screen.getByText('Отменён')).toBeInTheDocument()
+  })
+
+  it('limits order history to 3 orders by default and toggles show all / collapse', async () => {
+    const ordersList = [
+      order('o1', 101),
+      order('o2', 102),
+      order('o3', 103),
+      order('o4', 104),
+      order('o5', 105),
+    ]
+    renderApp('/profile', { getProfile: async () => profile, getOrders: async () => ordersList })
+
+    // First 3 orders should be visible
+    expect(await screen.findByText('№ 101')).toBeInTheDocument()
+    expect(screen.getByText('№ 102')).toBeInTheDocument()
+    expect(screen.getByText('№ 103')).toBeInTheDocument()
+
+    // 4th and 5th orders should be collapsed initially
+    expect(screen.queryByText('№ 104')).not.toBeInTheDocument()
+    expect(screen.queryByText('№ 105')).not.toBeInTheDocument()
+
+    // "Показать ещё" button is rendered
+    const showMoreBtn = screen.getByRole('button', { name: /Показать ещё/ })
+    expect(showMoreBtn).toBeInTheDocument()
+    expect(showMoreBtn).toHaveTextContent('всего 5')
+
+    // Click "Показать ещё" -> reveals 4th and 5th orders
+    fireEvent.click(showMoreBtn)
+    expect(screen.getByText('№ 104')).toBeInTheDocument()
+    expect(screen.getByText('№ 105')).toBeInTheDocument()
+
+    // Button changes to "Свернуть"
+    const collapseBtn = screen.getByRole('button', { name: 'Свернуть' })
+    expect(collapseBtn).toBeInTheDocument()
+
+    // Click "Свернуть" -> hides 4th and 5th orders again
+    fireEvent.click(collapseBtn)
+    expect(screen.queryByText('№ 104')).not.toBeInTheDocument()
+    expect(screen.queryByText('№ 105')).not.toBeInTheDocument()
   })
 
   it('saves a new name on blur through the API', async () => {
@@ -55,6 +95,15 @@ describe('ProfilePage', () => {
     fireEvent.change(input, { target: { value: 'Анна' } })
     fireEvent.blur(input)
     await waitFor(() => expect(updateProfile).toHaveBeenCalledWith({ name: 'Анна' }))
+  })
+
+  it('saves a valid e-mail on blur through the API', async () => {
+    const updateProfile = vi.fn().mockResolvedValue({ ...profile, email: 'anya@example.com' })
+    renderApp('/profile', { getProfile: async () => profile, updateProfile })
+    const email = await screen.findByPlaceholderText('не указан')
+    fireEvent.change(email, { target: { value: 'anya@example.com' } })
+    fireEvent.blur(email)
+    await waitFor(() => expect(updateProfile).toHaveBeenCalledWith({ email: 'anya@example.com' }))
   })
 
   it('shows an error toast when saving fails', async () => {
@@ -73,7 +122,7 @@ describe('ProfilePage', () => {
     expect(updateProfile).not.toHaveBeenCalled()
   })
 
-  it('repeating an order puts its lines into the cart', async () => {
+  it('repeating an order puts its lines into the cart and navigates to /cart', async () => {
     const { router } = renderApp('/profile', { getProfile: async () => profile, getOrders: async () => [order('o1', 31)] })
     fireEvent.click(await screen.findByRole('button', { name: /Повторить/ }))
     await waitFor(() => expect(router.state.location.pathname).toBe('/cart'))

@@ -1,0 +1,24 @@
+{
+  "$comment": "The brand in one place. Replace src/brand/logo.svg (the silhouette: one colour, viewBox cropped tight) and run `npm run brand`: the PWA icons, the favicon, the notification badges, the launch screen, the loader and the logo in the app all follow. `eyes` are drawn over it and blink in the loader: centre and diameter in % of the logo's width and height ([] for none).",
+  "background": "#16120F",
+  "iconBackground": "#1C140F",
+  "logoColor": "#FAF7F2",
+  "logoFill": "#C58B55",
+  "iconLogoWidth": 0.475,
+  "faviconLogoWidth": 0.708,
+  "splashIconSize": 275,
+  "eyes": [
+    {
+      "x": 30.63,
+      "y": 70.57,
+      "size": 15.51
+    },
+    {
+      "x": 69.11,
+      "y": 70.57,
+      "size": 15.53
+    }
+  ],
+  "splashOffsetY": -13,
+  "$splash": "How Android draws the PWA splash, measured on a phone (Android 14, Chrome WebAPK): the icon this wide in px, and its centre this far above the middle of the page (half the status bar). The launch screen copies it, so the hand-over does not jump."
+}

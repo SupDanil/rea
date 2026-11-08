@@ -63,25 +63,17 @@ describe('ProductCard Component', () => {
       expect(decodeURIComponent(img!.getAttribute('href')!)).toContain('/uploads/latte-hot.webp')
     })
 
-    it('quick-adds hot to cart by default when drink has both hot/cold variants', async () => {
-      renderCard(dualPhotoItem)
+    it('opens product constructor when card is clicked for hot/cold drinks', () => {
+      const onOpen = vi.fn()
+      renderCard(dualPhotoItem, false, onOpen)
 
-      const addBtn = screen.getByRole('button', { name: /Добавить «Латте Два Сезона» в корзину/i })
-      fireEvent.click(addBtn)
+      const cardButton = screen.getByRole('button', { name: /Латте Два Сезона/i })
+      fireEvent.click(cardButton)
 
-      await waitFor(() => {
-        const stored = JSON.parse(localStorage.getItem('zerno-cart') ?? '[]')
-        expect(stored).toHaveLength(1)
-        expect(stored[0]).toMatchObject({
-          itemId: 'latte-dual',
-          variantId: 'm',
-          temperature: 'hot',
-          qty: 1,
-        })
-      })
+      expect(onOpen).toHaveBeenCalledWith('latte-dual')
     })
 
-    it('quick-adds cold to cart when drink is cold-only', async () => {
+    it('renders cold badge and image for cold-only drinks without quick-add button', () => {
       const coldItem: MenuItem = {
         ...baseItem,
         id: 'cold-brew',
@@ -98,12 +90,7 @@ describe('ProductCard Component', () => {
 
       const img = container.querySelector('image')
       expect(decodeURIComponent(img!.getAttribute('href')!)).toContain('/uploads/cold-brew.webp')
-
-      fireEvent.click(screen.getByRole('button', { name: /Добавить «Колд Брю» в корзину/i }))
-      await waitFor(() => {
-        const stored = JSON.parse(localStorage.getItem('zerno-cart') ?? '[]')
-        expect(stored[0]?.temperature).toBe('cold')
-      })
+      expect(screen.queryByRole('button', { name: /Добавить «Колд Брю» в корзину/i })).toBeNull()
     })
   })
 
@@ -126,6 +113,44 @@ describe('ProductCard Component', () => {
       const glowElement = container.querySelector('.art-glow') as HTMLElement
       expect(glowElement).toBeInTheDocument()
       expect(glowElement.style.getPropertyValue('--tint')).toBe('#f8e1b8')
+    })
+  })
+
+  describe('Price and volume layout without quick-add buttons', () => {
+    it('renders volume and price aligned in bottom row without quick-add button', () => {
+      renderCard(baseItem)
+      expect(screen.getByText('300 мл')).toBeInTheDocument()
+      expect(screen.getByText('250 ₽')).toBeInTheDocument()
+      expect(screen.queryByRole('button', { name: /Добавить/i })).toBeNull()
+    })
+
+    it('renders price range for items with multiple variants', () => {
+      const multiVariantItem: MenuItem = {
+        ...baseItem,
+        id: 'cappuccino-multi',
+        variants: [
+          { ...baseItem.variants[0], size: 'S', volume: '200 мл', price: 210 },
+          { ...baseItem.variants[0], size: 'L', volume: '400 мл', price: 290 },
+        ],
+      }
+
+      renderCard(multiVariantItem)
+      expect(screen.getByText('200–400 мл')).toBeInTheDocument()
+      expect(screen.getByText('от 210 ₽')).toBeInTheDocument()
+    })
+
+    it('renders sold out indicator when item is sold out', () => {
+      const soldOutPastry: MenuItem = {
+        ...baseItem,
+        id: 'cookie-sold-out',
+        name: 'Печенье',
+        groupIds: [],
+        variants: [{ ...baseItem.variants[0], stopped: true }],
+      }
+
+      renderCard(soldOutPastry)
+      expect(screen.getByText('Закончилось')).toBeInTheDocument()
+      expect(screen.queryByRole('button', { name: /Добавить/i })).toBeNull()
     })
   })
 })

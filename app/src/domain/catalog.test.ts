@@ -5,6 +5,7 @@ import {
   type CatalogData,
   countAddons,
   createCatalog,
+  hasAddons,
   type Ingredient,
   isDrink,
   isSoldOut,
@@ -56,6 +57,11 @@ describe('Domain: catalog', () => {
   it('isDrink distinguishes drinks from single-size food', () => {
     expect(isDrink(dummyDrink)).toBe(true)
     expect(isDrink(dummyFood)).toBe(false)
+  })
+
+  it('hasAddons detects when an item has configurable modifier groups', () => {
+    expect(hasAddons(dummyDrink)).toBe(true)
+    expect(hasAddons(dummyFood)).toBe(false)
   })
 
   it('countAddons groups multiple portions of the same ingredient', () => {

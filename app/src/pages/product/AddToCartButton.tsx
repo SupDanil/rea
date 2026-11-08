@@ -3,11 +3,15 @@ import { useAnimatedNumber } from '../../hooks/useAnimatedNumber'
 import { cx } from '../../utils/cx'
 import { formatPrice } from '../../utils/format'
 
-type Props = { price: number; soldOut: boolean; added: boolean; onAdd: () => void }
+type Props = { price: number; soldOut: boolean; added: boolean; isEditing?: boolean; onAdd: () => void }
 
 /** Main purchase action; the shared Button owns its material and states. */
-export function AddToCartButton({ price, soldOut, added, onAdd }: Props) {
+export function AddToCartButton({ price, soldOut, added, isEditing, onAdd }: Props) {
   const shown = useAnimatedNumber(price, 400)
+  const defaultLabel = isEditing ? 'Сохранить' : 'В корзину'
+  const doneLabel = isEditing ? 'Сохранено' : 'В корзине'
+  const actionAria = isEditing ? `Сохранить за ${formatPrice(price)}` : `Добавить в корзину за ${formatPrice(price)}`
+
   return (
     <Button variant="primary" size="lg" fullWidth
       className={cx(
@@ -20,7 +24,7 @@ export function AddToCartButton({ price, soldOut, added, onAdd }: Props) {
       )}
       disabled={soldOut || added}
       onClick={onAdd}
-      aria-label={soldOut ? 'Закончилось' : added ? 'В корзине' : `Добавить в корзину за ${formatPrice(price)}`}
+      aria-label={soldOut ? 'Закончилось' : added ? doneLabel : actionAria}
     >
       {soldOut ? (
         <span className="text-body sm:text-control font-semibold">Закончилось</span>
@@ -37,11 +41,11 @@ export function AddToCartButton({ price, soldOut, added, onAdd }: Props) {
               className="[stroke-dasharray:24] animate-[draw_0.35s_var(--ease-soft)_both]"
             />
           </svg>
-          <span className="text-control sm:text-body-lg tracking-tight">В корзине</span>
+          <span className="text-control sm:text-body-lg tracking-tight">{doneLabel}</span>
         </span>
       ) : (
         <span className="flex w-full items-center justify-between gap-3 whitespace-nowrap">
-          <span className="text-body-lg font-semibold">В корзину</span>
+          <span className="text-body-lg font-semibold">{defaultLabel}</span>
           <span className="text-body-lg sm:text-lead font-extrabold tracking-tight tabular-nums">
             {formatPrice(Math.round(shown))}
           </span>

@@ -92,8 +92,11 @@ describe('CartPage', () => {
   })
 
   it('shows the empty state when nothing is in the cart', async () => {
-    renderCart()
+    const { router } = renderCart()
     expect(await screen.findByText('Пока пусто')).toBeInTheDocument()
+    const actionBtn = screen.getByRole('button', { name: 'В меню' })
+    fireEvent.click(actionBtn)
+    expect(router.state.location.pathname).toBe('/')
   })
 
   it('prices cart lines with the server menu (variant + add-ons)', async () => {
@@ -226,6 +229,18 @@ describe('CartPage', () => {
     expect(screen.getByRole('button', { name: /Оплатить/ })).toBeDisabled()
   })
 
+  it('blocks paying when the shop is closed and indicates that it is closed', async () => {
+    seedCart([latteLine])
+    const createOrder = vi.fn()
+    const closedShop = {
+      ...testShop,
+      hours: Array.from({ length: 7 }, (_, i) => ({ weekday: i + 1, opens: '00:00', closes: '00:00', isClosed: true })),
+    }
+    renderCart({ getShops: async () => [closedShop], createOrder })
+    expect(await screen.findByRole('alert')).toHaveTextContent('Кофейня сейчас закрыта')
+    expect(screen.getByRole('button', { name: /Заведение закрыто/ })).toBeDisabled()
+  })
+
   it('renders temperature badge in item meta when temperature is specified', async () => {
     const coldLine = {
       key: 'latte|m||temp:cold',
@@ -248,5 +263,18 @@ describe('CartPage', () => {
 
     expect(await screen.findByText('Холодный, M · 300 мл')).toBeInTheDocument()
     expect(screen.getByText('Горячий, M · 300 мл')).toBeInTheDocument()
+  })
+
+  it('tapping cart line button or title navigates to product with artSlot and editCartKey', async () => {
+    seedCart([latteLine])
+    const { router } = renderCart()
+    const openBtn = await screen.findByRole('button', { name: /Открыть Латте/i })
+    fireEvent.click(openBtn)
+    expect(router.state.location.pathname).toBe('/product/latte')
+    expect(router.state.location.state).toMatchObject({
+      inApp: true,
+      artSlot: latteLine.key,
+      editCartKey: latteLine.key,
+    })
   })
 })

@@ -1,6 +1,10 @@
+import { useContext } from 'react'
+
 import { Button, IconButton } from '../../components/Button'
 import { CloseIcon, RabbitIcon } from '../../components/icons'
+import { usePushNotifications } from '../../hooks/usePushNotifications'
 import { usePwaInstall } from '../../hooks/usePwaInstall'
+import { AppContext } from '../../state/AppContext'
 
 type Props = {
   onOpenGuide: () => void
@@ -8,6 +12,8 @@ type Props = {
 
 export function InstallBanner({ onOpenGuide }: Props) {
   const { canInstall, isBannerDismissed, promptInstall, dismissBanner } = usePwaInstall()
+  const { isSupported, permission, subscribe } = usePushNotifications()
+  const appContext = useContext(AppContext)
 
   if (!canInstall || isBannerDismissed) return null
 
@@ -15,6 +21,22 @@ export function InstallBanner({ onOpenGuide }: Props) {
     const outcome = await promptInstall()
     if (outcome === 'guide') {
       onOpenGuide()
+    } else if (outcome === 'native') {
+      // User tapped "Установить" and accepted native PWA install!
+      // This is within active user interaction — immediately prompt for push notification permissions!
+      if (isSupported && permission === 'default') {
+        try {
+          const ok = await subscribe(appContext?.profile?.phone)
+          if (ok) {
+            if (appContext?.updateProfile) {
+              await appContext.updateProfile({ notifications: true }).catch(() => {})
+            }
+            appContext?.showToast({ text: 'Уведомления включены! Сообщим о готовности кофе ☕️' })
+          }
+        } catch {
+          // If denied or dismissed, banner on order page remains visible
+        }
+      }
     }
   }
 

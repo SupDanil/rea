@@ -6,7 +6,7 @@ import { Checkbox,TextField } from '../../components/TextField'
 import { hint } from '../../components/ui'
 import { cx } from '../../utils/cx'
 import { formatPhone, phoneDigits } from '../../utils/format'
-import { stepBox, stepLead, stepTitle } from './steps'
+import { stepBox, stepTitle } from './steps'
 
 type Props = {
   digits: string
@@ -34,14 +34,7 @@ export function PhoneStep({ digits, sending, inputRef, onChange, onSubmit }: Pro
           if (digits.length === 10 && agreed && !sending) onSubmit()
         }}
       >
-        <div className="relative mx-auto size-16 sm:size-20 rounded-pill bg-accent/15 border-(length:--stroke-width) border-accent/25 grid place-items-center mb-0.5">
-          <span className="text-display sm:text-display leading-none" aria-hidden="true">
-            🎁
-          </span>
-        </div>
-
         <h1 className={stepTitle}>Вход по номеру</h1>
-        <p className={stepLead}>Напиток в подарок за регистрацию, скидка уровня и штампы за каждый заказ.</p>
 
         <label className="sr-only" htmlFor="phone">
           Телефон
@@ -109,17 +102,11 @@ export function PhoneStep({ digits, sending, inputRef, onChange, onSubmit }: Pro
           disabled={digits.length !== 10 || !agreed || sending}
           aria-busy={sending}
         >
-          {sending ? (
-            'Отправляем…'
-          ) : (
-            <span className="flex items-center justify-center gap-2">
-              <span>Получить код в Telegram</span>
-            </span>
-          )}
+          {sending ? 'Отправляем…' : 'Получить код'}
         </Button>
 
         <p className={cx(hint(), 'text-center text-micro text-muted mt-1')}>
-          Бесплатная доставка проверочного кода через официального Telegram-бота
+          Для входа используйте проверочный код 1234
         </p>
       </form>
 

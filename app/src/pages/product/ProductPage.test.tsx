@@ -20,12 +20,12 @@ describe('ProductPage Component', () => {
     localStorage.clear()
   })
 
-  const renderAt = (path: string) => {
+  const renderAt = (entry: string | { pathname: string; state?: Record<string, unknown> }) => {
     const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } })
     return render(
       <QueryClientProvider client={queryClient}>
         <AppProvider>
-          <MemoryRouter initialEntries={[path]}>
+          <MemoryRouter initialEntries={[entry as any]}>
             <Routes>
               <Route path="/product/:id" element={<ProductPage />} />
               <Route path="/" element={<div>menu-root</div>} />
@@ -246,5 +246,52 @@ describe('ProductPage Component', () => {
     expect(screen.queryByLabelText('Холодный напиток')).not.toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'Горячий' })).not.toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'Холодный' })).not.toBeInTheDocument()
+  })
+
+  it('pre-selects variant, temperature, and ingredients when opened from cart to edit', async () => {
+    vi.spyOn(api, 'getCatalog').mockResolvedValue(catalogData)
+    const cartLine = {
+      key: 'cappuccino|l|vanilla|temp:cold',
+      itemId: 'cappuccino',
+      variantId: 'l',
+      ingredientIds: ['vanilla'],
+      temperature: 'cold' as const,
+      qty: 2,
+    }
+    localStorage.setItem('zerno-cart', JSON.stringify([cartLine]))
+
+    renderAt({
+      pathname: '/product/cappuccino',
+      state: { editCartKey: cartLine.key, inApp: true },
+    })
+
+    expect(await screen.findByText('Капучино')).toBeInTheDocument()
+
+    // Variant L (400 мл) is checked
+    const lRadio = screen.getByRole('radio', { name: /L 400 мл/i })
+    expect(lRadio).toHaveAttribute('aria-checked', 'true')
+
+    // Cold temperature is selected
+    const coldRadio = screen.getByRole('radio', { name: /Холодный/i })
+    expect(coldRadio).toHaveAttribute('aria-checked', 'true')
+
+    // Addon vanilla is rendered in builder addons list
+    expect(screen.getByText('Ваниль')).toBeInTheDocument()
+
+    // Button shows "Сохранить" instead of "В корзину"
+    const saveBtn = screen.getByRole('button', { name: /Сохранить/i })
+    expect(saveBtn).toBeInTheDocument()
+
+    // Click save -> updates the cart line in place
+    fireEvent.click(saveBtn)
+
+    await waitFor(() => {
+      const stored = JSON.parse(localStorage.getItem('zerno-cart') || '[]')
+      expect(stored).toHaveLength(1)
+      expect(stored[0].key).toBe(cartLine.key)
+      expect(stored[0].qty).toBe(2)
+      expect(stored[0].temperature).toBe('cold')
+      expect(stored[0].ingredientIds).toEqual(['vanilla'])
+    })
   })
 })

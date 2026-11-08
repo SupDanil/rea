@@ -12,3 +12,7 @@ dist
 screenshots/
 screenshots-*/
 *.mp4
+uploads/
+**/public/uploads/
+__pycache__/
+*.pyc

@@ -1,10 +1,10 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 
+import { AddonIcon } from '../../components/AddonIcon'
 import { Button } from '../../components/Button'
 import { IngredientArt } from '../../components/ItemArt'
 import type { Ingredient, IngredientGroup } from '../../domain'
 import { cx } from '../../utils/cx'
-import { optimizedImageUrl } from '../../utils/imageUrl'
 
 export type SelectedAddonItem = {
   group: IngredientGroup
@@ -301,7 +301,7 @@ export function SelectedAddonsList({ items, onRemoveAll, className }: Props) {
           <div
             key={`${item.group.id}-${item.ingredient.id}`}
             className={cx(
-              'snap-start group/row flex items-center justify-between gap-1.5 pl-3 pr-1 rounded-control',
+              'snap-start group/row flex items-center justify-between gap-1.5 pl-2.5 xs:pl-3 pr-1 rounded-control',
               'bg-pd-glass text-pd-ink shadow-xs',
               'transition-all duration-150 select-none animate-[slide-in-right_0.22s_var(--ease-soft)_both]',
             )}
@@ -310,10 +310,10 @@ export function SelectedAddonsList({ items, onRemoveAll, className }: Props) {
             <div className="flex items-center gap-1.5 min-w-0 flex-1">
               <div className="size-4.5 xs:size-5 shrink-0 grid place-items-center rounded-pill overflow-hidden">
                 {item.ingredient.imageUrl ? (
-                  <img
-                    src={optimizedImageUrl(item.ingredient.imageUrl)}
+                  <AddonIcon
+                    url={item.ingredient.imageUrl}
                     alt=""
-                    className="size-full object-contain"
+                    className="size-full"
                   />
                 ) : (
                   <IngredientArt color={item.ingredient.color} className="size-3 xs:size-3.5" />
@@ -325,7 +325,7 @@ export function SelectedAddonsList({ items, onRemoveAll, className }: Props) {
             </div>
 
             {/* Right: Multiplier badge (only for counter-enabled groups like syrups/protein) & Delete button */}
-            <div className="flex items-center gap-1 shrink-0 ml-1">
+            <div className="flex items-center gap-0.5 xs:gap-1 shrink-0 ml-1">
               {item.group.counter && (
                 <span
                   key={item.qty}
@@ -339,7 +339,7 @@ export function SelectedAddonsList({ items, onRemoveAll, className }: Props) {
                 type="button"
                 onClick={() => onRemoveAll(item.group, item.ingredient.id)}
                 aria-label={`Удалить ${item.ingredient.name}`}
-                className="size-11 grid place-items-center rounded-control text-pd-muted hover:text-error hover:bg-error/15 transition-colors cursor-pointer text-caption font-bold leading-none active:scale-90"
+                className="size-8.5 xs:size-9 grid place-items-center rounded-control text-pd-muted hover:text-error hover:bg-error/15 transition-colors cursor-pointer text-caption font-bold leading-none active:scale-90"
               >
                 ✕
               </Button>

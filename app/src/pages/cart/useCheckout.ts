@@ -54,9 +54,9 @@ export function useCheckout({ pricing, promo, shopId, pickup, payment, onMissing
       cart.clear()
       replace(`/order/${order.id}`)
     } catch (err) {
-      // A paused shop explains itself; anything else is a generic retry.
-      const paused = err instanceof ApiError && err.reason === 'shop_paused'
-      showToast({ text: paused ? err.message : 'Не получилось оформить заказ — попробуйте ещё раз' })
+      // A paused or closed shop explains itself; anything else is a generic retry.
+      const isShopError = err instanceof ApiError && (err.reason === 'shop_paused' || err.reason === 'shop_closed')
+      showToast({ text: isShopError ? err.message : 'Не получилось оформить заказ — попробуйте ещё раз' })
     } finally {
       setPaying(false)
     }

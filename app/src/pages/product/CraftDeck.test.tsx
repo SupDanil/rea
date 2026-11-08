@@ -13,11 +13,11 @@ const allGroupsFixture: IngredientGroup[] = [
     name: 'Молоко',
     max: 1,
     ingredients: [
-      { id: 'oat', name: 'Овсяное', price: 70, color: '#efe2c4', nutrition: dummyNutrition, imageUrl: '/uploads/products/addons/addon-oat-milk.webp' },
-      { id: 'almond', name: 'Миндальное', price: 70, color: '#f1e6d6', nutrition: dummyNutrition, imageUrl: '/uploads/products/addons/addon-almond-milk.webp' },
-      { id: 'coconut', name: 'Кокосовое', price: 70, color: '#fbf6ee', nutrition: dummyNutrition, imageUrl: '/uploads/products/addons/addon-coconut-milk.webp' },
-      { id: 'lactosefree', name: 'Безлактозное', price: 40, color: '#f7f3ea', nutrition: dummyNutrition },
-      { id: 'goat', name: 'Козье', price: 50, color: '#f3efe6', nutrition: dummyNutrition },
+      { id: 'oat', name: 'Овсяное', price: 70, color: '#efe2c4', nutrition: dummyNutrition, imageUrl: '/uploads/products/addons/oat.svg' },
+      { id: 'almond', name: 'Миндальное', price: 70, color: '#f1e6d6', nutrition: dummyNutrition, imageUrl: '/uploads/products/addons/almond.svg' },
+      { id: 'coconut', name: 'Кокосовое', price: 70, color: '#fbf6ee', nutrition: dummyNutrition, imageUrl: '/uploads/products/addons/coconut.svg' },
+      { id: 'lactosefree', name: 'Безлактозное', price: 40, color: '#f7f3ea', nutrition: dummyNutrition, imageUrl: '/uploads/products/addons/lactosefree.svg' },
+      { id: 'goat', name: 'Козье', price: 50, color: '#f3efe6', nutrition: dummyNutrition, imageUrl: '/uploads/products/addons/ing-1793706331977.svg' },
     ],
   },
   {
@@ -26,12 +26,12 @@ const allGroupsFixture: IngredientGroup[] = [
     max: 4,
     counter: true,
     ingredients: [
-      { id: 'vanilla', name: 'Ваниль', price: 60, color: '#f5e6cb', nutrition: dummyNutrition, imageUrl: '/uploads/products/addons/addon-vanilla.webp' },
-      { id: 'caramel', name: 'Солёная карамель', price: 60, color: '#c68b59', nutrition: dummyNutrition, imageUrl: '/uploads/products/addons/addon-salted-caramel.webp' },
-      { id: 'hazelnut', name: 'Лесной орех', price: 60, color: '#a76b43', nutrition: dummyNutrition, imageUrl: '/uploads/products/addons/addon-hazelnut.webp' },
-      { id: 'pumpkin', name: 'Тыквенный пряный', price: 60, color: '#d46e29', nutrition: dummyNutrition, imageUrl: '/uploads/products/addons/addon-pumpkin.webp' },
-      { id: 'lavender', name: 'Лаванда', price: 60, color: '#b7a3e0', nutrition: dummyNutrition, imageUrl: '/uploads/products/addons/addon-lavender.webp' },
-      { id: 'maple', name: 'Клён', price: 60, color: '#b0702a', nutrition: dummyNutrition, imageUrl: '/uploads/products/addons/addon-caramel.webp' },
+      { id: 'vanilla', name: 'Ваниль', price: 60, color: '#f5e6cb', nutrition: dummyNutrition, imageUrl: '/uploads/products/addons/vanilla.svg' },
+      { id: 'caramel', name: 'Солёная карамель', price: 60, color: '#c68b59', nutrition: dummyNutrition, imageUrl: '/uploads/products/addons/caramel.svg' },
+      { id: 'hazelnut', name: 'Лесной орех', price: 60, color: '#a76b43', nutrition: dummyNutrition, imageUrl: '/uploads/products/addons/hazelnut.svg' },
+      { id: 'pumpkin', name: 'Тыквенный пряный', price: 60, color: '#d46e29', nutrition: dummyNutrition, imageUrl: '/uploads/products/addons/pumpkin.svg' },
+      { id: 'lavender', name: 'Лаванда', price: 60, color: '#b7a3e0', nutrition: dummyNutrition, imageUrl: '/uploads/products/addons/lavender.svg' },
+      { id: 'maple', name: 'Клён', price: 60, color: '#b0702a', nutrition: dummyNutrition, imageUrl: '/uploads/products/addons/maple.svg' },
     ],
   },
   {
@@ -40,11 +40,11 @@ const allGroupsFixture: IngredientGroup[] = [
     max: 5,
     counter: true,
     ingredients: [
-      { id: 'cinnamon', name: 'Корица', price: 0, color: '#a5643a', nutrition: dummyNutrition, imageUrl: '/uploads/products/addons/addon-cinnamon.webp' },
-      { id: 'cocoa', name: 'Какао', price: 30, color: '#6b3d26', nutrition: dummyNutrition, imageUrl: '/uploads/products/addons/addon-chocolate-dark.webp' },
-      { id: 'coconut-flakes', name: 'Кокосовая стружка', price: 40, color: '#f4efe6', nutrition: dummyNutrition, imageUrl: '/uploads/products/addons/addon-coconut-flakes.webp' },
-      { id: 'pistachio', name: 'Фисташка', price: 60, color: '#a9c27a', nutrition: dummyNutrition, imageUrl: '/uploads/products/addons/addon-pistachio-crushed.webp' },
-      { id: 'marshmallow', name: 'Маршмеллоу', price: 40, color: '#f6d2dc', nutrition: dummyNutrition, imageUrl: '/uploads/products/addons/addon-marshmallow.webp' },
+      { id: 'cinnamon', name: 'Корица', price: 0, color: '#a5643a', nutrition: dummyNutrition, imageUrl: '/uploads/products/addons/cinnamon.svg' },
+      { id: 'cocoa', name: 'Какао', price: 30, color: '#6b3d26', nutrition: dummyNutrition, imageUrl: '/uploads/products/addons/cocoa.svg' },
+      { id: 'coconut-flakes', name: 'Кокосовая стружка', price: 40, color: '#f4efe6', nutrition: dummyNutrition, imageUrl: '/uploads/products/addons/coconut-flakes.svg' },
+      { id: 'pistachio', name: 'Фисташка', price: 60, color: '#a9c27a', nutrition: dummyNutrition, imageUrl: '/uploads/products/addons/pistachio.svg' },
+      { id: 'marshmallow', name: 'Маршмеллоу', price: 40, color: '#f6d2dc', nutrition: dummyNutrition, imageUrl: '/uploads/products/addons/marshmallow.svg' },
     ],
   },
   {
@@ -53,9 +53,9 @@ const allGroupsFixture: IngredientGroup[] = [
     max: 5,
     counter: true,
     ingredients: [
-      { id: 'shot', name: 'Доп. шот эспрессо', price: 60, color: '#4a2a1a', nutrition: dummyNutrition },
-      { id: 'decaf', name: 'Без кофеина', price: 0, color: '#8d6a55', nutrition: dummyNutrition },
-      { id: 'cream', name: 'Взбитые сливки', price: 60, color: '#fffaf2', nutrition: dummyNutrition, imageUrl: '/uploads/products/addons/addon-whipped-cream.webp' },
+      { id: 'shot', name: 'Доп. шот эспрессо', price: 60, color: '#4a2a1a', nutrition: dummyNutrition, imageUrl: '/uploads/products/addons/shot.svg' },
+      { id: 'decaf', name: 'Без кофеина', price: 0, color: '#8d6a55', nutrition: dummyNutrition, imageUrl: '/uploads/products/addons/decaf.svg' },
+      { id: 'cream', name: 'Взбитые сливки', price: 60, color: '#fffaf2', nutrition: dummyNutrition, imageUrl: '/uploads/products/addons/cream.svg' },
     ],
   },
   {
@@ -64,9 +64,9 @@ const allGroupsFixture: IngredientGroup[] = [
     max: 3,
     counter: true,
     ingredients: [
-      { id: 'whey', name: 'Сывороточный протеин', price: 90, color: '#f0ece1', nutrition: dummyNutrition },
-      { id: 'collagen', name: 'Коллаген', price: 80, color: '#fff5ee', nutrition: dummyNutrition },
-      { id: 'plant-protein', name: 'Гороховый протеин', price: 90, color: '#e4edd8', nutrition: dummyNutrition },
+      { id: 'whey', name: 'Сывороточный протеин', price: 90, color: '#f0ece1', nutrition: dummyNutrition, imageUrl: '/uploads/products/addons/whey.svg' },
+      { id: 'collagen', name: 'Коллаген', price: 80, color: '#fff5ee', nutrition: dummyNutrition, imageUrl: '/uploads/products/addons/collagen.svg' },
+      { id: 'plant-protein', name: 'Гороховый протеин', price: 90, color: '#e4edd8', nutrition: dummyNutrition, imageUrl: '/uploads/products/addons/plant-protein.svg' },
     ],
   },
 ]

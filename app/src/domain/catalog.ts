@@ -90,6 +90,7 @@ export type CatalogData = {
 export const minPrice = (item: MenuItem): number => Math.min(...item.variants.map((v) => v.price))
 export const isSoldOut = (item: MenuItem): boolean => item.variants.every((v) => v.stopped)
 export const isDrink = (item: MenuItem): boolean => item.variants[0]?.size !== 'ONE'
+export const hasAddons = (item: MenuItem): boolean => Boolean(item.groupIds && item.groupIds.length > 0)
 
 /** Collapses repeated add-ons (counter groups store one id per portion) into { ingredient, qty }. */
 export function countAddons(ingredients: Ingredient[]): { ingredient: Ingredient; qty: number }[] {
@@ -122,6 +123,7 @@ export type Catalog = {
   minPrice: (item: MenuItem) => number
   isSoldOut: (item: MenuItem) => boolean
   isDrink: (item: MenuItem) => boolean
+  hasAddons: (item: MenuItem) => boolean
   countAddons: (ingredients: Ingredient[]) => { ingredient: Ingredient; qty: number }[]
   addonLabel: (info: { ingredient: Ingredient; qty: number }) => string
 }
@@ -177,6 +179,7 @@ export function createCatalog(data: CatalogData): Catalog {
     minPrice,
     isSoldOut,
     isDrink,
+    hasAddons,
     countAddons,
     addonLabel,
   }

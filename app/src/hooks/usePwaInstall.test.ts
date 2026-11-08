@@ -1,7 +1,7 @@
 import { act, renderHook } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
-import { checkIsIos, checkIsStandalone, usePwaInstall } from './usePwaInstall'
+import { checkIsIos, checkIsMobile, checkIsStandalone, usePwaInstall } from './usePwaInstall'
 
 describe('usePwaInstall', () => {
   beforeEach(() => {
@@ -57,6 +57,25 @@ describe('usePwaInstall', () => {
   it('detects iOS from userAgent', () => {
     vi.spyOn(navigator, 'userAgent', 'get').mockReturnValue('Mozilla/5.0 (iPhone; CPU iPhone OS 16_5 like Mac OS X)')
     expect(checkIsIos()).toBe(true)
+  })
+
+  it('detects mobile browsers vs desktop browsers', () => {
+    vi.spyOn(navigator, 'userAgent', 'get').mockReturnValue('Mozilla/5.0 (Linux; Android 14; Pixel 7)')
+    expect(checkIsMobile()).toBe(true)
+
+    vi.spyOn(navigator, 'userAgent', 'get').mockReturnValue('Mozilla/5.0 (iPhone; CPU iPhone OS 16_5 like Mac OS X)')
+    expect(checkIsMobile()).toBe(true)
+
+    vi.spyOn(navigator, 'userAgent', 'get').mockReturnValue('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 Chrome/120.0 Safari/537.36')
+    expect(checkIsMobile()).toBe(false)
+  })
+
+  it('disables canInstall on desktop non-mobile browsers', () => {
+    vi.spyOn(navigator, 'userAgent', 'get').mockReturnValue('Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)')
+    const { result } = renderHook(() => usePwaInstall())
+
+    expect(result.current.isMobile).toBe(false)
+    expect(result.current.canInstall).toBe(false)
   })
 
   it('returns guide outcome when iOS or no prompt available', async () => {

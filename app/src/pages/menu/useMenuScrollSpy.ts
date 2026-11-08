@@ -17,7 +17,16 @@ export function useMenuScrollSpy(providedCatalog?: Catalog) {
   const queryCatalog = useCatalog()
   const catalog = providedCatalog ?? queryCatalog
   const sections = useMemo(
-    () => catalog.topCategories.flatMap((top) => catalog.subcategoriesOf(top.id).map((sub) => ({ top, sub }))),
+    () =>
+      catalog.topCategories.flatMap((top) => {
+        const subs = catalog.subcategoriesOf(top.id)
+        if (subs.length === 0) {
+          return [{ top, sub: top }]
+        }
+        const directItems = catalog.itemsOf(top.id)
+        const subSections = subs.map((sub) => ({ top, sub }))
+        return directItems.length > 0 ? [{ top, sub: top }, ...subSections] : subSections
+      }),
     [catalog],
   )
   const [activeSub, setActiveSub] = useState(() => sections[0]?.sub.id ?? '')

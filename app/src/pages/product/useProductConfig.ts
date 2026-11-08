@@ -17,11 +17,42 @@ const addNutrition = (a: Nutrition, b: Nutrition): Nutrition => ({
 const firstAvailable = (item: MenuItem) => Math.max(0, item.variants.findIndex((v) => !v.stopped))
 
 /** Size, add-ons and the open add-on group for one product, plus the totals they add up to. */
-export function useProductConfig(item: MenuItem, providedCatalog?: Catalog) {
+export function useProductConfig(
+  item: MenuItem,
+  providedCatalog?: Catalog,
+  initialConfig?: {
+    variantId?: string
+    ingredientIds?: string[]
+  },
+) {
   const queryCatalog = useCatalog()
   const catalog = providedCatalog ?? queryCatalog
-  const [variantIdx, setVariantIdx] = useState(() => firstAvailable(item))
-  const [selection, setSelection] = useState<Selection>({})
+
+  const initialVariantIdx = useMemo(() => {
+    if (initialConfig?.variantId) {
+      const idx = item.variants.findIndex((v) => v.id === initialConfig.variantId)
+      if (idx >= 0) return idx
+    }
+    return firstAvailable(item)
+  }, [initialConfig?.variantId, item])
+
+  const initialSelection = useMemo(() => {
+    if (!initialConfig?.ingredientIds?.length) return {}
+    const sel: Selection = {}
+    for (const id of initialConfig.ingredientIds) {
+      for (const groupId of item.groupIds) {
+        const group = catalog.groupById.get(groupId)
+        if (group?.ingredients.some((i) => i.id === id)) {
+          sel[groupId] = [...(sel[groupId] ?? []), id]
+          break
+        }
+      }
+    }
+    return sel
+  }, [catalog, initialConfig?.ingredientIds, item.groupIds])
+
+  const [variantIdx, setVariantIdx] = useState(initialVariantIdx)
+  const [selection, setSelection] = useState<Selection>(initialSelection)
   const [openGroupId, setOpenGroupId] = useState<string | null>(null)
   const [shownItem, setShownItem] = useState(item)
 

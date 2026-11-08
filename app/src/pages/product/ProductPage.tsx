@@ -1,4 +1,4 @@
-import { type CSSProperties,useLayoutEffect, useRef, useState } from 'react'
+import { type CSSProperties, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import { Navigate, useNavigationType, useParams } from 'react-router'
 
 import { useIsLeaving } from '../../app/leaving'
@@ -7,6 +7,7 @@ import { CloseIcon, InfoIcon, SnowflakeIcon } from '../../components/icons'
 import { Modal } from '../../components/Modal'
 import { SegmentedControl } from '../../components/SegmentedControl'
 import { defaultTemperature, type Ingredient, type IngredientGroup, itemImage, type MenuItem } from '../../domain'
+import { lineKey } from '../../domain/cart'
 import { useAfterFirstPaint } from '../../hooks/useAfterFirstPaint'
 import { useAppNavigate } from '../../hooks/useAppNavigate'
 import { useCatalog, useCatalogQuery } from '../../queries/useCatalog'
@@ -38,8 +39,23 @@ export function ProductPage() {
 
 function ProductView({ item }: { item: MenuItem }) {
   const { cart } = useApp()
-  const { back, artSlot } = useAppNavigate()
-  const config = useProductConfig(item)
+  const { back, artSlot, editCartKey } = useAppNavigate()
+
+  const cartLine = useMemo(() => {
+    const key = editCartKey || artSlot
+    if (!key) return null
+    return cart.lines.find((l) => l.key === key && l.itemId === item.id) ?? null
+  }, [cart.lines, editCartKey, artSlot, item.id])
+
+  const initialConfig = useMemo(() => {
+    if (!cartLine) return undefined
+    return {
+      variantId: cartLine.variantId,
+      ingredientIds: cartLine.ingredientIds,
+    }
+  }, [cartLine])
+
+  const config = useProductConfig(item, undefined, initialConfig)
   const { variant, openGroupId, setOpenGroupId } = config
   const [showDetails, setShowDetails] = useState(false)
   const [added, setAdded] = useState(false)
@@ -53,7 +69,10 @@ function ProductView({ item }: { item: MenuItem }) {
   const isOnlyCold = item.temperatureMode === 'cold'
   const isBoth = item.temperatureMode === 'both'
 
-  const [temperature, setTemperature] = useState(() => defaultTemperature(item))
+  const [temperature, setTemperature] = useState<'hot' | 'cold' | undefined>(() => {
+    if (cartLine?.temperature) return cartLine.temperature
+    return defaultTemperature(item)
+  })
   const effectiveHeroImage = itemImage(item, temperature)
 
   const cupRef = useRef<HTMLDivElement>(null)
@@ -91,21 +110,49 @@ function ProductView({ item }: { item: MenuItem }) {
   useLayoutEffect(() => {
     const art = artRef.current
     if (!leaving || !art) return
+    const exclude = sheetRef.current
+
     if (toCart.current) {
+      if (cartLine) {
+        // Saved from cart: fly back to the cart line item thumbnail
+        const targetSlot = lineKey(item.id, variant.id, config.chosen.map((i) => i.id), temperature)
+        queueMicrotask(() => {
+          const thumb = findThumb(item.id, { exclude, slot: targetSlot }) ?? findThumb(item.id, { exclude, slot })
+          if (thumb) {
+            void flyArt(art, thumb, MORPH)
+          } else {
+            const badge = document.querySelector('[data-cart-badge]')
+            if (badge) void flyArt(art, badge, { ...TO_CART, landFade: true }).then(() => pop(badge))
+          }
+        })
+        return
+      }
+
       const badge = document.querySelector('[data-cart-badge]')
       if (badge) void flyArt(art, badge, { ...TO_CART, landFade: true }).then(() => pop(badge))
       return
     }
-    const exclude = sheetRef.current
+
     // After the commit, like the opening: the screen coming back settles in its own layout effect.
     queueMicrotask(() => {
       const thumb = findThumb(item.id, { exclude, slot }) ?? findThumb(openedWith, { exclude, slot })
       if (thumb) void flyArt(art, thumb, MORPH)
     })
-  }, [leaving, item.id, openedWith, slot])
+  }, [leaving, item.id, openedWith, slot, cartLine, variant.id, config.chosen, temperature])
 
   const add = () => {
-    cart.add(item.id, variant.id, config.chosen.map((i) => i.id), 1, temperature)
+    if (cartLine) {
+      cart.updateLine(
+        cartLine.key,
+        item.id,
+        variant.id,
+        config.chosen.map((i) => i.id),
+        cartLine.qty,
+        temperature,
+      )
+    } else {
+      cart.add(item.id, variant.id, config.chosen.map((i) => i.id), 1, temperature)
+    }
     setAdded(true)
     window.setTimeout(() => {
       toCart.current = true
@@ -278,6 +325,7 @@ function ProductView({ item }: { item: MenuItem }) {
             price={config.price}
             soldOut={config.soldOut}
             added={added}
+            isEditing={Boolean(cartLine)}
             onAdd={add}
           />
         </footer>

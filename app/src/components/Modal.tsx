@@ -69,9 +69,13 @@ export function Modal({ label, onClose, locked = false, kind = 'sheet', panelRef
 
   // Taking over from a screen on its way out (back to the cart from a product): nothing to rise
   // from, it dissolves in on the spot, and art can fly straight to its place in it.
+  const [isSwap] = useState(() => typeof document !== 'undefined' && !!document.querySelector('[data-leaving] [data-modal]'))
   useLayoutEffect(() => {
-    root.current?.toggleAttribute('data-modal-swap', !!document.querySelector('[data-leaving] [data-modal]'))
-  }, [])
+    const leaving = document.querySelector('[data-leaving] [data-modal]')
+    root.current?.toggleAttribute('data-modal-swap', isSwap || !!leaving)
+    // Tell the one leaving to hold still underneath while this one dissolves in.
+    leaving?.setAttribute('data-modal-replaced', '')
+  }, [isSwap])
 
   // Focus moves in, and back to where it was on close, never by scrolling anything. It lands on
   // the panel, not its first button: that would light up the close button's focus ring for no
@@ -132,6 +136,7 @@ export function Modal({ label, onClose, locked = false, kind = 'sheet', panelRef
       aria-modal="true"
       aria-label={label}
       data-modal
+      data-modal-swap={isSwap || undefined}
       data-modal-settled={settled || undefined}
     >
       <div

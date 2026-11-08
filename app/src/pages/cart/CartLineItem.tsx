@@ -110,7 +110,19 @@ export function CartLineItem({ line, disabled, onOpen, onQty, onRemove }: Props)
           <ItemArt art={cartArt} imageUrl={cartImage} className="relative z-10 size-[86%]" {...artProps(line.item.id, line.key)} />
         </Button>
 
-        <div className="flex min-w-0 flex-col pt-0.5 pr-1">
+        <div
+          className="flex min-w-0 flex-col pt-0.5 pr-1 cursor-pointer select-none"
+          onClick={onOpen}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault()
+              onOpen()
+            }
+          }}
+          aria-label={`Изменить ${line.item.name}`}
+        >
           <div className="font-display text-control sm:text-body-lg font-bold text-ink tracking-tight truncate">
             {line.item.name}
           </div>
@@ -118,7 +130,11 @@ export function CartLineItem({ line, disabled, onOpen, onQty, onRemove }: Props)
             {meta}
           </div>
 
-          <div className="mt-auto flex items-center justify-between pt-2">
+          <div
+            className="mt-auto flex items-center justify-between pt-2"
+            onClick={(e) => e.stopPropagation()}
+            onKeyDown={(e) => e.stopPropagation()}
+          >
             <span className="font-display text-control sm:text-body-lg font-bold text-ink">
               {formatPrice(line.unitPrice * line.qty)}
             </span>

@@ -21,6 +21,9 @@ export function renderApp(path = '/', overrides: ApiOverrides = {}) {
     getShops: async () => [testShop],
     getProfile: async () => null,
     getOrders: async () => [],
+    getVapidPublicKey: async () => 'test-vapid-key',
+    subscribePush: async () => ({ success: true, subscriptionId: 'sub-test' }),
+    unsubscribePush: async () => ({ success: true }),
   }
   const spies = Object.fromEntries(
     (Object.keys({ ...defaults, ...overrides }) as (keyof ApiClient)[]).map((key) => {

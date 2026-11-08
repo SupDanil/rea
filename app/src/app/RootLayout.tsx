@@ -1,4 +1,5 @@
 import { Toast } from '../components/Toast'
+import { UpdateModal } from '../components/UpdateModal'
 import { MenuDock } from '../pages/menu/MenuDock'
 import { MenuPage } from '../pages/menu/MenuPage'
 import { AnimatedOutlet } from './AnimatedOutlet'
@@ -11,6 +12,7 @@ export function RootLayout() {
       <MenuDock />
       <AnimatedOutlet />
       <Toast />
+      <UpdateModal />
     </>
   )
 }

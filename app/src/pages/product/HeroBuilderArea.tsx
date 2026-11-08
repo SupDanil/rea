@@ -73,8 +73,9 @@ export function HeroBuilderArea({
 }: HeroBuilderAreaProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const [containerDims, setContainerDims] = useState(() => {
-    if (typeof window !== 'undefined' && window.innerWidth >= 600) {
-      return { width: Math.min(700, window.innerWidth), height: 420 }
+    if (typeof window !== 'undefined') {
+      const w = Math.min(700, window.innerWidth || 390)
+      return { width: w, height: w >= 600 ? 420 : 380 }
     }
     return { width: 390, height: 380 }
   })
@@ -191,18 +192,15 @@ export function HeroBuilderArea({
   const visibleHeight = Math.max(110 - bounds.y, bounds.y + bounds.height - 110) * 2 * baseHeight / 220
   const currentScale = H < 200 ? Math.min(preferredScale, Math.max(0.65, (H - 12) / visibleHeight)) : preferredScale
 
-  const rightMargin = sideMargin
-
-  // Vertical carousel width: generous ~62-66% of screen width so it directly overlaps the cup
-  const listWidthRatio = W <= 300 ? 0.68 : W <= 340 ? 0.65 : W >= 600 ? 0.52 : 0.63
-  const maxListLimit = W >= 600 ? 320 : 255
-  const rightListWidth = Math.max(140, Math.min(maxListLimit, Math.round(W * listWidthRatio)))
-
-  // Align the visible left edge, including asymmetric transparent image padding.
-  // Scale, vertical position and the addons list retain their original layout.
-  const shiftX = isBuilder
-    ? sideMargin - W / 2 + (100 - bounds.x) * (160 / 220) * currentScale
-    : 0
+  // Horizontal stage layout:
+  // - State A (no toppings): Cup is centered horizontally in the stage (shiftX = 0).
+  // - State B (toppings selected): Stage is divided 50% / 50%.
+  //   The cup is centered in its left 50% half (target center = W / 4).
+  //   Unshifted cup center is W / 2, so base translation is -W / 4.
+  //   Optical offset ensures the visible art center is aligned.
+  const artCenterX = bounds.x + bounds.width / 2
+  const opticalOffset = (100 - artCenterX) * (160 / 220) * currentScale
+  const shiftX = isBuilder ? -W / 4 + opticalOffset : 0
 
   const shouldAnimate = !isInitial && !prefersReducedMotion()
 
@@ -211,7 +209,7 @@ export function HeroBuilderArea({
       ref={containerRef}
       className="relative w-full h-full min-h-(--product-stage-min) flex items-center justify-center overflow-visible"
     >
-      {/* 1. DRINK CUP: Center in State A, shifted left in State B (z-10, sits UNDER the carousel) */}
+      {/* 1. DRINK CUP: Center in State A, centered in left 50% half in State B (z-10) */}
       <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-10">
         <div
           className="relative flex items-center justify-center will-change-transform"
@@ -243,18 +241,16 @@ export function HeroBuilderArea({
         </div>
       </div>
 
-      {/* 2. SELECTED ADDONS LIST: Floats DIRECTLY OVER the cup in BUILDER state (z-20) */}
+      {/* 2. SELECTED ADDONS LIST: Occupies right 50% half in State B (z-20) */}
       {renderedItems && renderedItems.length > 0 && (
         <div
           className={cx(
-            'absolute top-1/2 -translate-y-1/2 z-20 h-full max-h-[calc(100%-calc(var(--space-unit)*2))] flex flex-col justify-center',
+            'absolute top-0 right-0 bottom-0 z-20 w-1/2 flex flex-col justify-center items-center px-1.5 xs:px-2.5 sm:px-3',
             isBuilder && !leaving
               ? 'opacity-100 translate-x-0 pointer-events-auto'
               : 'opacity-0 translate-x-3 pointer-events-none',
           )}
           style={{
-            right: `${rightMargin}px`,
-            width: `${rightListWidth}px`,
             transition: shouldAnimate
               ? isBuilder && !leaving
                 ? 'opacity 260ms 90ms var(--ease-soft), transform 260ms 90ms var(--ease-soft)'
@@ -262,7 +258,9 @@ export function HeroBuilderArea({
               : 'none',
           }}
         >
-          <SelectedAddonsList items={renderedItems} onRemoveAll={onRemoveAll} />
+          <div className="w-full max-w-60 h-full max-h-[calc(100%-calc(var(--space-unit)*2))] flex flex-col justify-center">
+            <SelectedAddonsList items={renderedItems} onRemoveAll={onRemoveAll} />
+          </div>
         </div>
       )}
     </div>

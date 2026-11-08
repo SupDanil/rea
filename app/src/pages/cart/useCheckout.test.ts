@@ -158,4 +158,16 @@ describe('useCheckout hook', () => {
     expect(mockShowToast).toHaveBeenCalledWith({ text: 'Кофейня временно не принимает заказы: санитарный час' })
     expect(mockClearCart).not.toHaveBeenCalled()
   })
+
+  it('shows the server’s reason when the shop is closed', async () => {
+    mockCreateOrder.mockRejectedValueOnce(new ApiError(409, 'Кофейня сейчас закрыта. Откроется в 08:00', 'shop_closed'))
+    const { result } = renderHook(() =>
+      useCheckout({ pricing: mockPricing, promo: null, pickup: { kind: 'asap' }, payment: 'cash', onMissingName: mockOnMissingName }),
+    )
+    await act(async () => {
+      await result.current.pay('Данил')
+    })
+    expect(mockShowToast).toHaveBeenCalledWith({ text: 'Кофейня сейчас закрыта. Откроется в 08:00' })
+    expect(mockClearCart).not.toHaveBeenCalled()
+  })
 })

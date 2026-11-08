@@ -1,11 +1,15 @@
+import { useQueryClient } from '@tanstack/react-query'
 import { useCallback, useEffect, useState } from 'react'
+import { useLocation } from 'react-router'
 
+import { dismissBootScreen } from '../../app/bootScreen'
 import { EmptyState } from '../../components/EmptyState'
 import { InstallGuideSheet } from '../../components/InstallGuideSheet'
-import { Loader } from '../../components/Loader'
 import { Presence } from '../../components/Presence'
+import { PullToRefresh } from '../../components/PullToRefresh'
 import type { Promotion } from '../../domain'
 import { useAppNavigate } from '../../hooks/useAppNavigate'
+import { queryKeys } from '../../queries/keys'
 import { useCatalog, useCatalogQuery } from '../../queries/useCatalog'
 import { useShop } from '../../queries/useShop'
 import { cx } from '../../utils/cx'
@@ -21,16 +25,19 @@ import { sectionId, useMenuScrollSpy } from './useMenuScrollSpy'
 /** The base layer: every other screen opens on top of it. */
 export function MenuPage() {
   const { go } = useAppNavigate()
+  const location = useLocation()
+  const queryClient = useQueryClient()
   const { isPending, isError, refetch } = useCatalogQuery()
   const catalog = useCatalog()
   const shop = useShop()
   const spy = useMenuScrollSpy(catalog)
 
+  const isHome = location.pathname === '/' || location.pathname === '/menu'
+
   const [imagesReady, setImagesReady] = useState(() => {
     if (typeof navigator !== 'undefined' && /jsdom/i.test(navigator.userAgent)) return true
     return false
   })
-  const [loaderMounted, setLoaderMounted] = useState(true)
   const [showInstallGuide, setShowInstallGuide] = useState(false)
 
   const mainPromo = catalog.mainPromo
@@ -57,12 +64,12 @@ export function MenuPage() {
     })
   }, [catalog.items, mainPromo?.imageUrl, mainPromoProduct?.imageUrl])
 
+  // The launch screen gives way once there is something to see: the menu with its first
+  // photos, or the message that it could not load.
+  const settled = spy.activeTop ? imagesReady : !isPending
   useEffect(() => {
-    if (spy.activeTop && imagesReady) {
-      const timer = setTimeout(() => setLoaderMounted(false), 380)
-      return () => clearTimeout(timer)
-    }
-  }, [spy.activeTop, imagesReady])
+    if (settled) dismissBootScreen()
+  }, [settled])
 
   const open = useCallback((id: string) => go(`/product/${id}`, { artSlot: CARD_SLOT }), [go])
   const openPromo = (promo: Promotion) => {
@@ -73,40 +80,59 @@ export function MenuPage() {
     }
   }
 
+  // Fresh prices, stop-list and promos (the catalog), and whether the shop is open. Rejects when
+  // the menu could not be fetched, so the pull says so instead of pretending.
+  const handleRefresh = useCallback(async () => {
+    const minDelay =
+      typeof navigator !== 'undefined' && /jsdom/i.test(navigator.userAgent)
+        ? Promise.resolve()
+        : new Promise((resolve) => setTimeout(resolve, 600))
+
+    const [menu] = await Promise.all([
+      refetch(),
+      queryClient.invalidateQueries({ queryKey: queryKeys.shops }),
+      minDelay,
+    ])
+    if (menu.isError) throw menu.error
+  }, [refetch, queryClient])
+
   if (!spy.activeTop) {
     return (
-      <div className="flex min-h-dvh flex-col">
-        {isPending ? (
-          <Loader />
-        ) : (
-          <>
-            <MenuHeader />
-            <EmptyState
-              title={isError ? 'Меню не загрузилось' : 'Меню пока пустое'}
-              text={isError ? 'Проверьте интернет и попробуйте ещё раз' : 'Скоро здесь появятся напитки и еда'}
-              actionLabel="Обновить"
-              onAction={() => void refetch()}
-            />
-          </>
-        )}
-      </div>
+      <PullToRefresh onRefresh={handleRefresh} disabled={!isHome}>
+        <div className="flex min-h-dvh flex-col">
+          {isPending ? null : (
+            <>
+              <MenuHeader />
+              <EmptyState
+                title={isError ? 'Меню не загрузилось' : 'Меню пока пустое'}
+                text={isError ? 'Проверьте интернет и попробуйте ещё раз' : 'Скоро здесь появятся напитки и еда'}
+                actionLabel="Обновить"
+                onAction={() => void refetch()}
+              />
+            </>
+          )}
+        </div>
+      </PullToRefresh>
     )
   }
 
   return (
-    <div {...{ [PAGE_ATTR]: '' }}>
-      {loaderMounted && <Loader isExiting={imagesReady} />}
-      <MenuHeader onOpenInstallGuide={() => setShowInstallGuide(true)} />
-      <InstallBanner onOpenGuide={() => setShowInstallGuide(true)} />
-      {mainPromo && (
-        <PromoBanner
-          promo={mainPromo}
-          product={mainPromoProduct}
-          onOpen={() => openPromo(mainPromo)}
-          variant="hero"
-        />
-      )}
-      <CategoryNav
+    <PullToRefresh
+      onRefresh={handleRefresh}
+      disabled={!isHome || showInstallGuide || !settled}
+    >
+      <div {...{ [PAGE_ATTR]: '' }}>
+        <MenuHeader onOpenInstallGuide={() => setShowInstallGuide(true)} />
+        <InstallBanner onOpenGuide={() => setShowInstallGuide(true)} />
+        {mainPromo && (
+          <PromoBanner
+            promo={mainPromo}
+            product={mainPromoProduct}
+            onOpen={() => openPromo(mainPromo)}
+            variant="hero"
+          />
+        )}
+        <CategoryNav
         catalog={catalog}
         navRef={spy.navRef}
         activeTop={spy.activeTop}
@@ -158,5 +184,6 @@ export function MenuPage() {
       </main>
       <Presence>{showInstallGuide && <InstallGuideSheet onClose={() => setShowInstallGuide(false)} />}</Presence>
     </div>
-  )
+  </PullToRefresh>
+)
 }

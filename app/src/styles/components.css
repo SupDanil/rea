@@ -26,7 +26,8 @@
   .ui-field--error, .ui-field[aria-invalid=true] { border-color: var(--danger); }
   .ui-field--xl { height: var(--control-lg); font-family: var(--font-heading); font-size: var(--type-title-sm); font-weight: var(--weight-bold); text-align: center; }
   .ui-field--code { height: calc(var(--space-unit) * 15); font-family: var(--font-heading); font-size: var(--type-heading); font-weight: var(--weight-bold); letter-spacing: var(--tracking-code); padding-left: calc(var(--panel-padding) + var(--tracking-code)); text-align: center; }
-  .ui-field--inline { height: auto; min-width: 0; padding: calc(var(--space-unit) * 1.5) 0; background: transparent; border-color: transparent; text-align: right; }
+  .ui-field--inline { height: auto; min-width: 0; padding: calc(var(--space-unit) * 1.5) calc(var(--space-unit) * 2.5); background: transparent; border-color: transparent; border-radius: var(--field-radius); text-align: right; }
+  .ui-field--inline:focus { background: var(--field-bg); border-color: var(--accent); }
   .ui-checkbox { width: calc(var(--space-unit) * 4); height: calc(var(--space-unit) * 4); flex-shrink: 0; accent-color: var(--accent); border-radius: var(--radius-sm); cursor: pointer; }
   .ui-stepper { position: relative; display: inline-flex; align-items: center; justify-content: space-between; gap: var(--space-unit); border-radius: var(--stepper-radius); background: var(--stepper-bg); padding: calc(var(--space-unit) * .5); color: var(--ink); }
   .ui-stepper--product { --stepper-bg: transparent; color: var(--pd-ink); width: 100%; padding: 0; height: var(--control-icon-lg); }
@@ -87,6 +88,9 @@
   .ui-choice:active, button:active .ui-choice { box-shadow: var(--ceramic-selected); }
   .ui-count-badge { background: var(--surface-2); color: var(--ink-2); box-shadow: none; }
   .ui-cart-count { background: var(--cart-badge-bg); box-shadow: none; }
+  .ui-promo-badge { display: inline-flex; align-items: center; justify-content: center; gap: calc(var(--space-unit) * 1.5); min-height: calc(var(--space-unit) * 8); padding-block: calc(var(--space-unit) * 1.75); padding-inline: calc(var(--space-unit) * 3.5); border-radius: var(--radius-pill); background: color-mix(in srgb, var(--surface) 92%, transparent); color: var(--accent); border: var(--stroke-width) solid color-mix(in srgb, var(--accent) 30%, transparent); font-family: var(--font-heading); font-size: var(--type-caption); font-weight: var(--weight-bold); letter-spacing: var(--tracking-label); line-height: 1; text-transform: uppercase; box-shadow: var(--ceramic-raised); }
+  .ui-promo-chip { display: inline-flex; align-items: center; justify-content: center; gap: var(--space-unit); min-height: calc(var(--space-unit) * 8); padding-block: calc(var(--space-unit) * 1.75); padding-inline: calc(var(--space-unit) * 3); border-radius: var(--radius-pill); background: color-mix(in srgb, var(--surface) 80%, transparent); color: var(--ink-2); border: var(--stroke-width) solid var(--line); font-size: var(--type-caption); font-weight: var(--weight-medium); line-height: 1; box-shadow: var(--ceramic-raised); }
+  .ui-promo-chip--cold { background: color-mix(in srgb, var(--cold) 15%, transparent); border-color: color-mix(in srgb, var(--cold) 35%, transparent); color: var(--cold); font-weight: var(--weight-bold); }
   .ui-category-chip { background: var(--surface); color: var(--ink-2); box-shadow: var(--ceramic-raised); }
   .ui-category-chip:hover { background-color: var(--surface-2); }
   .ui-category-chip:active { box-shadow: var(--ceramic-selected); }
@@ -100,6 +104,39 @@
   }
   /* Seal the last few pixels before sticky contact, without moving either bar. */
   .ui-menu-nav--joining::before { content: ''; position: absolute; inset-inline: 0; top: calc(-1 * var(--nav-join-distance)); height: var(--nav-join-distance); background: var(--bg); pointer-events: none; }
+
+  /*
+   * Pull to refresh (PullToRefresh.tsx): a raised ceramic disc, one ink colour, sliding out from
+   * under the header (it sits below it in the stack) to rest just beneath it. The logo is an empty
+   * outline of itself that fills with ink as you pull; brims with a small squash when letting go
+   * will refresh; pours over and over while loading. Only transforms and opacity move. Centred
+   * with margin auto, so the script's translate3d (Y only) never fights a centring one.
+   */
+  .ui-ptr {
+    position: fixed; z-index: 15; inset-inline: 0; top: calc(var(--header-h) + calc(var(--space-unit) * 2));
+    display: grid; place-items: center; width: calc(var(--space-unit) * 10); aspect-ratio: 1; margin-inline: auto;
+    border-radius: 50%; background: var(--surface); box-shadow: var(--ceramic-raised); color: var(--ink);
+    pointer-events: none; user-select: none; will-change: transform, opacity;
+  }
+  .ui-ptr__mark {
+    position: relative; width: calc(var(--space-unit) * 5); aspect-ratio: var(--brand-logo-aspect);
+    overflow: hidden; background: color-mix(in srgb, currentColor 16%, transparent);
+    -webkit-mask: var(--brand-logo-mask); mask: var(--brand-logo-mask); transform-origin: 50% 100%;
+  }
+  .ui-ptr__fill { position: absolute; inset: 0; background: currentColor; transform: translate3d(0, 100%, 0); }
+  .ui-ptr__eye { position: absolute; aspect-ratio: 1; border-radius: 50%; background: var(--surface); transform: translate(-50%, -50%); }
+  .ui-ptr[data-state='ready'] .ui-ptr__mark { animation: ptr-brim 0.32s ease-out; }
+  .ui-ptr[data-state='refreshing'] .ui-ptr__fill { animation: ptr-pour 1.2s cubic-bezier(0.45, 0, 0.55, 1) infinite; }
+  .ui-ptr[data-state='done'] .ui-ptr__mark { animation: ptr-brim 0.32s ease-out; }
+  .ui-ptr[data-state='done'] .ui-ptr__fill { transition: transform 0.24s ease-out; }
+  .ui-ptr[data-state='error'] .ui-ptr__mark { animation: ptr-shake 0.36s ease-in-out; }
+  @keyframes ptr-brim { 40% { transform: scale(1.12, 0.9); } 70% { transform: scale(0.97, 1.04); } }
+  @keyframes ptr-pour { 0% { transform: translate3d(0, 100%, 0); } 45%, 60% { transform: translate3d(0, 0, 0); } 100% { transform: translate3d(0, 100%, 0); } }
+  @keyframes ptr-shake { 25% { transform: translateX(-2px); } 50% { transform: translateX(2px); } 75% { transform: translateX(-1px); } }
+  @media (prefers-reduced-motion: reduce) {
+    .ui-ptr__mark, .ui-ptr__fill { animation: none !important; }
+    .ui-ptr[data-state='refreshing'] .ui-ptr__fill { transform: translate3d(0, 45%, 0); }
+  }
 }
 
 ::selection { color: var(--accent-ink); background-color: var(--accent); }

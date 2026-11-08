@@ -131,6 +131,8 @@ describe('Modal', () => {
       </>,
     )
     expect(screen.getByRole('dialog', { name: 'Корзина' })).toHaveAttribute('data-modal-swap')
+    // The one it takes over from holds still underneath instead of dropping away.
+    expect(screen.getByRole('dialog', { name: 'Товар' })).toHaveAttribute('data-modal-replaced')
   })
 
   it('does not follow an upward drag', () => {

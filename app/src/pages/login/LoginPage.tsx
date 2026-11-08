@@ -28,7 +28,6 @@ export function LoginPage() {
   const [code, setCode] = useState('')
   const [codeError, setCodeError] = useState<string | null>(null)
   const [devCode, setDevCode] = useState<string | null>(null)
-  const [telegramUrl, setTelegramUrl] = useState<string | null>(null)
   const [name, setName] = useState(knownName)
   const [resendIn, setResendIn] = useState(0)
   const [sending, setSending] = useState(false)
@@ -58,7 +57,6 @@ export function LoginPage() {
     try {
       const res = await api.sendSmsCode(phone)
       setDevCode(res.devCode ?? null)
-      setTelegramUrl(res.telegramUrl ?? null)
       setCode('')
       setCodeError(null)
       setResendIn(RESEND_AFTER)
@@ -121,7 +119,6 @@ export function LoginPage() {
             code={code}
             error={codeError}
             devCode={devCode}
-            telegramUrl={telegramUrl}
             verifying={verifying}
             resendIn={resendIn}
             inputRef={inputRef}

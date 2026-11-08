@@ -1,3 +1,4 @@
+import { BrandLogo } from '../brand/BrandLogo'
 // Small stroke icons; size and colour come from the surrounding text.
 
 export const BackIcon = () => (
@@ -43,15 +44,8 @@ export const ChevronDownIcon = ({ className }: { className?: string }) => (
   </svg>
 )
 
-export const RabbitIcon = ({ className, size = 24 }: { className?: string; size?: number }) => (
-  <svg className={className} viewBox="0 0 48 48" width={size} height={size} fill="none" aria-hidden="true">
-    <ellipse cx="16" cy="13" rx="5" ry="12" transform="rotate(-12 16 13)" fill="currentColor" />
-    <ellipse cx="31" cy="13" rx="5" ry="11" transform="rotate(14 31 13)" fill="currentColor" />
-    <ellipse cx="24" cy="31" rx="17" ry="14" fill="currentColor" />
-    <circle cx="18" cy="30" r="2.5" fill="var(--bg)" />
-    <circle cx="30" cy="30" r="2.5" fill="var(--bg)" />
-  </svg>
-)
+/** The brand logo, from src/brand/logo.svg like every other copy of it. */
+export const RabbitIcon = BrandLogo
 
 export const InfoIcon = ({ size = 20, className }: { size?: number; className?: string }) => (
   <svg className={className} viewBox="0 0 24 24" width={size} height={size} fill="none" stroke="currentColor" strokeWidth="var(--icon-stroke)" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
@@ -101,5 +95,12 @@ export const MoreVerticalIcon = ({ size = 20, className }: { size?: number; clas
     <circle cx="12" cy="5" r="1.5" fill="currentColor" stroke="none" />
     <circle cx="12" cy="12" r="1.5" fill="currentColor" stroke="none" />
     <circle cx="12" cy="19" r="1.5" fill="currentColor" stroke="none" />
+  </svg>
+)
+
+export const BellIcon = ({ size = 20, className }: { size?: number; className?: string }) => (
+  <svg className={className} viewBox="0 0 24 24" width={size} height={size} fill="none" stroke="currentColor" strokeWidth="var(--icon-stroke)" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+    <path d="M13.73 21a2 2 0 0 1-3.46 0" />
   </svg>
 )

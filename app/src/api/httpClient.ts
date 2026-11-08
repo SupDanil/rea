@@ -212,11 +212,24 @@ export class HttpApiClient implements ApiClient {
 
   async signOut(): Promise<void> {
     const refreshToken = this.getRefreshToken()
-    this.clearAuth()
+    let endpoint: string | undefined
+
+    if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
+      try {
+        const reg = await navigator.serviceWorker.ready
+        const sub = await reg?.pushManager?.getSubscription()
+        if (sub) {
+          endpoint = sub.endpoint
+          await this.unsubscribePush(sub.endpoint).catch(() => {})
+          await sub.unsubscribe().catch(() => {})
+        }
+      } catch {}
+    }
+
     try {
       await this.request<{ success: boolean }>('/auth/sign-out', {
         method: 'POST',
-        body: JSON.stringify({ refreshToken }),
+        body: JSON.stringify({ refreshToken, endpoint }),
       })
     } finally {
       this.clearAuth()
@@ -274,6 +287,28 @@ export class HttpApiClient implements ApiClient {
 
   orderEventsUrl(id: string): string {
     return `${this.baseUrl}/orders/${encodeURIComponent(id)}/events`
+  }
+
+  async getVapidPublicKey(): Promise<string> {
+    const res = await this.request<{ publicKey: string }>('/push/vapid-key')
+    return res.publicKey
+  }
+
+  subscribePush(
+    subscription: PushSubscriptionJSON,
+    phone?: string,
+  ): Promise<{ success: boolean; subscriptionId: string }> {
+    return this.request<{ success: boolean; subscriptionId: string }>('/push/subscribe', {
+      method: 'POST',
+      body: JSON.stringify({ subscription, phone }),
+    })
+  }
+
+  unsubscribePush(endpoint: string): Promise<{ success: boolean }> {
+    return this.request<{ success: boolean }>('/push/unsubscribe', {
+      method: 'POST',
+      body: JSON.stringify({ endpoint }),
+    })
   }
 }
 

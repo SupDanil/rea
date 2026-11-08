@@ -19,8 +19,7 @@ export function QrCodeView({ value, size = 180, className = '' }: QrCodeViewProp
     let cancelled = false
     QRCode.toString(value, {
       type: 'svg',
-      margin: 4,
-      width: size,
+      margin: 1,
       errorCorrectionLevel: 'M',
       color: {
         dark: '#000000', // 100% optical contrast
@@ -54,7 +53,7 @@ export function QrCodeView({ value, size = 180, className = '' }: QrCodeViewProp
   return (
     <div
       className={cx(
-        'block bg-white leading-none [&>svg]:block [&>svg]:w-full [&>svg]:h-auto',
+        'aspect-square bg-white leading-none [&>svg]:block [&>svg]:w-full [&>svg]:h-full [&>svg]:aspect-square',
         className,
       )}
       style={{ width: size, maxWidth: '100%' }}

@@ -33,7 +33,9 @@ export async function connect(url) {
   // The tab on screen: a background one runs no animations.
   for (const page of candidates) {
     const tab = await attach(page, url)
-    if ((await tab.evaluate('document.visibilityState')) === 'visible') return tab
+    // Chrome freezes background tabs, and a frozen one never answers: give up on it.
+    const state = await Promise.race([tab.evaluate('document.visibilityState'), sleep(2000).then(() => 'frozen')])
+    if (state === 'visible') return tab
     tab.close()
   }
   throw new Error('The app is not the tab on screen')

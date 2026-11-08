@@ -1,7 +1,7 @@
 import { useCallback, useMemo } from 'react'
 import { useLocation, useNavigate } from 'react-router'
 
-type NavState = { inApp?: boolean; artSlot?: string } | null
+type NavState = { inApp?: boolean; artSlot?: string; editCartKey?: string } | null
 
 /**
  * Screens open on top of the menu. `go` marks the entry as opened from inside
@@ -16,13 +16,15 @@ export function useAppNavigate() {
 
   // Stable, so lists of cards can skip re-rendering on every navigation.
   const go = useCallback(
-    (to: string, opts?: { artSlot?: string }) => navigate(to, { state: { inApp: true, ...opts } }),
+    (to: string, opts?: { artSlot?: string; editCartKey?: string }) =>
+      navigate(to, { state: { inApp: true, ...opts } }),
     [navigate],
   )
 
   return useMemo(
     () => ({
       artSlot: state?.artSlot,
+      editCartKey: state?.editCartKey,
       go,
       // Swapping screens in place (hot ↔ iced, cart → order) keeps the way back.
       replace: (to: string) => navigate(to, { replace: true, state }),

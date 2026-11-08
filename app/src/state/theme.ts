@@ -15,7 +15,16 @@ const readStored = (): Theme | null => {
 const apply = (theme: Theme) => {
   document.documentElement.dataset.theme = theme
   const background = getComputedStyle(document.documentElement).getPropertyValue('--bg').trim()
-  if (background) document.querySelector('meta[name="theme-color"]')?.setAttribute('content', background)
+  // Under the launch screen the page keeps the splash colour; it takes this one when that goes.
+  if (background && document.getElementById('boot')) {
+    document.documentElement.dataset.themeBg = background
+  } else if (background) {
+    document.documentElement.style.backgroundColor = background
+    if (document.body) document.body.style.backgroundColor = background
+    document.querySelectorAll('meta[name="theme-color"]').forEach((meta) => {
+      meta.setAttribute('content', background)
+    })
+  }
 }
 
 /** Follows the system until the user picks a theme, then remembers that pick. */
@@ -37,6 +46,7 @@ export function useTheme() {
     setTheme((current) => {
       const next: Theme = current === 'dark' ? 'light' : 'dark'
       writeString(STORAGE_KEY, next)
+      writeString('shit-coffee-theme', next)
       return next
     })
   }, [])

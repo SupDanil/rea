@@ -97,7 +97,11 @@ export function CategoryNav({ catalog, navRef, activeTop, activeSub, activeSubs,
               )}
               onClick={() => {
                 const first = catalog.subcategoriesOf(top.id)[0]
-                if (first) onSelect(first.id)
+                if (first) {
+                  onSelect(first.id)
+                } else {
+                  onSelect(top.id)
+                }
               }}
             >
               {top.name}

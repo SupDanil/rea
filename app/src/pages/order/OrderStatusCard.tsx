@@ -144,8 +144,8 @@ export function OrderStatusCard({ order, status, now, onRate }: Props) {
               <div className="text-compact font-bold text-ink-2 mb-3.5">
                 {order.name ? `${order.name} · ` : ''}Покажите сканеру
               </div>
-              <div className="w-full max-w-(--layout-dialog-sm) shrink-0 overflow-hidden rounded-control bg-white">
-                <QrCodeView value={`ORD:${order.id}`} size={280} />
+              <div className="mx-auto flex aspect-square items-center justify-center rounded-control bg-white p-3.5 shadow-sm ring-(length:--stroke-width) ring-black/10">
+                <QrCodeView value={`ORD:${order.id}`} size={280} className="w-full max-w-72" />
               </div>
               <Button
                 type="button"

@@ -17,4 +17,7 @@ export interface ApiClient {
   checkPromo(code: string): Promise<CheckPromoDto>
   /** URL of the server-sent events stream for one order */
   orderEventsUrl(id: string): string
+  getVapidPublicKey(): Promise<string>
+  subscribePush(subscription: PushSubscriptionJSON, phone?: string): Promise<{ success: boolean; subscriptionId: string }>
+  unsubscribePush(endpoint: string): Promise<{ success: boolean }>
 }

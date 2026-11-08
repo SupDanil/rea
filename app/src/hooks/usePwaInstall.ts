@@ -25,7 +25,16 @@ export function checkIsStandalone(): boolean {
 export function checkIsIos(): boolean {
   if (typeof window === 'undefined' || typeof navigator === 'undefined') return false
   const ua = navigator.userAgent || ''
-  return /iphone|ipad|ipod/i.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
+  return /iphone|ipad|ipod/i.test(ua) || (navigator.platform === 'MacIntel' && (navigator.maxTouchPoints ?? 0) > 1)
+}
+
+/** Detect whether current environment is a mobile browser (Android, iOS, iPadOS, smartphones, tablets) */
+export function checkIsMobile(): boolean {
+  if (typeof window === 'undefined' || typeof navigator === 'undefined') return false
+  const ua = navigator.userAgent || ''
+  const isMobileUa = /android|iphone|ipad|ipod|mobile|silk|blackberry|opera mini|iemobile|wpdesktop/i.test(ua)
+  const isIpadOs = navigator.platform === 'MacIntel' && (navigator.maxTouchPoints ?? 0) > 1
+  return isMobileUa || isIpadOs
 }
 
 /**
@@ -35,6 +44,7 @@ export function checkIsIos(): boolean {
 export function usePwaInstall() {
   const [isStandalone, setIsStandalone] = useState<boolean>(() => checkIsStandalone())
   const [isIos] = useState<boolean>(() => checkIsIos())
+  const [isMobile] = useState<boolean>(() => checkIsMobile())
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null)
   const [isBannerDismissed, setIsBannerDismissed] = useState<boolean>(() => {
     try {
@@ -100,8 +110,9 @@ export function usePwaInstall() {
   return {
     isStandalone,
     isIos,
+    isMobile,
     isPromptReady: deferredPrompt !== null,
-    canInstall: !isStandalone,
+    canInstall: !isStandalone && isMobile,
     isBannerDismissed,
     promptInstall,
     dismissBanner,

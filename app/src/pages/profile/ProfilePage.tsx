@@ -9,10 +9,8 @@ import { useApp } from '../../state/AppContext'
 import type { Profile } from '../../state/loyalty'
 import type { Order } from '../../state/orders'
 import { LoginPage } from '../login/LoginPage'
-import { LevelCard } from './LevelCard'
 import { OrderHistory } from './OrderHistory'
 import { ProfileSettings } from './ProfileSettings'
-import { StampCard } from './StampCard'
 
 /** Signed out, the profile route asks to sign in and then turns into the profile. */
 export function ProfilePage() {
@@ -45,8 +43,8 @@ function ProfileLoadingSkeleton() {
 }
 
 function ProfileView({ profile }: { profile: Profile }) {
-  const { cart, loyalty, myOrders, theme, toggleTheme, updateProfile, signOut, showToast } = useApp()
-  const { go, back } = useAppNavigate()
+  const { cart, myOrders, theme, toggleTheme, updateProfile, signOut, showToast } = useApp()
+  const { go, replace, back } = useAppNavigate()
   const [confirmExit, setConfirmExit] = useState(false)
 
   const saveProfile = (patch: Partial<Profile>) => {
@@ -56,7 +54,7 @@ function ProfileView({ profile }: { profile: Profile }) {
   const repeat = (order: Order) => {
     order.lines.forEach((l) => cart.add(l.itemId, l.variantId, l.ingredientIds, l.qty))
     showToast({ text: `Заказ № ${order.number} в корзине` })
-    go('/cart')
+    replace('/cart')
   }
 
   return (
@@ -66,14 +64,13 @@ function ProfileView({ profile }: { profile: Profile }) {
           <span className={avatar()} aria-hidden="true">
             {profile.name.trim().slice(0, 1).toUpperCase() || '☕'}
           </span>
-          <div>
-            <div className="text-title font-extrabold tracking-(--tracking-display)">{profile.name}</div>
+          <div className="min-w-0 flex-1">
+            <div className="text-title font-extrabold tracking-(--tracking-display) truncate">{profile.name}</div>
             <div className="mt-0.5 text-body text-muted">{profile.phone}</div>
           </div>
         </div>
 
-        <LevelCard loyalty={loyalty} />
-        <StampCard loyalty={loyalty} />
+        {/* LevelCard and StampCard temporarily hidden per requirements */}
         <OrderHistory orders={myOrders} onOpen={(o) => go(`/order/${o.id}`)} onRepeat={repeat} />
         <ProfileSettings profile={profile} theme={theme} onToggleTheme={toggleTheme} onUpdate={saveProfile} />
 
@@ -87,7 +84,7 @@ function ProfileView({ profile }: { profile: Profile }) {
           <ConfirmBox
             modal
             title="Выйти из профиля?"
-            text="Уровень, штампы и подарки сохранятся — вернутся, когда войдёте снова."
+            text="История заказов и настройки сохранятся — вернутся, когда войдёте снова."
             confirmLabel="Выйти"
             cancelLabel="Остаться"
             onConfirm={() => {

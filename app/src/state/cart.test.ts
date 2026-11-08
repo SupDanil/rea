@@ -160,4 +160,42 @@ describe('useCart hook and state', () => {
     expect(result.current.lines[0].qty).toBe(3)
     expect(result.current.lines[1].qty).toBe(1)
   })
+
+  it('updateLine updates an existing line in place or merges with existing duplicate', () => {
+    const { result } = renderHook(() => useCart())
+
+    act(() => {
+      result.current.add('latte', 'm', [], 2, 'hot')
+      result.current.add('cappuccino', 's', ['syrup'], 1, 'cold')
+    })
+
+    const initialKey = result.current.lines[1].key
+
+    // Update cappuccino from S cold with syrup to L hot with no syrups
+    act(() => {
+      result.current.updateLine(initialKey, 'cappuccino', 'l', [], 1, 'hot')
+    })
+
+    expect(result.current.lines.length).toBe(2)
+    expect(result.current.lines[1]).toMatchObject({
+      itemId: 'cappuccino',
+      variantId: 'l',
+      ingredientIds: [],
+      temperature: 'hot',
+      qty: 1,
+    })
+
+    // Update cappuccino to match the latte line -> merges qty into latte
+    const capKey = result.current.lines[1].key
+    act(() => {
+      result.current.updateLine(capKey, 'latte', 'm', [], 1, 'hot')
+    })
+
+    expect(result.current.lines.length).toBe(1)
+    expect(result.current.lines[0]).toMatchObject({
+      itemId: 'latte',
+      variantId: 'm',
+      qty: 3,
+    })
+  })
 })

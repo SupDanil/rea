@@ -101,9 +101,11 @@
 [data-modal-settled]:not([data-leaving] *) > * {
   animation: none;
 }
+/* Its dim lies over the panel it takes over from: hidden until that one is gone (below). */
 [data-modal-swap]:not([data-leaving] *) > [data-modal-backdrop] {
-  animation: none;
+  animation: modal-swap-dim 0.3s step-end backwards;
 }
+@keyframes modal-swap-dim { from { opacity: 0; } }
 [data-modal-swap]:not([data-leaving] *) > [data-modal-panel='sheet'] {
   animation: fade-only 0.25s ease backwards;
 }
@@ -123,6 +125,19 @@
 [data-leaving] [data-modal-panel='screen'] {
   animation: sheet-down 0.3s cubic-bezier(0.4, 0, 0.6, 1) both;
 }
+
+/*
+ * One modal handing over to the next (repeat an order: profile → cart). The old panel and its dim
+ * stay put while the new panel dissolves in over them, so nothing behind shows through and nothing
+ * darkens; the new dim takes over as the old one goes. Marked by Modal, no :has(), for older browsers.
+ */
+[data-leaving] [data-modal-replaced] > [data-modal-panel] {
+  animation: modal-hold 0.3s linear both;
+}
+[data-leaving] [data-modal-replaced] > [data-modal-backdrop] {
+  animation: modal-hold 0.3s linear both;
+}
+@keyframes modal-hold { to { opacity: 1; } }
 
 /* Decoration plays out only where it can be seen, not scrolled away or under another screen. */
 [data-offscreen] [data-ambient],
@@ -239,11 +254,16 @@ html[data-scroll-lock] {
   html {
     line-height: normal;
     overflow-anchor: none;
+    background-color: var(--bg);
+    overscroll-behavior-y: none;
   }
   body {
-    background: var(--bg);
+    background-color: var(--bg);
     color: var(--ink);
+    min-height: 100vh;
+    min-height: 100dvh;
     transition: background-color 0.3s ease;
+    overscroll-behavior-y: none;
   }
   button {
     cursor: pointer;

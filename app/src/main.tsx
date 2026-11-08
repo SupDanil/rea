@@ -4,14 +4,27 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { RouterProvider } from 'react-router/dom'
-import { registerSW } from 'virtual:pwa-register'
 
 import { router } from './app/router'
+import { initPwaUpdate } from './hooks/usePwaUpdate'
 import { AppProvider } from './state/AppProvider'
 
-// Register Service Worker for PWA installability, caching, and push notifications
+// Initialize PWA Service Worker lifecycle & update detection
+initPwaUpdate()
+
+// Handle push notification click navigation messages from Service Worker
 if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
-  registerSW({ immediate: true })
+  navigator.serviceWorker.addEventListener('message', (event) => {
+    if (event.data?.type === 'PUSH_NAVIGATE' && event.data.url) {
+      try {
+        const url = new URL(event.data.url, window.location.origin)
+        if (url.hash) {
+          const path = url.hash.replace(/^#/, '')
+          void router.navigate(path)
+        }
+      } catch {}
+    }
+  })
 }
 
 const queryClient = new QueryClient({
