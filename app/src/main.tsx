@@ -8,6 +8,10 @@ import { RouterProvider } from 'react-router/dom'
 import { router } from './app/router'
 import { initPwaUpdate } from './hooks/usePwaUpdate'
 import { AppProvider } from './state/AppProvider'
+import { initTelegramApp } from './utils/telegram'
+
+// Initialize Telegram Mini App viewport & controls
+initTelegramApp()
 
 // Initialize PWA Service Worker lifecycle & update detection
 initPwaUpdate()

@@ -1,5 +1,5 @@
 import type { CatalogData, Order, Promotion, Shop, UserProfile } from '../domain'
-import type { CheckPromoDto, CreateOrderDto, SendSmsDto, UpdateOrderDto, VerifySmsDto } from './types'
+import type { CheckPromoDto, CreateOrderDto, SendSmsDto, TelegramWebAppAuthDto, UpdateOrderDto, VerifySmsDto } from './types'
 
 export interface ApiClient {
   getCatalog(): Promise<CatalogData>
@@ -8,6 +8,7 @@ export interface ApiClient {
   getProfile(): Promise<UserProfile | null>
   sendSmsCode(phone: string): Promise<SendSmsDto>
   verifySmsCode(phone: string, code: string, name?: string): Promise<VerifySmsDto>
+  telegramWebAppAuth(initData: string, phone?: string, name?: string): Promise<TelegramWebAppAuthDto>
   updateProfile(patch: Partial<UserProfile>): Promise<UserProfile>
   signOut(): Promise<void>
   getOrders(): Promise<Order[]>

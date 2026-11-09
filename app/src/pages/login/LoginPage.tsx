@@ -7,6 +7,7 @@ import { useAppNavigate } from '../../hooks/useAppNavigate'
 import { useApp } from '../../state/AppContext'
 import type { Profile } from '../../state/loyalty'
 import { readSavedName } from '../../utils/storage'
+import { getTelegramInitData, getTelegramUser, isTelegramWebApp } from '../../utils/telegram'
 import { CodeStep } from './CodeStep'
 import { NameStep } from './NameStep'
 import { PhoneStep } from './PhoneStep'
@@ -52,8 +53,46 @@ export function LoginPage() {
 
   const phone = `+7${digits}`
 
+  // If in Telegram Mini App, attempt auto-login for already linked users
+  useEffect(() => {
+    if (isTelegramWebApp()) {
+      const initData = getTelegramInitData()
+      if (initData) {
+        setSending(true)
+        api
+          .telegramWebAppAuth(initData)
+          .then((res) => {
+            if (res.profile) {
+              done(res.profile, res.profile.name, !res.isNew)
+            }
+          })
+          .catch(() => {})
+          .finally(() => setSending(false))
+      }
+    }
+  }, [])
+
   const sendCode = async () => {
     setSending(true)
+    if (isTelegramWebApp()) {
+      try {
+        const initData = getTelegramInitData()
+        const tgUser = getTelegramUser()
+        const tgName = [tgUser?.first_name, tgUser?.last_name].filter(Boolean).join(' ') || knownName
+        const tgPhone = digits.length === 10 ? phone : undefined
+        const res = await api.telegramWebAppAuth(initData, tgPhone, tgName || undefined)
+        if (res.profile) {
+          done(res.profile, res.profile.name, !res.isNew)
+          return
+        }
+      } catch (err: any) {
+        showToast({ text: err.message || 'Ошибка входа через Telegram' })
+      } finally {
+        setSending(false)
+      }
+      return
+    }
+
     try {
       const res = await api.sendSmsCode(phone)
       setDevCode(res.devCode ?? null)

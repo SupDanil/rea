@@ -1,6 +1,6 @@
 import type { CatalogData, Order, Promotion, Shop, UserProfile } from '../domain'
 import type { ApiClient } from './client'
-import type { CheckPromoDto, CreateOrderDto, SendSmsDto, UpdateOrderDto, VerifySmsDto } from './types'
+import type { CheckPromoDto, CreateOrderDto, SendSmsDto, TelegramWebAppAuthDto, UpdateOrderDto, VerifySmsDto } from './types'
 
 export const AUTH_PHONE_KEY = 'shit_coffee_phone'
 export const AUTH_ACCESS_TOKEN_KEY = 'shit_coffee_access_token'
@@ -195,6 +195,20 @@ export class HttpApiClient implements ApiClient {
     if (res.refreshToken) writeStorage(AUTH_REFRESH_TOKEN_KEY, res.refreshToken)
     writeStorage(AUTH_PHONE_KEY, res.profile.phone)
     writeStorage(AUTH_PROFILE_KEY, JSON.stringify(res.profile))
+    return res
+  }
+
+  async telegramWebAppAuth(initData: string, phone?: string, name?: string): Promise<TelegramWebAppAuthDto> {
+    const res = await this.request<TelegramWebAppAuthDto>('/auth/telegram/webapp', {
+      method: 'POST',
+      body: JSON.stringify({ initData, phone, name }),
+    })
+    if (res.accessToken) writeStorage(AUTH_ACCESS_TOKEN_KEY, res.accessToken)
+    if (res.refreshToken) writeStorage(AUTH_REFRESH_TOKEN_KEY, res.refreshToken)
+    if (res.profile?.phone) {
+      writeStorage(AUTH_PHONE_KEY, res.profile.phone)
+      writeStorage(AUTH_PROFILE_KEY, JSON.stringify(res.profile))
+    }
     return res
   }
 

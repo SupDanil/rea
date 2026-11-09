@@ -1,6 +1,7 @@
 import { useState } from 'react'
 
 import { checkIsIos } from '../hooks/usePwaInstall'
+import { addTelegramAppToHomeScreen, isTelegramWebApp } from '../utils/telegram'
 import { Button } from './Button'
 import { AddToHomeIcon, CheckIcon, MoreVerticalIcon, RabbitIcon, ShareIcon } from './icons'
 import { SegmentedControl } from './SegmentedControl'
@@ -155,8 +156,21 @@ export function InstallGuideSheet({ onClose }: Props) {
         )}
       </SheetBody>
 
-      <SheetDock>
-        <Button variant="primary" fullWidth size="lg" onClick={onClose}>
+      <SheetDock className="space-y-2">
+        {isTelegramWebApp() && (
+          <Button
+            variant="primary"
+            fullWidth
+            size="lg"
+            onClick={() => {
+              addTelegramAppToHomeScreen()
+              onClose()
+            }}
+          >
+            📱 Добавить на главный экран
+          </Button>
+        )}
+        <Button variant={isTelegramWebApp() ? 'ghost' : 'primary'} fullWidth size="lg" onClick={onClose}>
           Понятно
         </Button>
       </SheetDock>

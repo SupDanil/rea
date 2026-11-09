@@ -43,4 +43,21 @@ export type VerifySmsDto = {
   refreshToken?: string
 }
 
+export type TelegramWebAppAuthDto = {
+  success?: boolean
+  needsPhone?: boolean
+  phone?: string
+  isNew?: boolean
+  profile?: UserProfile
+  accessToken?: string
+  refreshToken?: string
+  telegramLinked?: boolean
+  telegramUser?: {
+    id: number
+    firstName?: string
+    lastName?: string
+    username?: string
+  }
+}
+
 export type { CatalogData, Promotion }

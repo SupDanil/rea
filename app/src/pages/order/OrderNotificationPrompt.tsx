@@ -9,6 +9,7 @@ import { usePushNotifications } from '../../hooks/usePushNotifications'
 import { usePwaInstall } from '../../hooks/usePwaInstall'
 import { useApp } from '../../state/AppContext'
 import type { OrderStatus } from '../../state/orders'
+import { isTelegramWebApp, requestTelegramWriteAccess } from '../../utils/telegram'
 
 type Props = {
   orderId: string
@@ -35,13 +36,16 @@ export function OrderNotificationPrompt({ orderId, status }: Props) {
   }
 
   // If notifications are already active, nothing to prompt
-  const isNotificationsActive = Boolean(isSupported && permission === 'granted' && profile?.notifications)
+  const isTg = isTelegramWebApp()
+  const isNotificationsActive = Boolean(
+    isTg ? profile?.notifications : isSupported && permission === 'granted' && profile?.notifications
+  )
   if (isNotificationsActive) {
     return null
   }
 
   // If user explicitly denied browser permission, don't nag with an action button that would fail
-  if (permission === 'denied') {
+  if (!isTg && permission === 'denied') {
     return null
   }
 
@@ -55,6 +59,19 @@ export function OrderNotificationPrompt({ orderId, status }: Props) {
   const handleEnable = async () => {
     setIsSubscribing(true)
     try {
+      if (isTelegramWebApp()) {
+        const allowed = await requestTelegramWriteAccess()
+        if (allowed) {
+          if (updateProfile) {
+            await updateProfile({ notifications: true }).catch(() => {})
+          }
+          showToast({ text: 'Уведомления Telegram включены! Напишем о готовности ☕️' })
+        } else {
+          handleDismiss()
+        }
+        return
+      }
+
       const ok = await subscribe(profile?.phone)
       if (ok) {
         if (updateProfile) {
@@ -73,8 +90,8 @@ export function OrderNotificationPrompt({ orderId, status }: Props) {
     }
   }
 
-  // iOS Safari case: PWA not installed to Home Screen yet
-  if (!isSupported && isMobile && !isStandalone) {
+  // iOS Safari case: PWA not installed to Home Screen yet (skip in TMA)
+  if (!isTg && !isSupported && isMobile && !isStandalone) {
     return (
       <>
         <Surface className="relative flex items-center justify-between gap-3 rounded-media p-3.5 ring-(length:--stroke-width) ring-line">

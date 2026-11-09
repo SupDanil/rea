@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 
+import { addTelegramAppToHomeScreen, isTelegramWebApp } from '../utils/telegram'
+
 const DISMISSED_KEY = 'shit_coffee_pwa_banner_dismissed'
 
 interface BeforeInstallPromptEvent extends Event {
@@ -84,6 +86,10 @@ export function usePwaInstall() {
   }, [])
 
   const promptInstall = useCallback(async (): Promise<'native' | 'guide'> => {
+    if (isTelegramWebApp()) {
+      addTelegramAppToHomeScreen()
+      return 'native'
+    }
     if (deferredPrompt) {
       try {
         await deferredPrompt.prompt()

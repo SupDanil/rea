@@ -12,7 +12,8 @@ import { usePushNotifications } from '../../hooks/usePushNotifications'
 import { usePwaInstall } from '../../hooks/usePwaInstall'
 import type { Profile } from '../../state/loyalty'
 import type { Theme } from '../../state/theme'
-import { isEmail } from '../../utils/format'
+import { formatPhone, isEmail, phoneDigits } from '../../utils/format'
+import { isTelegramWebApp, requestTelegramContact, requestTelegramWriteAccess } from '../../utils/telegram'
 
 const setting = 'flex min-h-14 w-full items-center justify-between gap-3 px-4 py-2.5 text-left'
 const fieldRow = 'flex flex-col sm:flex-row sm:items-center justify-between gap-1.5 sm:gap-3 px-4 py-2.5 text-left min-h-14'
@@ -26,22 +27,40 @@ export function ProfileSettings({ profile, theme, onToggleTheme, onUpdate }: Pro
   const [email, setEmail] = useState(profile.email)
   const [emailError, setEmailError] = useState(false)
   const [permissionNotice, setPermissionNotice] = useState<string | null>(null)
+  const [isEditingPhone, setIsEditingPhone] = useState(false)
+  const [phoneInput, setPhoneInput] = useState('')
   const { isStandalone, isMobile, promptInstall } = usePwaInstall()
   const { isSupported, permission, subscribe, unsubscribe, syncIfGranted } = usePushNotifications()
   const [showInstallGuide, setShowInstallGuide] = useState(false)
 
+  const isTg = isTelegramWebApp() || Boolean(profile.telegramId)
+  const cleanPhone = profile.phone && !profile.phone.startsWith('tg_') ? profile.phone : ''
+
   const isNotificationsActive = Boolean(
-    isSupported ? (permission === 'granted' && profile.notifications) : profile.notifications
+    isTg
+      ? profile.notifications
+      : isSupported
+        ? (permission === 'granted' && profile.notifications)
+        : profile.notifications
   )
 
   useEffect(() => {
-    if (isNotificationsActive) {
-      void syncIfGranted(profile.phone)
+    if (isNotificationsActive && !isTg && cleanPhone) {
+      void syncIfGranted(cleanPhone)
     }
-  }, [isNotificationsActive, profile.phone, syncIfGranted])
+  }, [isNotificationsActive, isTg, cleanPhone, syncIfGranted])
 
   const handleToggleNotifications = async () => {
     setPermissionNotice(null)
+
+    if (isTg) {
+      const nextState = !profile.notifications
+      onUpdate({ notifications: nextState })
+      if (nextState && isTelegramWebApp()) {
+        void requestTelegramWriteAccess()
+      }
+      return
+    }
 
     if (isNotificationsActive) {
       if (isSupported) {
@@ -75,7 +94,11 @@ export function ProfileSettings({ profile, theme, onToggleTheme, onUpdate }: Pro
   }
 
   let notificationDescription = 'О готовности заказа'
-  if (!isSupported) {
+  if (isTg) {
+    notificationDescription = profile.notifications
+      ? 'В боте @shit_coffee_bot'
+      : 'Уведомления в Telegram отключены'
+  } else if (!isSupported) {
     notificationDescription = isMobile && !isStandalone
       ? 'Добавьте на экран «Домой», чтобы включить пуши'
       : 'Не поддерживается на этом устройстве'
@@ -97,11 +120,32 @@ export function ProfileSettings({ profile, theme, onToggleTheme, onUpdate }: Pro
     if (trimmed && trimmed !== profile.name) onUpdate({ name: trimmed })
     else setName(profile.name)
   }
+
   const saveEmail = () => {
     const trimmed = email.trim()
     if (trimmed && !isEmail(trimmed)) return setEmailError(true)
     setEmailError(false)
     if (trimmed !== profile.email) onUpdate({ email: trimmed })
+  }
+
+  const handleShareTelegramContact = async () => {
+    try {
+      const shared = await requestTelegramContact()
+      if (shared) {
+        // Wait briefly for webhook to process and refresh
+        setTimeout(() => {
+          window.location.reload()
+        }, 1200)
+      }
+    } catch {}
+  }
+
+  const handleSavePhone = () => {
+    const digits = phoneDigits(phoneInput)
+    if (digits.length === 10) {
+      onUpdate({ phone: `+7${digits}` })
+      setIsEditingPhone(false)
+    }
   }
 
   return (
@@ -125,10 +169,77 @@ export function ProfileSettings({ profile, theme, onToggleTheme, onUpdate }: Pro
               />
             </div>
           </div>
-          <div className={setting}>
-            <span className={settingLabel}>Телефон</span>
-            <span className="text-control text-muted">{profile.phone}</span>
-          </div>
+
+          {/* Telegram Account Row */}
+          {(isTg || profile.telegramUsername || profile.telegramId) && (
+            <div className={setting}>
+              <span className={settingLabel}>Telegram</span>
+              <span className="text-control text-sky-400 font-medium flex items-center gap-1.5">
+                <span>✈️</span>
+                <span>
+                  {profile.telegramUsername
+                    ? `@${profile.telegramUsername}`
+                    : profile.telegramId
+                      ? `ID: ${profile.telegramId}`
+                      : 'Подключен'}
+                </span>
+              </span>
+            </div>
+          )}
+
+          {/* Phone Number Row */}
+          {isEditingPhone ? (
+            <div className={fieldRow}>
+              <span className={settingLabel}>Телефон</span>
+              <div className="flex items-center gap-2 w-full sm:w-auto">
+                <TextField
+                  fieldSize="inline"
+                  inputMode="tel"
+                  placeholder="+7 (___) ___-__-__"
+                  value={formatPhone(phoneDigits(phoneInput))}
+                  onChange={(e) => setPhoneInput(e.target.value)}
+                  className="w-full sm:w-44 text-left sm:text-right"
+                />
+                <Button size="sm" variant="primary" onClick={handleSavePhone} disabled={phoneDigits(phoneInput).length !== 10}>
+                  Сохранить
+                </Button>
+                <Button size="sm" variant="ghost" onClick={() => setIsEditingPhone(false)}>
+                  Отмена
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <div className={setting}>
+              <span className={settingLabel}>Телефон</span>
+              {cleanPhone ? (
+                <span className="text-control text-muted">
+                  {formatPhone(cleanPhone.replace(/^\+7/, ''))}
+                </span>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <span className="text-control text-muted">не указан</span>
+                  {isTelegramWebApp() ? (
+                    <button
+                      type="button"
+                      onClick={() => void handleShareTelegramContact()}
+                      className="text-xs text-sky-400 underline hover:opacity-80"
+                    >
+                      Поделиться номером
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => setIsEditingPhone(true)}
+                      className="text-xs text-accent underline hover:opacity-80"
+                    >
+                      Указать
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+
           <div>
             <div className={fieldRow}>
               <label htmlFor="profile-email-input" className={settingLabel}>
@@ -174,7 +285,7 @@ export function ProfileSettings({ profile, theme, onToggleTheme, onUpdate }: Pro
           </div>
           <SwitchRow label="Тёмная тема" checked={theme === 'dark'} onChange={onToggleTheme} />
 
-          {isMobile && (
+          {isMobile && !isTelegramWebApp() && (
             isStandalone ? (
               <div className={setting}>
                 <div>

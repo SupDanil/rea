@@ -12,6 +12,7 @@ import {
   STAMPS_PER_GIFT,
 } from '../domain/loyalty'
 import type { UserProfile } from '../domain/profile'
+import { getTelegramInitData, isTelegramWebApp } from '../utils/telegram'
 import { hasAuthToken, readCachedProfile, writeCachedProfile } from '../utils/storage'
 
 export type Profile = UserProfile
@@ -38,16 +39,43 @@ export function useProfile() {
 
     api
       .getProfile()
-      .then((p) => {
+      .then(async (p) => {
         if (!cancelled) {
-          setProfile(p)
-          if (p) writeCachedProfile(p)
-          setIsAuthLoading(false)
+          if (p) {
+            setProfile(p)
+            writeCachedProfile(p)
+            setIsAuthLoading(false)
+          } else if (isTelegramWebApp()) {
+            const initData = getTelegramInitData()
+            if (initData) {
+              try {
+                const tgAuth = await api.telegramWebAppAuth(initData)
+                if (!cancelled && tgAuth.profile) {
+                  setProfile(tgAuth.profile)
+                  writeCachedProfile(tgAuth.profile)
+                }
+              } catch {}
+            }
+            setIsAuthLoading(false)
+          } else {
+            setIsAuthLoading(false)
+          }
         }
       })
-      .catch(() => {
-        // Offline or server down: stay signed out until the next load.
+      .catch(async () => {
         if (!cancelled) {
+          if (isTelegramWebApp()) {
+            const initData = getTelegramInitData()
+            if (initData) {
+              try {
+                const tgAuth = await api.telegramWebAppAuth(initData)
+                if (!cancelled && tgAuth.profile) {
+                  setProfile(tgAuth.profile)
+                  writeCachedProfile(tgAuth.profile)
+                }
+              } catch {}
+            }
+          }
           setIsAuthLoading(false)
         }
       })
