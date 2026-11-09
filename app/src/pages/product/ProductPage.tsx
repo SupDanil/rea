@@ -13,6 +13,7 @@ import { useAppNavigate } from '../../hooks/useAppNavigate'
 import { useCatalog, useCatalogQuery } from '../../queries/useCatalog'
 import { useApp } from '../../state/AppContext'
 import { cx } from '../../utils/cx'
+import { dropIntoCup } from '../../utils/dropIn'
 import { findThumb, flyArt, MORPH, settledRect, TO_CART } from '../../utils/morph'
 import { bounce, pop } from '../../utils/motion'
 import { AddToCartButton } from './AddToCartButton'
@@ -88,11 +89,13 @@ function ProductView({ item }: { item: MenuItem }) {
   const activeGroup = config.groups.find((g) => g.id === activeGroupId)
 
 
-  const pick = (group: IngredientGroup, ingredient: Ingredient) => {
+  const pick = (group: IngredientGroup, ingredient: Ingredient, from: Element | null) => {
     const landed = group.counter ? config.addOne(group, ingredient) : config.toggle(group, ingredient.id)
-    if (landed && cupRef.current) {
-      bounce(cupRef.current, 0.5)
-    }
+    if (!landed) return
+    const cup = artRef.current
+    // The add-on's picture drops into the cup; the cup bounces when it lands, not on the tap.
+    if (from && cup) void dropIntoCup(from, cup).then(() => bounce(cupRef.current, 0.5))
+    else bounce(cupRef.current, 0.5)
   }
 
   // Opening: the thumbnail you tapped (menu card, hero, cart line) flies into the cup's place.
@@ -312,7 +315,7 @@ function ProductView({ item }: { item: MenuItem }) {
                 qtyOf={(id) => config.qtyOf(activeGroup, id)}
                 total={config.totalOf(activeGroup)}
                 canAdd={(ing) => config.canAdd(activeGroup, ing)}
-                onPick={(ing) => pick(activeGroup, ing)}
+                onPick={(ing, art) => pick(activeGroup, ing, art)}
                 onRemove={(ing) => config.removeOne(activeGroup, ing.id)}
               />
             )}

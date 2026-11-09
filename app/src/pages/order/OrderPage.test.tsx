@@ -52,12 +52,13 @@ describe('OrderPage real-time order tracking', () => {
     status: 'accepted',
   }
 
-  const mockApp = (orders: Order[], profile: any = { phone: sampleOrder.phone, name: sampleOrder.name }) =>
+  type MockProfile = { phone: string; name: string } | null
+  const mockApp = (orders: Order[], profile: MockProfile = { phone: sampleOrder.phone, name: sampleOrder.name }) =>
     vi.spyOn(AppContextModule, 'useApp').mockReturnValue({
       orders: { orders, update: mockUpdate, merge: mockMerge, upsert: mockUpsert },
       showToast: mockShowToast,
       profile,
-    } as any)
+    } as unknown as ReturnType<typeof AppContextModule.useApp>)
 
   const renderPage = (orderId = 'ord-test-456') => {
     const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false, staleTime: Infinity } } })
@@ -82,7 +83,7 @@ describe('OrderPage real-time order tracking', () => {
     mockShowToast.mockReset()
     FakeEventSource.instances = []
     vi.stubGlobal('EventSource', FakeEventSource)
-    vi.spyOn(AppNavigateModule, 'useAppNavigate').mockReturnValue({ go: vi.fn(), back: mockBack, replace: vi.fn() } as any)
+    vi.spyOn(AppNavigateModule, 'useAppNavigate').mockReturnValue({ go: vi.fn(), back: mockBack, replace: vi.fn() } as unknown as ReturnType<typeof AppNavigateModule.useAppNavigate>)
   })
 
   afterEach(() => {

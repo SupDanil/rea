@@ -33,7 +33,7 @@ describe('useCheckout hook', () => {
       go: vi.fn(),
       back: vi.fn(),
       replace: mockReplace,
-    } as any)
+    } as unknown as ReturnType<typeof AppNavigateModule.useAppNavigate>)
 
     vi.spyOn(AppContextModule, 'useApp').mockReturnValue({
       cart: {
@@ -48,7 +48,7 @@ describe('useCheckout hook', () => {
         name: 'Данил',
       },
       showToast: mockShowToast,
-    } as any)
+    } as unknown as ReturnType<typeof AppContextModule.useApp>)
   })
 
   afterEach(() => {

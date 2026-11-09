@@ -60,13 +60,16 @@ function getShopTimeParts(shop: Shop, date: Date) {
   }
 }
 
+type LegacyHours = { opens?: string; opensAt?: string; closes?: string; closesAt?: string; isClosed?: boolean }
+
 export const hoursOn = (shop: Shop, date: Date): ShopHours | undefined => {
   const { weekday } = getShopTimeParts(shop, date)
   if (Array.isArray(shop.hours)) {
     return shop.hours.find((h) => h.weekday === weekday)
   }
   if (shop.hours && typeof shop.hours === 'object') {
-    const raw = shop.hours as any
+    // Legacy single-day object (older API payloads): read either key spelling.
+    const raw = shop.hours as unknown as LegacyHours
     const opens = raw.opens || raw.opensAt || '08:00'
     const closes = raw.closes || raw.closesAt || '22:00'
     const isClosed = Boolean(raw.isClosed)

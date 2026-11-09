@@ -28,18 +28,22 @@ export function useProductConfig(
   const queryCatalog = useCatalog()
   const catalog = providedCatalog ?? queryCatalog
 
+  // Plain locals, so the memo dependencies match what the bodies read (React Compiler keeps them).
+  const initialVariantId = initialConfig?.variantId
+  const initialIngredientIds = initialConfig?.ingredientIds
+
   const initialVariantIdx = useMemo(() => {
-    if (initialConfig?.variantId) {
-      const idx = item.variants.findIndex((v) => v.id === initialConfig.variantId)
+    if (initialVariantId) {
+      const idx = item.variants.findIndex((v) => v.id === initialVariantId)
       if (idx >= 0) return idx
     }
     return firstAvailable(item)
-  }, [initialConfig?.variantId, item])
+  }, [initialVariantId, item])
 
   const initialSelection = useMemo(() => {
-    if (!initialConfig?.ingredientIds?.length) return {}
+    if (!initialIngredientIds?.length) return {}
     const sel: Selection = {}
-    for (const id of initialConfig.ingredientIds) {
+    for (const id of initialIngredientIds) {
       for (const groupId of item.groupIds) {
         const group = catalog.groupById.get(groupId)
         if (group?.ingredients.some((i) => i.id === id)) {
@@ -49,7 +53,7 @@ export function useProductConfig(
       }
     }
     return sel
-  }, [catalog, initialConfig?.ingredientIds, item.groupIds])
+  }, [catalog, initialIngredientIds, item.groupIds])
 
   const [variantIdx, setVariantIdx] = useState(initialVariantIdx)
   const [selection, setSelection] = useState<Selection>(initialSelection)

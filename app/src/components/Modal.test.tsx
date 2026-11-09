@@ -188,8 +188,8 @@ describe('Presence', () => {
     Element.prototype.getAnimations = () => [{ finished } as unknown as Animation]
   }
   afterEach(() => {
-    // @ts-expect-error jsdom has no Web Animations
-    delete Element.prototype.getAnimations
+    // jsdom has no Web Animations: drop the stub again
+    delete (Element.prototype as Partial<Element>).getAnimations
   })
 
   it('waits for the exit to play out, however long a stalled phone takes to start it', async () => {

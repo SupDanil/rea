@@ -100,9 +100,7 @@ describe('usePwaInstall', () => {
     const promptMock = vi.fn().mockResolvedValue(undefined)
     const userChoiceMock = Promise.resolve({ outcome: 'accepted' as const, platform: 'web' })
 
-    const fakeEvent = new Event('beforeinstallprompt') as any
-    fakeEvent.prompt = promptMock
-    fakeEvent.userChoice = userChoiceMock
+    const fakeEvent = Object.assign(new Event('beforeinstallprompt'), { prompt: promptMock, userChoice: userChoiceMock })
 
     act(() => {
       window.dispatchEvent(fakeEvent)

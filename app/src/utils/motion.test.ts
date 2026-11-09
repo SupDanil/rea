@@ -4,8 +4,8 @@ import { flyTo } from './motion'
 
 describe('flyTo', () => {
   afterEach(() => {
-    // @ts-expect-error jsdom has no Web Animations
-    delete Element.prototype.animate
+    // jsdom has no Web Animations: drop the stub again
+    delete (Element.prototype as Partial<Element>).animate
     document.body.innerHTML = ''
   })
 

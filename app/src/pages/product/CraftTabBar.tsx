@@ -1,5 +1,8 @@
+import { useState } from 'react'
+
 import { ChoiceButton } from '../../components/ChoiceButton'
 import type { IngredientGroup } from '../../domain'
+import { cx } from '../../utils/cx'
 import type { Selection } from './useProductConfig'
 
 type Props = {
@@ -34,17 +37,32 @@ export function CraftTabBar({
             className="shrink-0 transition-colors duration-200"
           >
             <span>{group.name}</span>
-            {pickedCount > 0 && (
-              <span
-                key={pickedCount}
-                className="ui-count-badge grid size-5 place-items-center rounded-pill text-caption font-bold leading-none animate-pop"
-              >
-                {pickedCount}
-              </span>
-            )}
+            <TabCount count={pickedCount} />
           </ChoiceButton>
         )
       })}
     </div>
+  )
+}
+
+/**
+ * The count's slot grows from zero width (grid 0fr → 1fr), so the tab widens and its neighbours slide
+ * over instead of jumping. Going back to zero it collapses the same way, still showing the last number.
+ */
+function TabCount({ count }: { count: number }) {
+  const [last, setLast] = useState(count)
+  if (count > 0 && count !== last) setLast(count)
+  const shown = count > 0
+  return (
+    <span className={cx('ui-tab-count', shown && 'ui-tab-count--shown')} aria-hidden={!shown}>
+      <span>
+        <span
+          key={shown ? count : 'hidden'}
+          className={cx('ui-count-badge grid size-5 place-items-center rounded-pill text-caption font-bold leading-none', shown && 'animate-pop')}
+        >
+          {shown ? count : last}
+        </span>
+      </span>
+    </span>
   )
 }

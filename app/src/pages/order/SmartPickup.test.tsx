@@ -125,7 +125,7 @@ describe('Smart Pickup & QR flow (Luckin Coffee logic)', () => {
       },
     ]
 
-    vi.spyOn(api, 'getShops').mockResolvedValue(shops as any)
+    vi.spyOn(api, 'getShops').mockResolvedValue(shops as unknown as Awaited<ReturnType<typeof api.getShops>>)
     const onClose = vi.fn()
     const qc = new QueryClient()
 

@@ -3,7 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import * as pushHook from '../../hooks/usePushNotifications'
 import * as pwaHook from '../../hooks/usePwaInstall'
-import { AppContext } from '../../state/AppContext'
+import { AppContext, type AppState } from '../../state/AppContext'
 import { OrderNotificationPrompt } from './OrderNotificationPrompt'
 
 describe('OrderNotificationPrompt', () => {
@@ -20,12 +20,11 @@ describe('OrderNotificationPrompt', () => {
     profile: { phone: '+79991112233', name: 'Данил', email: '', notifications: false, joinedAt: 1 },
     updateProfile: vi.fn().mockResolvedValue({}),
     showToast: vi.fn(),
-    cart: {} as any,
-    catalog: {} as any,
-    loyalty: {} as any,
-    myOrders: {} as any,
-    orders: {} as any,
-    theme: 'dark' as any,
+    cart: {} as AppState['cart'],
+    loyalty: {} as AppState['loyalty'],
+    myOrders: {} as AppState['myOrders'],
+    orders: {} as AppState['orders'],
+    theme: 'dark' as AppState['theme'],
     toggleTheme: vi.fn(),
     isAuthLoading: false,
     signIn: vi.fn(),
@@ -50,7 +49,7 @@ describe('OrderNotificationPrompt', () => {
     })
 
     const { container } = render(
-      <AppContext.Provider value={appValue as any}>
+      <AppContext.Provider value={appValue as unknown as AppState}>
         <OrderNotificationPrompt orderId="ord-1" status="making" />
       </AppContext.Provider>
     )
@@ -74,7 +73,7 @@ describe('OrderNotificationPrompt', () => {
     const appValue = mockApp()
 
     render(
-      <AppContext.Provider value={appValue as any}>
+      <AppContext.Provider value={appValue as unknown as AppState}>
         <OrderNotificationPrompt orderId="ord-1" status="making" />
       </AppContext.Provider>
     )
@@ -106,7 +105,7 @@ describe('OrderNotificationPrompt', () => {
     const appValue = mockApp()
 
     render(
-      <AppContext.Provider value={appValue as any}>
+      <AppContext.Provider value={appValue as unknown as AppState}>
         <OrderNotificationPrompt orderId="ord-1" status="making" />
       </AppContext.Provider>
     )
@@ -133,18 +132,21 @@ describe('OrderNotificationPrompt', () => {
     })
 
     vi.spyOn(pwaHook, 'usePwaInstall').mockReturnValue({
-      isInstallable: true,
       isStandalone: false,
       isIos: true,
       isMobile: true,
+      isPromptReady: false,
+      canInstall: true,
+      isBannerDismissed: false,
       promptInstall: vi.fn(),
+      dismissBanner: vi.fn(),
     })
 
     const appValue = mockApp()
 
     render(
-      <AppContext.Provider value={appValue as any}>
-        <OrderNotificationPrompt orderId="ord-1" status="created" />
+      <AppContext.Provider value={appValue as unknown as AppState}>
+        <OrderNotificationPrompt orderId="ord-1" status="accepted" />
       </AppContext.Provider>
     )
 
@@ -171,7 +173,7 @@ describe('OrderNotificationPrompt', () => {
     const appValue = mockApp()
 
     const { unmount } = render(
-      <AppContext.Provider value={appValue as any}>
+      <AppContext.Provider value={appValue as unknown as AppState}>
         <OrderNotificationPrompt orderId="ord-1" status="making" />
       </AppContext.Provider>
     )
@@ -184,7 +186,7 @@ describe('OrderNotificationPrompt', () => {
     unmount()
 
     const { container } = render(
-      <AppContext.Provider value={appValue as any}>
+      <AppContext.Provider value={appValue as unknown as AppState}>
         <OrderNotificationPrompt orderId="ord-1" status="making" />
       </AppContext.Provider>
     )
@@ -207,7 +209,7 @@ describe('OrderNotificationPrompt', () => {
     const appValue = mockApp()
 
     const { container } = render(
-      <AppContext.Provider value={appValue as any}>
+      <AppContext.Provider value={appValue as unknown as AppState}>
         <OrderNotificationPrompt orderId="ord-1" status="making" />
       </AppContext.Provider>
     )
@@ -230,14 +232,14 @@ describe('OrderNotificationPrompt', () => {
     const appValue = mockApp()
 
     const { container: completedContainer } = render(
-      <AppContext.Provider value={appValue as any}>
+      <AppContext.Provider value={appValue as unknown as AppState}>
         <OrderNotificationPrompt orderId="ord-1" status="completed" />
       </AppContext.Provider>
     )
     expect(completedContainer.firstChild).toBeNull()
 
     const { container: cancelledContainer } = render(
-      <AppContext.Provider value={appValue as any}>
+      <AppContext.Provider value={appValue as unknown as AppState}>
         <OrderNotificationPrompt orderId="ord-2" status="cancelled" />
       </AppContext.Provider>
     )
@@ -261,7 +263,7 @@ describe('OrderNotificationPrompt', () => {
     })
 
     render(
-      <AppContext.Provider value={appValue as any}>
+      <AppContext.Provider value={appValue as unknown as AppState}>
         <OrderNotificationPrompt orderId="ord-1" status="making" />
       </AppContext.Provider>
     )
@@ -287,7 +289,7 @@ describe('OrderNotificationPrompt', () => {
     })
 
     render(
-      <AppContext.Provider value={appValue as any}>
+      <AppContext.Provider value={appValue as unknown as AppState}>
         <OrderNotificationPrompt orderId="ord-1" status="making" />
       </AppContext.Provider>
     )
@@ -311,14 +313,14 @@ describe('OrderNotificationPrompt', () => {
     const appValue = mockApp()
 
     const { rerender } = render(
-      <AppContext.Provider value={appValue as any}>
+      <AppContext.Provider value={appValue as unknown as AppState}>
         <OrderNotificationPrompt orderId="ord-1" status="ready" />
       </AppContext.Provider>
     )
     expect(screen.getByText('Заказ ждёт у стойки!')).toBeInTheDocument()
 
     rerender(
-      <AppContext.Provider value={appValue as any}>
+      <AppContext.Provider value={appValue as unknown as AppState}>
         <OrderNotificationPrompt orderId="ord-1" status="accepted" />
       </AppContext.Provider>
     )
@@ -338,17 +340,20 @@ describe('OrderNotificationPrompt', () => {
     })
 
     vi.spyOn(pwaHook, 'usePwaInstall').mockReturnValue({
-      isInstallable: false,
       isStandalone: false,
       isIos: false,
       isMobile: false,
+      isPromptReady: false,
+      canInstall: false,
+      isBannerDismissed: false,
       promptInstall: vi.fn(),
+      dismissBanner: vi.fn(),
     })
 
     const appValue = mockApp()
 
     const { container } = render(
-      <AppContext.Provider value={appValue as any}>
+      <AppContext.Provider value={appValue as unknown as AppState}>
         <OrderNotificationPrompt orderId="ord-1" status="making" />
       </AppContext.Provider>
     )
@@ -369,17 +374,20 @@ describe('OrderNotificationPrompt', () => {
     })
 
     vi.spyOn(pwaHook, 'usePwaInstall').mockReturnValue({
-      isInstallable: true,
       isStandalone: false,
       isIos: true,
       isMobile: true,
+      isPromptReady: false,
+      canInstall: true,
+      isBannerDismissed: false,
       promptInstall: vi.fn(),
+      dismissBanner: vi.fn(),
     })
 
     const appValue = mockApp()
 
     const { unmount } = render(
-      <AppContext.Provider value={appValue as any}>
+      <AppContext.Provider value={appValue as unknown as AppState}>
         <OrderNotificationPrompt orderId="ord-ios-1" status="making" />
       </AppContext.Provider>
     )
@@ -392,7 +400,7 @@ describe('OrderNotificationPrompt', () => {
     unmount()
 
     const { container } = render(
-      <AppContext.Provider value={appValue as any}>
+      <AppContext.Provider value={appValue as unknown as AppState}>
         <OrderNotificationPrompt orderId="ord-ios-1" status="making" />
       </AppContext.Provider>
     )

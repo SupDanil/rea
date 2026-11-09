@@ -57,8 +57,8 @@ describe('flyArt', () => {
     await Promise.all(animations.map((a) => a.finished.catch(() => {})))
     await Promise.resolve()
     vi.unstubAllGlobals()
-    // @ts-expect-error jsdom has no Web Animations
-    delete Element.prototype.animate
+    // jsdom has no Web Animations: drop the stub again
+    delete (Element.prototype as Partial<Element>).animate
   })
 
   it('hides both ends in flight, then shows them and removes the clone', async () => {

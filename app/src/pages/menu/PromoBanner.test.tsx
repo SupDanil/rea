@@ -123,7 +123,7 @@ describe('PromoBanner', () => {
     expect(screen.queryByLabelText(/Быстро добавить/)).toBeNull()
 
     // Secondary transition button
-    const readBtn = screen.getByRole('button', { name: 'Подробнее', exact: true })
+    const readBtn = screen.getByRole('button', { name: 'Подробнее' })
     expect(readBtn).toBeInTheDocument()
     fireEvent.click(readBtn)
     expect(onOpen).toHaveBeenCalledTimes(1)
@@ -164,7 +164,7 @@ describe('PromoBanner', () => {
     expect(screen.queryByLabelText(/Быстро добавить/)).toBeNull()
     expect(container.querySelector('button button')).toBeNull()
 
-    const readBtn = screen.getByRole('button', { name: 'Подробнее', exact: true })
+    const readBtn = screen.getByRole('button', { name: 'Подробнее' })
     fireEvent.click(readBtn)
     expect(onOpen).toHaveBeenCalledTimes(1)
   })

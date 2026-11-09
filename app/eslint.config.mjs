@@ -19,6 +19,12 @@ export default [
   },
   js.configs.recommended,
   {
+    // Service-worker scripts served as-is from public/ (importScripts'd by the generated SW).
+    files: ["public/**/*.js"],
+    languageOptions: { globals: { ...globals.serviceworker } },
+    rules: { "no-empty": ["error", { allowEmptyCatch: true }] },
+  },
+  {
     files: ["**/*.{ts,tsx}"],
     languageOptions: {
       parser: tsParser,

@@ -96,7 +96,8 @@ export function InstallGuideSheet({ onClose }: Props) {
 
             <div className="rounded-card bg-surface-2 p-3.5 border-(length:--stroke-width) border-line text-caption text-muted leading-normal">
               <strong className="block text-ink font-semibold mb-1">🔔 Уведомления на iOS (iOS 16.4+)</strong>
-              Apple поддерживает push-уведомления в Safari только после добавления приложения на экран «Домой». Запускайте приложение с иконки на рабочем столе, чтобы получать оповещения о готовности кофе!
+              Apple поддерживает push-уведомления в Safari только после добавления приложения на экран «Домой».
+              {' '}Запускайте приложение с иконки на рабочем столе, чтобы получать оповещения о готовности кофе!
             </div>
           </div>
         ) : (

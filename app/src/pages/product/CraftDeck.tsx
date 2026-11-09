@@ -2,7 +2,6 @@ import { type PointerEvent, useEffect, useLayoutEffect, useRef, useState } from 
 
 import { AddonIcon } from '../../components/AddonIcon'
 import { Button, IconButton } from '../../components/Button'
-import { ChoiceFace } from '../../components/ChoiceButton'
 import { BackIcon } from '../../components/icons'
 import { IngredientArt } from '../../components/ItemArt'
 import type { Ingredient, IngredientGroup } from '../../domain'
@@ -19,9 +18,9 @@ type Props = {
   onRemove: (ingredient: Ingredient) => void
 }
 
-// 152px card + optional 44px pagination. No loading jump.
+// 164px card (room for a 44px control) + optional 44px pagination. No loading jump.
 export function CraftDeckSlot({ group }: { group: IngredientGroup }) {
-  return <div aria-hidden="true" className={group.ingredients.length > 1 ? 'h-50 wide:h-53' : 'h-39 wide:h-42'} />
+  return <div aria-hidden="true" className={group.ingredients.length > 1 ? 'h-52 wide:h-55' : 'h-41 wide:h-44'} />
 }
 
 function nearestCard(el: HTMLDivElement) {
@@ -164,7 +163,7 @@ export function CraftDeck({ group, qtyOf, canAdd, onPick, onRemove }: Props) {
           : e.key === 'Home' ? 0 : e.key === 'End' ? group.ingredients.length - 1 : null
         if (next !== null) { e.preventDefault(); centerCard(next) }
       }}
-      className="relative flex w-full min-w-0 flex-col items-center focus-visible:outline-(length:--focus-width) focus-visible:outline-accent focus-visible:outline-offset-[calc(var(--space-unit)*0.5)]"
+      className="craft-deck relative flex w-full min-w-0 flex-col items-center focus-visible:outline-(length:--focus-width) focus-visible:outline-accent focus-visible:outline-offset-[calc(var(--space-unit)*0.5)]"
     >
       {activeIndex > 0 && <IconButton onClick={() => centerCard(activeRef.current - 1)} aria-label="Предыдущая добавка" className="absolute left-2 bottom-2 z-10 hidden sm:grid"><BackIcon /></IconButton>}
       {activeIndex < group.ingredients.length - 1 && <IconButton onClick={() => centerCard(activeRef.current + 1)} aria-label="Следующая добавка" className="absolute right-2 bottom-2 z-10 hidden sm:grid"><span className="rotate-180"><BackIcon /></span></IconButton>}
@@ -244,26 +243,25 @@ function IngredientCard({ ingredient, index, active, counter, qty, canAdd, onPic
                 : 'включено'}
         </span>
         {selected && (
-          <span className="grid min-w-5 h-5 place-items-center rounded-pill bg-accent text-accent-ink px-1 text-micro font-bold shadow-xs">
-            {counter ? `×${qty}` : (
-              <svg viewBox="0 0 16 16" width="11" height="11" aria-hidden="true">
-                <path d="m3 8 3 3 7-7" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-            )}
+          // One flat "selected" mark for every card; the amount lives only in the − n + control below.
+          <span className="grid size-5 place-items-center rounded-pill bg-accent text-accent-ink">
+            <svg viewBox="0 0 16 16" width="11" height="11" aria-hidden="true">
+              <path d="m3 8 3 3 7-7" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
           </span>
         )}
       </div>
 
-      {/* Media: Centered photo-icon */}
-      <div data-ingredient-media className="relative w-full flex items-center justify-center pt-0.5">
-        <div ref={artRef} className="flex h-12 w-full items-center justify-center">
+      {/* Media: Centered photo-icon. A toggle card has no button, so its picture takes that room. */}
+      <div data-ingredient-media className={cx('relative w-full flex items-center justify-center', counter ? 'pt-0.5' : 'flex-1 min-h-0')}>
+        <div ref={artRef} data-deck-art className={cx('flex w-full items-center justify-center', counter ? 'h-12' : 'h-18')}>
           {ingredient.imageUrl ? (
             <AddonIcon
               url={ingredient.imageUrl}
               alt={ingredient.name}
-              className="size-12 max-h-12 w-auto object-contain pointer-events-none drop-shadow-xs"
+              className={cx('w-auto object-contain pointer-events-none drop-shadow-xs', counter ? 'size-12 max-h-12' : 'size-18 max-h-18')}
             />
-          ) : <IngredientArt color={ingredient.color} className="size-10" />}
+          ) : <IngredientArt color={ingredient.color} className={counter ? 'size-10' : 'size-14'} />}
         </div>
       </div>
 
@@ -276,18 +274,12 @@ function IngredientCard({ ingredient, index, active, counter, qty, canAdd, onPic
     </>
   )
 
+  // No plate: the picture, name and control float on the stage. Selection reads from the check badge,
+  // focus from the muted neighbours; the radius only shapes the keyboard focus ring.
   const cardClass = cx(
-    'relative flex flex-col items-center h-39 w-30 min-w-0 shrink-0 snap-center p-2 text-center select-none',
-    'rounded-2xl bg-pd-glass border-(length:--stroke-width) transition-all duration-200',
-    selected
-      ? 'border-accent/40 text-pd-ink'
-      : 'border-pd-line text-pd-ink hover:border-pd-line-hover',
+    'relative flex flex-col items-center h-41 w-30 min-w-0 shrink-0 snap-center p-2 text-center select-none rounded-2xl text-pd-ink',
     ingredient.stopped && 'opacity-60',
   )
-
-  const cardStyle = {
-    boxShadow: 'var(--ceramic-raised)',
-  }
 
   const actionAreaClass = 'w-full flex justify-center mt-auto'
 
@@ -304,18 +296,9 @@ function IngredientCard({ ingredient, index, active, counter, qty, canAdd, onPic
         cardClass,
         'cursor-pointer focus-visible:outline-(length:--focus-width) focus-visible:outline-accent focus-visible:outline-offset-[calc(var(--space-unit)*0.5)]',
       )}
-      style={cardStyle}
     >
+      {/* The whole card is the control: state reads from the check badge and the accent border. */}
       {content}
-      <span className={actionAreaClass}>
-        <ChoiceFace
-          tone="product"
-          selected={selected}
-          className="ui-choice--deck w-full max-w-25 text-caption font-bold"
-        >
-          {selected ? 'Выбрано' : 'Выбрать'}
-        </ChoiceFace>
-      </span>
     </Button>
   )
 
@@ -324,7 +307,6 @@ function IngredientCard({ ingredient, index, active, counter, qty, canAdd, onPic
       data-card-index={index}
       data-active={active}
       className={cardClass}
-      style={cardStyle}
     >
       {content}
       <div className={actionAreaClass}>
@@ -343,7 +325,7 @@ function IngredientCard({ ingredient, index, active, counter, qty, canAdd, onPic
                 e.stopPropagation()
                 onRemove()
               }}
-              className="text-compact font-bold text-pd-ink hover:text-accent transition-colors grid place-items-center rounded-pill active:scale-95"
+              className="text-lead font-extrabold text-pd-ink hover:text-accent transition-colors grid place-items-center rounded-pill active:scale-95"
             >
               −
             </IconButton>
@@ -359,7 +341,7 @@ function IngredientCard({ ingredient, index, active, counter, qty, canAdd, onPic
                 e.stopPropagation()
                 onPick(artRef.current)
               }}
-              className="text-compact font-bold text-pd-ink hover:text-accent transition-colors grid place-items-center rounded-pill disabled:opacity-30 active:scale-95"
+              className="text-lead font-extrabold text-pd-ink hover:text-accent transition-colors grid place-items-center rounded-pill disabled:opacity-30 active:scale-95"
             >
               +
             </IconButton>

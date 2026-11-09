@@ -6,7 +6,7 @@ import { CloseIcon } from '../../components/icons'
 import { ItemArt } from '../../components/ItemArt'
 import { Modal } from '../../components/Modal'
 import { QuickAddButton } from '../../components/QuickAddButton'
-import { isSoldOut, itemImage,type MenuItem, minPrice } from '../../domain'
+import { isSoldOut, itemImage,type MenuItem, minPrice, type Promotion } from '../../domain'
 import { useAppNavigate } from '../../hooks/useAppNavigate'
 import { useCatalog, useCatalogQuery } from '../../queries/useCatalog'
 import { useApp } from '../../state/AppContext'
@@ -50,7 +50,7 @@ export function PromoArticlePage() {
   return <PromoArticleView promo={promo} />
 }
 
-function PromoArticleView({ promo }: { promo: any }) {
+function PromoArticleView({ promo }: { promo: Promotion }) {
   const { back, go } = useAppNavigate()
   const { cart } = useApp()
   const catalog = useCatalog()

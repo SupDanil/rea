@@ -78,7 +78,7 @@ describe('CraftDeck selection and quantities', () => {
   describe('Suite 4: Single-Choice Group Mechanics', () => {
     const milkGroup = allGroupsFixture.find((g) => g.id === 'milk')!
 
-    it('renders "Выбрать" for unselected, "Выбрано" with checkmark badge for selected', () => {
+    it('marks the selected card with aria-pressed and a check badge; the card itself is the control', () => {
       const { container } = render(
         <CraftDeck
           group={milkGroup}
@@ -92,12 +92,12 @@ describe('CraftDeck selection and quantities', () => {
       )
 
       const oatCard = container.querySelector('[data-card-index="0"]')!
-      expect(oatCard).toHaveTextContent('Выбрано')
       expect(oatCard).toHaveAttribute('aria-pressed', 'true')
       expect(oatCard.querySelector('svg')).toBeInTheDocument() // Checkmark badge ✓
 
       const almondCard = container.querySelector('[data-card-index="1"]')!
-      expect(almondCard).toHaveTextContent('Выбрать')
+      expect(almondCard).toHaveAttribute('aria-pressed', 'false')
+      expect(almondCard).not.toHaveTextContent(/Выбра/)
     })
 
     it('triggers onPick with ingredient and art element on card click', () => {
@@ -165,8 +165,9 @@ describe('CraftDeck selection and quantities', () => {
       )
 
       // Now stepper exists
+      // The amount appears once, in the stepper; the corner shows a plain check mark
       expect(screen.getByText('1')).toBeInTheDocument()
-      expect(screen.getByText('×1')).toBeInTheDocument()
+      expect(screen.queryByText('×1')).toBeNull()
 
       // Click "+" to add second portion
       const plusBtn = screen.getByLabelText('Кокосовая стружка: добавить порцию')
@@ -300,7 +301,7 @@ function setupDeck(group = allGroupsFixture[0], selected = '') {
   return { ...view, track, scrollTo, onPick }
 }
 
-function pointer(target: EventTarget, type: string, x: number, pointerType = 'mouse') {
+function pointer(target: Element | Window, type: string, x: number, pointerType = 'mouse') {
   // jsdom has no native PointerEvent; include real pointer metadata explicitly.
   const event = new MouseEvent(type, { bubbles: true, cancelable: true, clientX: x, button: 0 })
   Object.defineProperties(event, { pointerType: { value: pointerType }, pointerId: { value: 1 } })

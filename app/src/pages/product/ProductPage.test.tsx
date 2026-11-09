@@ -25,7 +25,7 @@ describe('ProductPage Component', () => {
     return render(
       <QueryClientProvider client={queryClient}>
         <AppProvider>
-          <MemoryRouter initialEntries={[entry as any]}>
+          <MemoryRouter initialEntries={[entry]}>
             <Routes>
               <Route path="/product/:id" element={<ProductPage />} />
               <Route path="/" element={<div>menu-root</div>} />

@@ -234,6 +234,7 @@ export function HeroBuilderArea({
                   item.id !== openedWith && 'animate-[swap-in_0.4s_var(--ease-soft)_both]',
                 )}
                 ref={artRef}
+                data-art-box={`${bounds.x} ${bounds.y} ${bounds.width} ${bounds.height}`}
                 {...artProps(item.id)}
               />
             </div>
