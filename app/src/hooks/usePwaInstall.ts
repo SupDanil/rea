@@ -118,7 +118,7 @@ export function usePwaInstall() {
     isIos,
     isMobile,
     isPromptReady: deferredPrompt !== null,
-    canInstall: !isStandalone && isMobile,
+    canInstall: !isStandalone && isMobile && !isTelegramWebApp(),
     isBannerDismissed,
     promptInstall,
     dismissBanner,

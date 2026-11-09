@@ -52,11 +52,11 @@ export function PhoneStep({ digits, sending, inputRef, onChange, onSubmit }: Pro
 
         {isTg ? (
           <div className="w-full space-y-3">
-            <div className="flex items-center gap-3 p-3.5 rounded-2xl bg-sky-500/10 border border-sky-500/20 text-sky-400">
+            <div className="flex items-center gap-3 p-3.5 rounded-2xl bg-accent/10 border border-accent/20 text-accent">
               <span className="text-2xl">✈️</span>
               <div className="text-left min-w-0">
                 <div className="text-sm font-bold truncate text-ink">{displayName}</div>
-                <div className="text-xs text-sky-400/90 font-mono">
+                <div className="text-xs text-accent font-mono">
                   {tgUser?.username ? `@${tgUser.username}` : `ID: ${tgUser?.id}`}
                 </div>
               </div>
@@ -85,13 +85,15 @@ export function PhoneStep({ digits, sending, inputRef, onChange, onSubmit }: Pro
                 />
               </div>
             ) : (
-              <button
+              <Button
                 type="button"
+                variant="ghost"
+                size="sm"
                 onClick={() => setShowPhoneInput(true)}
-                className="text-xs text-accent underline hover:opacity-80 block text-left pt-1"
+                className="text-xs text-accent underline hover:opacity-80 block text-left pt-1 !p-0 !min-h-0"
               >
                 + Указать номер телефона (необязательно)
-              </button>
+              </Button>
             )}
           </div>
         ) : (

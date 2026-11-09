@@ -104,3 +104,17 @@ export const BellIcon = ({ size = 20, className }: { size?: number; className?: 
     <path d="M13.73 21a2 2 0 0 1-3.46 0" />
   </svg>
 )
+
+export const EditIcon = ({ size = 14, className }: { size?: number; className?: string }) => (
+  <svg className={className} viewBox="0 0 24 24" width={size} height={size} fill="none" stroke="currentColor" strokeWidth="var(--icon-stroke)" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
+  </svg>
+)
+
+export const LockIcon = ({ size = 13, className }: { size?: number; className?: string }) => (
+  <svg className={className} viewBox="0 0 24 24" width={size} height={size} fill="none" stroke="currentColor" strokeWidth="var(--icon-stroke)" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <rect x="4" y="11" width="16" height="10" rx="2" ry="2" />
+    <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+  </svg>
+)
+

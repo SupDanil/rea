@@ -5,6 +5,7 @@ import { CloseIcon, RabbitIcon } from '../../components/icons'
 import { usePushNotifications } from '../../hooks/usePushNotifications'
 import { usePwaInstall } from '../../hooks/usePwaInstall'
 import { AppContext } from '../../state/AppContext'
+import { isTelegramWebApp } from '../../utils/telegram'
 
 type Props = {
   onOpenGuide: () => void
@@ -15,7 +16,7 @@ export function InstallBanner({ onOpenGuide }: Props) {
   const { isSupported, permission, subscribe } = usePushNotifications()
   const appContext = useContext(AppContext)
 
-  if (!canInstall || isBannerDismissed) return null
+  if (isTelegramWebApp() || !canInstall || isBannerDismissed) return null
 
   const handleInstall = async () => {
     const outcome = await promptInstall()
