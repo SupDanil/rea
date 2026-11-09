@@ -21,7 +21,7 @@ type Props = {
 
 // 152px card + optional 44px pagination. No loading jump.
 export function CraftDeckSlot({ group }: { group: IngredientGroup }) {
-  return <div aria-hidden="true" className={group.ingredients.length > 1 ? 'h-49 wide:h-53' : 'h-38 wide:h-42'} />
+  return <div aria-hidden="true" className={group.ingredients.length > 1 ? 'h-50 wide:h-53' : 'h-39 wide:h-42'} />
 }
 
 function nearestCard(el: HTMLDivElement) {
@@ -232,18 +232,19 @@ function IngredientCard({ ingredient, index, active, counter, qty, canAdd, onPic
 
   const content = (
     <>
-      <div data-ingredient-media className="relative w-full flex items-center justify-center pt-1">
-        <div ref={artRef} className="flex h-10 w-full items-center justify-center">
-          {ingredient.imageUrl ? (
-            <AddonIcon
-              url={ingredient.imageUrl}
-              alt={ingredient.name}
-              className="size-9 pointer-events-none"
-            />
-          ) : <IngredientArt color={ingredient.color} className="size-9" />}
-        </div>
+      {/* Top bar: Price on top-left, selection counter/check badge on top-right */}
+      <div className="relative w-full flex items-center justify-between h-5 px-0.5 z-10 pointer-events-none">
+        <span className="text-micro font-bold text-pd-ink-2 tabular-nums">
+          {ingredient.stopped
+            ? 'нет в наличии'
+            : ingredient.price > 0
+              ? `+${formatPrice(ingredient.price)}`
+              : counter
+                ? 'бесплатно'
+                : 'включено'}
+        </span>
         {selected && (
-          <span className="absolute right-0.5 top-0 z-10 grid min-w-5 h-5 place-items-center rounded-pill bg-accent text-accent-ink px-1 text-caption font-bold shadow-xs">
+          <span className="grid min-w-5 h-5 place-items-center rounded-pill bg-accent text-accent-ink px-1 text-micro font-bold shadow-xs">
             {counter ? `×${qty}` : (
               <svg viewBox="0 0 16 16" width="11" height="11" aria-hidden="true">
                 <path d="m3 8 3 3 7-7" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
@@ -253,25 +254,30 @@ function IngredientCard({ ingredient, index, active, counter, qty, canAdd, onPic
         )}
       </div>
 
-      <div className="flex flex-col items-center justify-center my-auto px-1 w-full text-center">
-        <span className="font-sans text-[12px] font-bold text-pd-ink leading-[1.2] line-clamp-2 text-balance break-words">
+      {/* Media: Centered photo-icon */}
+      <div data-ingredient-media className="relative w-full flex items-center justify-center pt-0.5">
+        <div ref={artRef} className="flex h-12 w-full items-center justify-center">
+          {ingredient.imageUrl ? (
+            <AddonIcon
+              url={ingredient.imageUrl}
+              alt={ingredient.name}
+              className="size-12 max-h-12 w-auto object-contain pointer-events-none drop-shadow-xs"
+            />
+          ) : <IngredientArt color={ingredient.color} className="size-10" />}
+        </div>
+      </div>
+
+      {/* Title: Exactly fixed 32px height (h-8) for 1 or 2 lines, so names never move the button */}
+      <div className="flex h-8 w-full items-center justify-center text-center px-0.5 overflow-hidden">
+        <span className="font-sans text-caption font-bold text-pd-ink leading-[1.15] line-clamp-2 text-balance break-words">
           {ingredient.name}
-        </span>
-        <span className="text-[11px] font-semibold leading-tight text-pd-ink-2 tabular-nums mt-0.5">
-          {ingredient.stopped
-            ? 'нет в наличии'
-            : ingredient.price > 0
-              ? `+${formatPrice(ingredient.price)}`
-              : counter
-                ? 'бесплатно'
-                : 'включено'}
         </span>
       </div>
     </>
   )
 
   const cardClass = cx(
-    'relative flex flex-col items-center justify-between h-39 w-30 min-w-0 shrink-0 snap-center p-2 text-center select-none',
+    'relative flex flex-col items-center h-39 w-30 min-w-0 shrink-0 snap-center p-2 text-center select-none',
     'rounded-2xl bg-pd-glass border-(length:--stroke-width) transition-all duration-200',
     selected
       ? 'border-accent/40 text-pd-ink'
@@ -280,7 +286,7 @@ function IngredientCard({ ingredient, index, active, counter, qty, canAdd, onPic
   )
 
   const cardStyle = {
-    boxShadow: selected ? 'var(--ceramic-selected)' : 'var(--ceramic-raised)',
+    boxShadow: 'var(--ceramic-raised)',
   }
 
   const actionAreaClass = 'w-full flex justify-center mt-auto'
@@ -305,7 +311,7 @@ function IngredientCard({ ingredient, index, active, counter, qty, canAdd, onPic
         <ChoiceFace
           tone="product"
           selected={selected}
-          className="w-full max-w-[92px] h-7.5 min-h-[30px] rounded-pill text-caption font-bold"
+          className="ui-choice--deck w-full max-w-25 text-caption font-bold"
         >
           {selected ? 'Выбрано' : 'Выбрать'}
         </ChoiceFace>
@@ -324,8 +330,7 @@ function IngredientCard({ ingredient, index, active, counter, qty, canAdd, onPic
       <div className={actionAreaClass}>
         {qty > 0 ? (
           <div
-            className="flex h-7.5 w-full max-w-[92px] items-center justify-between rounded-pill bg-pd-glass-hover/80 dark:bg-black/35 border-(length:--stroke-width) border-pd-line/70 px-1 select-none"
-            style={{ boxShadow: 'var(--ceramic-selected)' }}
+            className="ui-choice ui-choice--product ui-choice--selected ui-choice--deck ui-choice--stepper w-full max-w-25 flex items-center justify-between select-none"
             role="group"
             aria-label={`Количество: ${qty}`}
           >
@@ -338,11 +343,11 @@ function IngredientCard({ ingredient, index, active, counter, qty, canAdd, onPic
                 e.stopPropagation()
                 onRemove()
               }}
-              className="size-6 min-w-6 h-6 text-compact font-bold text-pd-ink hover:text-accent transition-colors grid place-items-center rounded-pill"
+              className="text-compact font-bold text-pd-ink hover:text-accent transition-colors grid place-items-center rounded-pill active:scale-95"
             >
               −
             </IconButton>
-            <span className="min-w-4 text-compact font-display font-bold text-pd-ink text-center tabular-nums" aria-live="polite">
+            <span className="min-w-4 text-caption font-heading font-bold text-pd-ink text-center tabular-nums" aria-live="polite">
               {qty}
             </span>
             <IconButton
@@ -354,7 +359,7 @@ function IngredientCard({ ingredient, index, active, counter, qty, canAdd, onPic
                 e.stopPropagation()
                 onPick(artRef.current)
               }}
-              className="size-6 min-w-6 h-6 text-compact font-bold text-pd-ink hover:text-accent transition-colors grid place-items-center rounded-pill disabled:opacity-30"
+              className="text-compact font-bold text-pd-ink hover:text-accent transition-colors grid place-items-center rounded-pill disabled:opacity-30 active:scale-95"
             >
               +
             </IconButton>
@@ -365,8 +370,7 @@ function IngredientCard({ ingredient, index, active, counter, qty, canAdd, onPic
             aria-label={`${ingredient.name}: добавить порцию`}
             disabled={!canAdd || ingredient.stopped}
             onClick={() => onPick(artRef.current)}
-            className="flex h-7.5 w-full max-w-[92px] items-center justify-center rounded-pill bg-pd-glass hover:bg-pd-glass-hover border-(length:--stroke-width) border-pd-line/60 px-2 text-caption font-bold text-pd-ink disabled:opacity-40 transition-all focus-visible:outline-(length:--focus-width) focus-visible:outline-accent"
-            style={{ boxShadow: 'var(--ceramic-raised)' }}
+            className="ui-choice ui-choice--product ui-choice--deck w-full max-w-25 text-caption font-bold text-pd-ink disabled:opacity-40 transition-all focus-visible:outline-(length:--focus-width) focus-visible:outline-accent"
           >
             {ingredient.stopped ? 'Закончилось' : '+ Добавить'}
           </Button>

@@ -86,6 +86,9 @@
   .ui-choice:hover { background-color: var(--surface-2); }
   .ui-choice--selected, .ui-choice--selected:hover { background: var(--selection-surface); color: var(--ink); box-shadow: var(--ceramic-selected); font-weight: var(--weight-bold); }
   .ui-choice:active, button:active .ui-choice { box-shadow: var(--ceramic-selected); }
+  .ui-choice.ui-choice--deck { min-height: calc(var(--space-unit) * 7.5); height: calc(var(--space-unit) * 7.5); padding-inline: calc(var(--space-unit) * 2); border-radius: var(--radius-pill); font-size: var(--type-caption); line-height: 1; }
+  .ui-choice.ui-choice--deck.ui-choice--stepper { padding-inline: calc(var(--space-unit) * 1.5); }
+  .ui-choice.ui-choice--deck .ui-icon-button { width: calc(var(--space-unit) * 6); height: calc(var(--space-unit) * 6); min-width: calc(var(--space-unit) * 6); min-height: calc(var(--space-unit) * 6); font-size: var(--type-compact); }
   .ui-count-badge { background: var(--surface-2); color: var(--ink-2); box-shadow: none; }
   .ui-cart-count { background: var(--cart-badge-bg); box-shadow: none; }
   .ui-promo-badge { display: inline-flex; align-items: center; justify-content: center; gap: calc(var(--space-unit) * 1.5); min-height: calc(var(--space-unit) * 8); padding-block: calc(var(--space-unit) * 1.75); padding-inline: calc(var(--space-unit) * 3.5); border-radius: var(--radius-pill); background: color-mix(in srgb, var(--surface) 92%, transparent); color: var(--accent); border: var(--stroke-width) solid color-mix(in srgb, var(--accent) 30%, transparent); font-family: var(--font-heading); font-size: var(--type-caption); font-weight: var(--weight-bold); letter-spacing: var(--tracking-label); line-height: 1; text-transform: uppercase; box-shadow: var(--ceramic-raised); }

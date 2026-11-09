@@ -273,6 +273,9 @@
   --ceramic-lift: color-mix(in srgb, var(--ink) 5%, transparent);
   --ceramic-shade: color-mix(in srgb, var(--neutral-black) 52%, transparent);
   --ceramic-raised: inset 0 1px 1px var(--ceramic-light), -3px -3px 6px var(--ceramic-lift), 1px 2px 3px color-mix(in srgb, var(--ceramic-shade) 60%, transparent), 4px 6px 10px color-mix(in srgb, var(--ceramic-shade) 85%, transparent);
+  --ceramic-selected: inset 0 0 0 var(--stroke-width) color-mix(in srgb, var(--neutral-black) 50%, transparent), inset 1px 2px 4px color-mix(in srgb, var(--neutral-black) 80%, transparent), inset -1px -1px 2px color-mix(in srgb, var(--ink) 25%, transparent), 0 1px 1px color-mix(in srgb, var(--neutral-white) 8%, transparent);
+  --ceramic-inset: var(--ceramic-selected);
+  --segment-selected-shadow: inset 0 0 0 var(--stroke-width) color-mix(in srgb, var(--neutral-black) 45%, transparent), inset 1px 2px 3px color-mix(in srgb, var(--neutral-black) 70%, transparent), inset -1px -1px 2px color-mix(in srgb, var(--ink) 20%, transparent);
 
   /* Dark espresso ceramic surfaces. */
   --glass: var(--surface);

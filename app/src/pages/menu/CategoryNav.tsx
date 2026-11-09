@@ -134,12 +134,14 @@ export function CategoryNav({ catalog, navRef, activeTop, activeSub, activeSubs,
                 role="tab"
                 aria-selected={selected}
                 className={cx(
-                  'relative z-1 min-h-11 rounded-control px-3.5 whitespace-nowrap transition-colors duration-250 cursor-pointer',
+                  // Border is constant on both states: toggling it made border-color animate
+                  // from currentColor (white) to transparent on the chip being deselected.
+                  'relative z-1 min-h-11 rounded-control px-3.5 whitespace-nowrap transition-colors duration-250 cursor-pointer border-(length:--stroke-width) border-transparent',
                   isStuck ? 'py-1.5 text-compact sm:py-2' : 'py-1.5 text-compact',
                   'font-semibold',
                   selected
                     ? 'text-ink'
-                    : 'ui-category-chip text-ink-2 border-(length:--stroke-width) border-transparent',
+                    : 'ui-category-chip text-ink-2',
                 )}
                 onClick={() => onSelect(sub.id)}
               >
