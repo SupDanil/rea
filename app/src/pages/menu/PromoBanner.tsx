@@ -1,4 +1,4 @@
-import { type CSSProperties, useMemo, useRef } from 'react'
+import { type CSSProperties, useCallback, useMemo, useRef } from 'react'
 
 import { Button } from '../../components/Button'
 import { ArtGlow, ItemArt } from '../../components/ItemArt'
@@ -7,6 +7,7 @@ import { useAmbientWhileVisible } from '../../hooks/useAmbientWhileVisible'
 import { cx } from '../../utils/cx'
 import { formatPrice, plural } from '../../utils/format'
 import { artProps } from '../../utils/morph'
+import { tiltRef } from '../../utils/tilt'
 
 interface PromoBannerProps {
   promo: Promotion
@@ -26,6 +27,10 @@ export function PromoBanner({
   const artRef = useRef<SVGSVGElement>(null)
   const rootRef = useRef<HTMLDivElement>(null)
   useAmbientWhileVisible(rootRef)
+  const setRoot = useCallback((el: HTMLDivElement | null) => {
+    rootRef.current = el
+    return tiltRef(el)
+  }, [])
 
   const soldOut = isProduct && product ? isSoldOut(product) : false
   const tint = isProduct && product ? product.art.bg : promo.bgColor || 'var(--promo-fallback)'
@@ -55,9 +60,9 @@ export function PromoBanner({
 
   return (
     <div
-      ref={rootRef}
+      ref={setRoot}
       className={cx(
-        'tinted mesh-grain group relative flex flex-col justify-center overflow-hidden rounded-dialog text-left text-ink shadow-card transition-all active:scale-[0.99] cursor-pointer isolate',
+        'ui-tilt tinted mesh-grain group relative flex flex-col justify-center overflow-hidden rounded-dialog text-left text-ink shadow-card transition-[scale,box-shadow,opacity] active:scale-[0.99] cursor-pointer isolate',
         'brand-promo [background:var(--background-promo)]',
         isHero
           ? 'mx-2.5 sm:mx-3 mt-1 w-[calc(100%-calc(var(--space-unit)*5))] sm:w-[calc(100%-calc(var(--space-unit)*6))] wide:max-w-(--layout-hero) wide:mx-auto'
@@ -86,7 +91,7 @@ export function PromoBanner({
         )}
       >
         {/* Left Copy & Actions */}
-        <div className="flex flex-col justify-center h-full py-1 pr-2 xs:pr-3 sm:pr-4 wide:pr-6 z-1">
+        <div className="ui-tilt__shift ui-tilt__shift--surface flex flex-col justify-center h-full py-1 pr-2 xs:pr-3 sm:pr-4 wide:pr-6 z-1">
           {/* Badges & Meta Chips */}
           <div className="flex items-center gap-2 flex-nowrap sm:flex-wrap">
             <span className="ui-promo-badge shrink-0">
@@ -177,14 +182,14 @@ export function PromoBanner({
               <div data-ambient className="relative flex h-full w-full items-center justify-center animate-[float_6s_ease-in-out_2]">
                 <ArtGlow
                   color="var(--art-glow)"
-                  className={cx('left-1/2 top-[56%] -translate-1/2 aspect-square h-full', artHeight)}
+                  className={cx('ui-tilt__shift--back left-1/2 top-[56%] -translate-1/2 aspect-square h-full', artHeight)}
                 />
                 <ItemArt
                   ref={artRef}
                   art={product.art}
                   imageUrl={itemImage(product)}
                   className={cx(
-                    'relative block h-full w-auto object-contain transition-transform duration-300 ease-soft group-hover:scale-105',
+                    'ui-tilt__shift relative block h-full w-auto object-contain transition-[scale] duration-300 ease-soft group-hover:scale-105',
                     artHeight,
                   )}
                   {...artProps(product.id, promo.id)}
@@ -198,7 +203,7 @@ export function PromoBanner({
                 <img
                   src={promo.imageUrl}
                   alt={promo.title}
-                  className="h-full w-full object-cover"
+                  className="ui-tilt__shift h-full w-full object-cover scale-110"
                 />
               </div>
             ) : null}

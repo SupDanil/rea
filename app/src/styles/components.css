@@ -100,6 +100,22 @@
   .ui-category-indicator { background: var(--selection-surface); box-shadow: var(--ceramic-selected); }
   .ui-product-card { background: color-mix(in srgb, var(--surface) 55%, var(--bg)); box-shadow: var(--product-card-shadow); }
   .ui-product-card:hover { box-shadow: var(--product-card-hover-shadow); }
+  /*
+   * Gyroscopic tilt for the promo banner, phones only (utils/tilt.ts sets <html data-tilt> and
+   * writes --tilt-x/--tilt-y on the visible .ui-tilt). The card turns against the phone, as if it
+   * held still in space, and its layers slide at different depths: the copy barely, as print on
+   * the card; the cup most, hanging in front of it; its glow the other way, behind. The flat art
+   * never turns on its own. Off during a shared-element flight, so the flight lands true.
+   */
+  [data-tilt] .ui-tilt {
+    --tilt-shift: 12px;
+    transform: perspective(800px) rotateX(calc(var(--tilt-y, 0) * 4deg)) rotateY(calc(var(--tilt-x, 0) * -4deg));
+  }
+  [data-tilt] .ui-tilt__shift { transform: translate3d(calc(var(--tilt-x, 0) * var(--tilt-shift)), calc(var(--tilt-y, 0) * var(--tilt-shift)), 0); }
+  [data-tilt] .ui-tilt__shift--surface { --tilt-shift: 3px; }
+  [data-tilt] .ui-tilt__shift--back { transform: translate3d(calc(var(--tilt-x, 0) * var(--tilt-shift) * -0.5), calc(var(--tilt-y, 0) * var(--tilt-shift) * -0.5), 0); }
+  body:has([data-flight]) :is(.ui-tilt, .ui-tilt__shift, .ui-tilt__shift--back) { transform: none; }
+  @media (prefers-reduced-motion: reduce) { :is(.ui-tilt, .ui-tilt__shift, .ui-tilt__shift--back) { transform: none; } }
   .ui-promo-open:focus-visible { outline-offset: calc(-1 * var(--space-unit)); }
   .ui-product-footer { box-shadow: var(--ceramic-footer); }
   @media (max-width: 599px) and (max-height: 700px) {
