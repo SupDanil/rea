@@ -76,7 +76,6 @@
   --stepper-bg: var(--surface-2);
   --segment-inset: calc(var(--space-unit) * 1.5);
   --segment-height: calc(var(--space-unit) * 10.5);
-  --segment-height-compact: calc(var(--space-unit) * 11);
   --segment-radius: var(--radius-card);
   --segment-bg: var(--surface);
   /* A centred shell shadow keeps the visible top/bottom rim equally thick. */

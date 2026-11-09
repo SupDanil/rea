@@ -149,10 +149,10 @@ export function PromoBanner({
                     variant="secondary"
                     size="sm"
                     onClick={onOpen}
-                    className="pointer-events-auto relative z-20 inline-flex items-center gap-1.5 font-bold shadow-xs transition-transform group-hover:scale-105"
+                    className="pointer-events-auto relative z-20 inline-flex items-center gap-1 min-h-9 px-3.5 text-caption xs:text-compact font-bold shadow-xs transition-transform group-hover:scale-105"
                   >
                     <span>Выбрать</span>
-                    <span aria-hidden="true" className="text-body leading-none transition-transform group-hover:translate-x-0.5">→</span>
+                    <span aria-hidden="true" className="leading-none transition-transform group-hover:translate-x-0.5">→</span>
                   </Button>
                 </>
               )
@@ -161,10 +161,10 @@ export function PromoBanner({
                 variant="secondary"
                 size="sm"
                 onClick={onOpen}
-                className="pointer-events-auto relative z-20 inline-flex items-center gap-1.5 font-bold shadow-xs transition-transform group-hover:scale-105"
+                className="pointer-events-auto relative z-20 inline-flex items-center gap-1 min-h-9 px-3.5 text-caption xs:text-compact font-bold shadow-xs transition-transform group-hover:scale-105"
               >
                 <span>Подробнее</span>
-                <span aria-hidden="true" className="text-body leading-none transition-transform group-hover:translate-x-0.5">→</span>
+                <span aria-hidden="true" className="leading-none transition-transform group-hover:translate-x-0.5">→</span>
               </Button>
             )}
           </div>
