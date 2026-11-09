@@ -126,11 +126,11 @@ describe('CraftDeck selection and quantities', () => {
   describe('Suite 5: Counter Group Mechanics', () => {
     const toppingsGroup = allGroupsFixture.find((g) => g.id === 'toppings')!
 
-    it('transitions between "+ Добавить" and "− qty +" stepper smoothly', () => {
+    it('a tap on the idle card adds the first portion; then only the − qty + control acts', () => {
       const onPick = vi.fn()
       const onRemove = vi.fn()
 
-      const { rerender } = render(
+      const { rerender, container } = render(
         <CraftDeck
           group={toppingsGroup}
           groupIndex={2}
@@ -142,10 +142,13 @@ describe('CraftDeck selection and quantities', () => {
         />
       )
 
-      // Initially "+ Добавить"
+      // Idle: the whole card is the add control, no separate button and no stepper yet
+      const card = container.querySelector('[data-card-index="2"]')!
       const addBtn = screen.getByLabelText('Кокосовая стружка: добавить порцию')
-      expect(addBtn).toBeInTheDocument()
-      expect(addBtn).toHaveTextContent('Добавить')
+      expect(card).toContainElement(addBtn)
+      expect(addBtn).toHaveTextContent('')
+      expect(card).toHaveAttribute('data-counted', 'false')
+      expect(screen.queryByLabelText('Кокосовая стружка: убрать порцию')).toBeNull()
 
       // Click to add
       fireEvent.click(addBtn)
@@ -164,7 +167,8 @@ describe('CraftDeck selection and quantities', () => {
         />
       )
 
-      // Now stepper exists
+      // Counted: the card-wide add control is gone, the stepper is shown
+      expect(container.querySelector('[data-card-index="2"]')).toHaveAttribute('data-counted', 'true')
       // The amount appears once, in the stepper; the corner shows a plain check mark
       expect(screen.getByText('1')).toBeInTheDocument()
       expect(screen.queryByText('×1')).toBeNull()
@@ -228,7 +232,6 @@ describe('CraftDeck selection and quantities', () => {
       )
 
       expect(screen.getByText('нет в наличии')).toBeInTheDocument()
-      expect(screen.getByText('Закончилось')).toBeInTheDocument()
       const btn = screen.getByRole('button', { name: 'Закончившийся сироп: добавить порцию' })
       expect(btn).toBeDisabled()
     })

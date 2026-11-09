@@ -86,7 +86,7 @@
   .ui-choice:hover { background-color: var(--surface-2); }
   .ui-choice--selected, .ui-choice--selected:hover { background: var(--selection-surface); color: var(--ink); box-shadow: var(--ceramic-selected); font-weight: var(--weight-bold); }
   .ui-choice:active, button:active .ui-choice { box-shadow: var(--ceramic-selected); }
-  .ui-choice.ui-choice--deck { min-height: var(--control-icon-lg); height: var(--control-icon-lg); padding-inline: calc(var(--space-unit) * 2); border-radius: var(--radius-pill); font-size: var(--type-caption); line-height: 1; }
+  .ui-choice.ui-choice--deck { min-height: calc(var(--space-unit) * 9); height: calc(var(--space-unit) * 9); padding-inline: calc(var(--space-unit) * 2); border-radius: var(--radius-pill); font-size: var(--type-caption); line-height: 1; }
   .ui-choice.ui-choice--deck.ui-choice--stepper { padding-inline: calc(var(--space-unit) * 1.5); }
   /* Selected deck control = the SegmentedControl material: a raised shell with the pressed-in well inside.
      The deck has no plate any more, and a bare well would vanish into the page (dark theme above all). */
@@ -98,6 +98,10 @@
     background: var(--selection-surface); box-shadow: var(--segment-selected-shadow);
   }
   .ui-choice.ui-choice--deck .ui-icon-button { width: calc(var(--space-unit) * 8); height: calc(var(--space-unit) * 8); min-width: calc(var(--space-unit) * 8); min-height: calc(var(--space-unit) * 8); font-size: var(--type-lead); }
+  /* Deck controls are 36px to look at (the card stays 156px, the stage keeps its height) but 44px to the
+     finger, as the design doc requires: the hit area reaches into the card's padding. */
+  button.ui-choice.ui-choice--deck { position: relative; }
+  button.ui-choice.ui-choice--deck::after { content: ''; position: absolute; inset: calc(var(--space-unit) * -1) 0; }
   /* 32px visible, 44px to the finger (Apple's minimum touch target). */
   .ui-choice.ui-choice--deck .ui-icon-button::before { content: ''; position: absolute; inset: calc(var(--space-unit) * -1.5); }
   .ui-count-badge { background: var(--surface-2); color: var(--ink-2); box-shadow: none; }
@@ -181,6 +185,18 @@
   /* Photos from the admin are their own layer: never recoloured, only the centred one scales up a little. */
   .craft-deck [data-deck-art] { transition: scale var(--motion-control) var(--ease-soft); }
   .craft-deck [data-active="true"] [data-deck-art] { scale: 1.15; }
+  /* Counter card states. Idle: a 72px picture like every card. Counted: the picture eases down to 56px and the
+     − n + slot unfolds (grid 0fr → 1fr). Inner budget 140px: 16 bar + 56 art + 32 name + 36 control. */
+  .craft-deck__media { margin-block: var(--space-unit); transition: margin-block var(--motion-swap) var(--ease-soft); }
+  .craft-deck__art { height: calc(var(--space-unit) * 18); transition: height var(--motion-swap) var(--ease-soft), scale var(--motion-control) var(--ease-soft); }
+  .craft-deck__art > * { transition: scale var(--motion-swap) var(--ease-soft); }
+  .craft-deck__count { display: grid; grid-template-rows: 0fr; opacity: 0; transition: grid-template-rows var(--motion-swap) var(--ease-soft), opacity var(--motion-control) var(--ease-soft); }
+  .craft-deck__count > * { min-height: 0; }
+  .craft-deck [data-counted="false"] .craft-deck__count > * { overflow: hidden; }
+  .craft-deck [data-counted="true"] .craft-deck__media { margin-block: 0; }
+  .craft-deck [data-counted="true"] .craft-deck__art { height: calc(var(--space-unit) * 14); }
+  .craft-deck [data-counted="true"] .craft-deck__art > * { scale: calc(14 / 18); }
+  .craft-deck [data-counted="true"] .craft-deck__count { grid-template-rows: 1fr; opacity: 1; transition-delay: 60ms; }
 }
 
 ::selection { color: var(--accent-ink); background-color: var(--accent); }

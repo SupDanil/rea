@@ -18,9 +18,9 @@ type Props = {
   onRemove: (ingredient: Ingredient) => void
 }
 
-// 164px card (room for a 44px control) + optional 44px pagination. No loading jump.
+// 156px card + optional 44px pagination. No loading jump.
 export function CraftDeckSlot({ group }: { group: IngredientGroup }) {
-  return <div aria-hidden="true" className={group.ingredients.length > 1 ? 'h-52 wide:h-55' : 'h-41 wide:h-44'} />
+  return <div aria-hidden="true" className={group.ingredients.length > 1 ? 'h-50 wide:h-53' : 'h-39 wide:h-42'} />
 }
 
 function nearestCard(el: HTMLDivElement) {
@@ -228,11 +228,14 @@ function IngredientCard({ ingredient, index, active, counter, qty, canAdd, onPic
 }) {
   const artRef = useRef<HTMLDivElement>(null)
   const selected = qty > 0
+  // While the control folds away it keeps showing the last amount, not a blank or a zero.
+  const [lastQty, setLastQty] = useState(qty)
+  if (qty > 0 && qty !== lastQty) setLastQty(qty)
 
   const content = (
     <>
       {/* Top bar: Price on top-left, selection counter/check badge on top-right */}
-      <div className="relative w-full flex items-center justify-between h-5 px-0.5 z-10 pointer-events-none">
+      <div className="relative w-full flex items-center justify-between h-4 px-0.5 z-10 pointer-events-none">
         <span className="text-micro font-bold text-pd-ink-2 tabular-nums">
           {ingredient.stopped
             ? 'нет в наличии'
@@ -253,15 +256,15 @@ function IngredientCard({ ingredient, index, active, counter, qty, canAdd, onPic
       </div>
 
       {/* Media: Centered photo-icon. A toggle card has no button, so its picture takes that room. */}
-      <div data-ingredient-media className={cx('relative w-full flex items-center justify-center', counter ? 'pt-0.5' : 'flex-1 min-h-0')}>
-        <div ref={artRef} data-deck-art className={cx('flex w-full items-center justify-center', counter ? 'h-12' : 'h-18')}>
+      <div data-ingredient-media className={cx('relative w-full flex items-center justify-center', counter ? 'craft-deck__media' : 'my-1')}>
+        <div ref={artRef} data-deck-art className={cx('flex w-full items-center justify-center', counter ? 'craft-deck__art' : 'h-18')}>
           {ingredient.imageUrl ? (
             <AddonIcon
               url={ingredient.imageUrl}
               alt={ingredient.name}
-              className={cx('w-auto object-contain pointer-events-none drop-shadow-xs', counter ? 'size-12 max-h-12' : 'size-18 max-h-18')}
+              className="size-18 max-h-18 w-auto object-contain pointer-events-none drop-shadow-xs"
             />
-          ) : <IngredientArt color={ingredient.color} className={counter ? 'size-10' : 'size-14'} />}
+          ) : <IngredientArt color={ingredient.color} className="size-14" />}
         </div>
       </div>
 
@@ -277,11 +280,9 @@ function IngredientCard({ ingredient, index, active, counter, qty, canAdd, onPic
   // No plate: the picture, name and control float on the stage. Selection reads from the check badge,
   // focus from the muted neighbours; the radius only shapes the keyboard focus ring.
   const cardClass = cx(
-    'relative flex flex-col items-center h-41 w-30 min-w-0 shrink-0 snap-center p-2 text-center select-none rounded-2xl text-pd-ink',
+    'relative flex flex-col items-center h-39 w-30 min-w-0 shrink-0 snap-center p-2 text-center select-none rounded-2xl text-pd-ink',
     ingredient.stopped && 'opacity-60',
   )
-
-  const actionAreaClass = 'w-full flex justify-center mt-auto'
 
   if (!counter) return (
     <Button
@@ -294,6 +295,7 @@ function IngredientCard({ ingredient, index, active, counter, qty, canAdd, onPic
       onClick={() => onPick(artRef.current)}
       className={cx(
         cardClass,
+        'justify-center', // compact price · picture · name, centred: spare height becomes air around the deck
         'cursor-pointer focus-visible:outline-(length:--focus-width) focus-visible:outline-accent focus-visible:outline-offset-[calc(var(--space-unit)*0.5)]',
       )}
     >
@@ -302,61 +304,59 @@ function IngredientCard({ ingredient, index, active, counter, qty, canAdd, onPic
     </Button>
   )
 
+  // Counter card: looks like every other card until the first portion. Tapping it adds one; the picture
+  // shrinks and the − n + control unfolds below. After that the card itself does nothing (no stray
+  // portions while swiping) — only − and +. Back at zero the control folds away and the picture grows.
+  const addable = canAdd && !ingredient.stopped
   return (
     <div
       data-card-index={index}
       data-active={active}
-      className={cardClass}
+      data-counted={selected}
+      className={cx(cardClass, 'justify-center')}
     >
+      {!selected && (
+        <Button
+          type="button"
+          aria-label={`${ingredient.name}: добавить порцию`}
+          disabled={!addable}
+          onClick={() => onPick(artRef.current)}
+          className="absolute inset-0 z-20 rounded-2xl cursor-pointer disabled:cursor-default focus-visible:outline-(length:--focus-width) focus-visible:outline-accent focus-visible:outline-offset-[calc(var(--space-unit)*0.5)]"
+        />
+      )}
       {content}
-      <div className={actionAreaClass}>
-        {qty > 0 ? (
+      <div className="craft-deck__count w-full" inert={!selected} aria-hidden={!selected}>
+        <div className="flex justify-center">
           <div
             className="ui-choice ui-choice--product ui-choice--selected ui-choice--deck ui-choice--stepper w-full max-w-25 flex items-center justify-between select-none"
             role="group"
-            aria-label={`Количество: ${qty}`}
+            aria-label={selected ? `Количество: ${qty}` : undefined}
           >
             <IconButton
               variant="plain"
               size="sm"
-              aria-label={`${ingredient.name}: убрать порцию`}
+              aria-label={selected ? `${ingredient.name}: убрать порцию` : ''}
               disabled={ingredient.stopped}
-              onClick={(e) => {
-                e.stopPropagation()
-                onRemove()
-              }}
+              onClick={onRemove}
               className="text-lead font-extrabold text-pd-ink hover:text-accent transition-colors grid place-items-center rounded-pill active:scale-95"
             >
               −
             </IconButton>
             <span className="min-w-4 text-caption font-heading font-bold text-pd-ink text-center tabular-nums" aria-live="polite">
-              {qty}
+              {selected ? qty : lastQty || ''}
             </span>
             <IconButton
               variant="plain"
               size="sm"
-              aria-label={`${ingredient.name}: добавить порцию`}
-              disabled={!canAdd || ingredient.stopped}
-              onClick={(e) => {
-                e.stopPropagation()
-                onPick(artRef.current)
-              }}
+              aria-label={selected ? `${ingredient.name}: добавить порцию` : ''}
+              disabled={!addable}
+              onClick={() => onPick(artRef.current)}
               className="text-lead font-extrabold text-pd-ink hover:text-accent transition-colors grid place-items-center rounded-pill disabled:opacity-30 active:scale-95"
             >
               +
             </IconButton>
           </div>
-        ) : (
-          <Button
-            type="button"
-            aria-label={`${ingredient.name}: добавить порцию`}
-            disabled={!canAdd || ingredient.stopped}
-            onClick={() => onPick(artRef.current)}
-            className="ui-choice ui-choice--product ui-choice--deck w-full max-w-25 text-caption font-bold text-pd-ink disabled:opacity-40 transition-all focus-visible:outline-(length:--focus-width) focus-visible:outline-accent"
-          >
-            {ingredient.stopped ? 'Закончилось' : '+ Добавить'}
-          </Button>
-        )}
+        </div>
       </div>
     </div>
   )
