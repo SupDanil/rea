@@ -27,6 +27,12 @@ export function formatPhone(digits: string) {
   if (parts[3]) out += `-${parts[3]}`
   return out
 }
+/**
+ * Value for a phone input: empty until the first digit, so the placeholder shows and
+ * there is no «+7» to put the caret in front of (typing there used to glue a 7 to the number).
+ */
+export const phoneInputValue = (digits: string) => (digits ? formatPhone(digits) : '')
+
 export const phoneDigits = (value: string) => value.replace(/\D/g, '').replace(/^[78]/, '').slice(0, 10)
 
 export const isEmail = (v: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)

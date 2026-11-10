@@ -84,7 +84,7 @@ describe('OrderNotificationPrompt', () => {
 
     await waitFor(() => {
       expect(subscribeMock).toHaveBeenCalledWith('+79991112233')
-      expect(appValue.updateProfile).toHaveBeenCalledWith({ notifications: true })
+      expect(appValue.updateProfile).toHaveBeenCalledWith({ notificationsApp: true, notifications: true })
       expect(appValue.showToast).toHaveBeenCalledWith(expect.objectContaining({ text: expect.stringContaining('Уведомления включены') }))
     })
   })
@@ -115,7 +115,7 @@ describe('OrderNotificationPrompt', () => {
 
     await waitFor(() => {
       expect(subscribeMock).toHaveBeenCalledWith('+79991112233')
-      expect(appValue.updateProfile).toHaveBeenCalledWith({ notifications: false })
+      expect(appValue.updateProfile).toHaveBeenCalledWith({ notificationsApp: false, notifications: false })
     })
   })
 

@@ -70,9 +70,9 @@ function ProfileView({ profile }: { profile: Profile }) {
           </div>
         </div>
 
-        {/* LevelCard and StampCard temporarily hidden per requirements */}
-        <OrderHistory orders={myOrders} onOpen={(o) => go(`/order/${o.id}`)} onRepeat={repeat} />
+        {/* Settings first, then order history */}
         <ProfileSettings profile={profile} theme={theme} onToggleTheme={toggleTheme} onUpdate={saveProfile} />
+        <OrderHistory orders={myOrders} onOpen={(o) => go(`/order/${o.id}`)} onRepeat={repeat} />
 
         <div className="mt-5.5 text-center">
           <Button className={textBtn(true)} onClick={() => setConfirmExit(true)}>

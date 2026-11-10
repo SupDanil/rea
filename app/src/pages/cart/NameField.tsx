@@ -2,6 +2,7 @@ import type { RefObject } from 'react'
 
 import { TextField } from '../../components/TextField'
 import { block, blockTitle, hint } from '../../components/ui'
+import { NAME_MAX } from '../../forms/schemas'
 
 type Props = { value: string; error: boolean; inputRef: RefObject<HTMLInputElement | null>; onChange: (value: string) => void }
 
@@ -16,7 +17,7 @@ export function NameField({ value, error, inputRef, onChange }: Props) {
         ref={inputRef}
          error={error} fieldSize="md"
         value={value}
-        maxLength={20}
+        maxLength={NAME_MAX}
         autoComplete="given-name"
         placeholder="Имя для бариста"
         aria-invalid={error}

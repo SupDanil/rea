@@ -8,6 +8,7 @@ import {
   formatPrice,
   isEmail,
   phoneDigits,
+  phoneInputValue,
   plural,
 } from './format'
 
@@ -48,6 +49,12 @@ describe('Utils: format', () => {
     expect(formatPhone('9991234567')).toBe('+7 999 123-45-67')
     expect(formatPhone('89991234567')).toBe('+7 999 123-45-67')
     expect(formatPhone('+7 999 123-45-67')).toBe('+7 999 123-45-67')
+  })
+
+  it('phoneInputValue stays empty until the first digit, then masks', () => {
+    expect(phoneInputValue('')).toBe('')
+    expect(phoneInputValue('9')).toBe('+7 9')
+    expect(phoneInputValue('9991234567')).toBe('+7 999 123-45-67')
   })
 
   it('phoneDigits strips non-digits and leading 7/8', () => {

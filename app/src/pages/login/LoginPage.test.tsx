@@ -3,6 +3,7 @@ import { afterEach,beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { ApiError } from '../../api'
 import { renderApp } from '../../test/renderApp'
+import * as tg from '../../utils/telegram'
 
 const profile = { phone: '+79990001122', name: 'Гость', email: '', notifications: true, joinedAt: 1 }
 
@@ -98,5 +99,90 @@ describe('LoginPage (SMS code checked by the server)', () => {
     fireEvent.change(await screen.findByLabelText('Код из SMS'), { target: { value: '4821' } })
     expect(await screen.findByText('Маша, напиток в подарок уже ждёт 🎁')).toBeInTheDocument()
     expect(verifySmsCode).toHaveBeenCalledWith('+79990001122', '4821', 'Маша')
+  })
+
+  describe('step forms (TanStack Form + zod)', () => {
+    it('«Получить код» stays locked until the number is complete and the offer is accepted', async () => {
+      const sendSmsCode = vi.fn().mockResolvedValue({ phone: profile.phone, success: true })
+      renderApp('/login', { sendSmsCode })
+      const input = await screen.findByLabelText('Телефон')
+      const submit = screen.getByRole('button', { name: 'Получить код' })
+      expect(submit).toBeDisabled()
+
+      fireEvent.change(input, { target: { value: '99900011' } })
+      expect(submit).toBeDisabled()
+
+      fireEvent.change(input, { target: { value: '9990001122' } })
+      await waitFor(() => expect(submit).toBeEnabled())
+      expect(input).toHaveValue('+7 999 000-11-22')
+
+      const [agreed] = screen.getAllByRole('checkbox')
+      fireEvent.click(agreed)
+      await waitFor(() => expect(submit).toBeDisabled())
+      expect(sendSmsCode).not.toHaveBeenCalled()
+    })
+
+    it('the code is verified only when all four digits are in, and non-digits are dropped', async () => {
+      const verifySmsCode = vi.fn().mockRejectedValue(new ApiError(401, 'Неверный код', 'invalid'))
+      renderApp('/login', { sendSmsCode: async () => ({ phone: profile.phone, success: true }), verifySmsCode })
+      await typePhone()
+      const code = (await screen.findByLabelText('Код из SMS')) as HTMLInputElement
+
+      fireEvent.change(code, { target: { value: '1a2' } })
+      expect(code.value).toBe('12')
+      expect(verifySmsCode).not.toHaveBeenCalled()
+
+      fireEvent.change(code, { target: { value: '12345' } })
+      expect(code.value).toBe('1234')
+      await waitFor(() => expect(verifySmsCode).toHaveBeenCalledTimes(1))
+    })
+
+    it('after a wrong code, editing clears the error and the corrected code is checked again', async () => {
+      const verifySmsCode = vi
+        .fn()
+        .mockRejectedValueOnce(new ApiError(401, 'Неверный код', 'invalid'))
+        .mockResolvedValueOnce({ profile: { ...profile, name: 'Аня' }, isNew: false })
+      renderApp('/login', { sendSmsCode: async () => ({ phone: profile.phone, success: true }), verifySmsCode })
+      await typePhone()
+      const code = await screen.findByLabelText('Код из SMS')
+
+      fireEvent.change(code, { target: { value: '0000' } })
+      expect(await screen.findByText('Неверный код')).toBeInTheDocument()
+
+      fireEvent.change(code, { target: { value: '000' } })
+      await waitFor(() => expect(screen.queryByText('Неверный код')).toBeNull())
+
+      fireEvent.change(code, { target: { value: '0001' } })
+      await waitFor(() => expect(verifySmsCode).toHaveBeenLastCalledWith('+79990001122', '0001', undefined))
+      expect(await screen.findByText('С возвращением, Аня!')).toBeInTheDocument()
+    })
+
+    it('the name step does not accept a blank name', async () => {
+      const updateProfile = vi.fn()
+      renderApp('/login', {
+        sendSmsCode: async () => ({ phone: profile.phone, success: true }),
+        verifySmsCode: async () => ({ phone: profile.phone, code: '1234', profile, isNew: true }),
+        updateProfile,
+      })
+      await typePhone()
+      fireEvent.change(await screen.findByLabelText('Код из SMS'), { target: { value: '1234' } })
+
+      const name = await screen.findByLabelText('Имя')
+      const done = screen.getByRole('button', { name: 'Готово' })
+      fireEvent.change(name, { target: { value: '   ' } })
+      expect(done).toBeDisabled()
+      fireEvent.submit(name.closest('form')!)
+      expect(updateProfile).not.toHaveBeenCalled()
+    })
+  })
+
+  it('inside Telegram a linked guest is signed in automatically, without the phone form', async () => {
+    vi.spyOn(tg, 'isTelegramWebApp').mockReturnValue(true)
+    vi.spyOn(tg, 'getTelegramInitData').mockReturnValue('init-data')
+    const telegramWebAppAuth = vi.fn().mockResolvedValue({ profile: { ...profile, name: 'Аня' }, isNew: false })
+    renderApp('/login', { telegramWebAppAuth })
+
+    expect(await screen.findByText('С возвращением, Аня!')).toBeInTheDocument()
+    expect(telegramWebAppAuth).toHaveBeenCalledWith('init-data')
   })
 })

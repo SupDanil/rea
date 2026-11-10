@@ -1,3 +1,4 @@
+import { useForm, useStore } from '@tanstack/react-form'
 import { useId, useRef, useState } from 'react'
 
 import { Button } from '../../components/Button'
@@ -8,6 +9,7 @@ import { ShopPickerSheet } from '../../components/ShopPickerSheet'
 import { Summary, SummaryRow, SummaryTotal } from '../../components/Summary'
 import { addPrice, textBtn } from '../../components/ui'
 import { isDrink, isPaused, type MenuItem, shopStatus } from '../../domain'
+import { checkoutSchema, type CheckoutValues } from '../../forms/schemas'
 import { useAppNavigate } from '../../hooks/useAppNavigate'
 import { useNow } from '../../hooks/useNow'
 import { useCatalog } from '../../queries/useCatalog'
@@ -16,7 +18,6 @@ import { useApp } from '../../state/AppContext'
 import { countOf, type ResolvedLine,resolveLines } from '../../state/cart'
 import type { Profile } from '../../state/loyalty'
 import { giftValue } from '../../state/loyalty'
-import type { PaymentMethod, Pickup } from '../../state/orders'
 import { formatPrice } from '../../utils/format'
 import { collapseOut, fadeAway } from '../../utils/motion'
 import { readSavedName } from '../../utils/storage'
@@ -75,14 +76,32 @@ function CartLoadingSkeleton() {
 function CartView({ profile }: { profile: Profile }) {
   const { cart, loyalty, showToast } = useApp()
   const { go, back } = useAppNavigate()
-  const [name, setName] = useState(() => profile.name || readSavedName())
-  const [nameError, setNameError] = useState(false)
-  const [pickup, setPickup] = useState<Pickup>({ kind: 'asap' })
-  const [payment, setPayment] = useState<PaymentMethod>('card')
+  // The promo the server confirmed — a result, not an input (PromoField owns the input).
   const [promo, setPromo] = useState<AppliedPromo | null>(null)
-  const [useGift, setUseGift] = useState(true)
   const [showShopPicker, setShowShopPicker] = useState(false)
   const nameRef = useRef<HTMLInputElement>(null)
+
+  const focusName = () => {
+    nameRef.current?.focus()
+    nameRef.current?.scrollIntoView({ block: 'center', behavior: 'smooth' })
+  }
+
+  // The checkout form: everything the guest chooses before paying.
+  const [defaultValues] = useState<CheckoutValues>(() => ({
+    name: profile.name || readSavedName(),
+    pickup: { kind: 'asap' },
+    payment: 'card',
+    useGift: true,
+  }))
+  const form = useForm({
+    defaultValues,
+    validators: { onSubmit: checkoutSchema },
+    onSubmit: ({ value }) => pay(checkoutSchema.parse(value).name),
+    onSubmitInvalid: focusName,
+  })
+  const pickup = useStore(form.store, (state) => state.values.pickup)
+  const payment = useStore(form.store, (state) => state.values.payment)
+  const useGift = useStore(form.store, (state) => state.values.useGift)
 
   const catalog = useCatalog()
   const shop = useShop()
@@ -145,11 +164,7 @@ function CartView({ profile }: { profile: Profile }) {
     shopId: shop?.id,
     pickup,
     payment,
-    onMissingName: () => {
-      setNameError(true)
-      nameRef.current?.focus()
-      nameRef.current?.scrollIntoView({ block: 'center', behavior: 'smooth' })
-    },
+    onMissingName: focusName,
   })
 
   const clearButton = lines.length > 0 && (
@@ -183,19 +198,20 @@ function CartView({ profile }: { profile: Profile }) {
             ))}
           </ul>
           <UpsellRow items={upsell} disabled={paying} onAdd={addUpsell} />
-          <LoyaltyOffer loyalty={cartLoyalty} canGift={price.canGift} useGift={useGift} onToggleGift={() => setUseGift((v) => !v)} onLogin={() => go('/login')} />
-          <NameField
-            value={name}
-            error={nameError}
-            inputRef={nameRef}
-            onChange={(value) => {
-              setName(value)
-              if (value.trim()) setNameError(false)
-            }}
-          />
-          <PickupPicker shop={shop} value={pickup} onChange={setPickup} onChangeShop={() => setShowShopPicker(true)} />
+          <LoyaltyOffer loyalty={cartLoyalty} canGift={price.canGift} useGift={useGift} onToggleGift={() => form.setFieldValue('useGift', !useGift)} onLogin={() => go('/login')} />
+          <form.Field name="name">
+            {(field) => (
+              <NameField
+                value={field.state.value}
+                error={field.state.meta.errors.length > 0}
+                inputRef={nameRef}
+                onChange={field.handleChange}
+              />
+            )}
+          </form.Field>
+          <PickupPicker shop={shop} value={pickup} onChange={(value) => form.setFieldValue('pickup', value)} onChangeShop={() => setShowShopPicker(true)} />
           <PromoField applied={promo} onApply={setPromo} />
-          <PaymentPicker value={payment} onChange={setPayment} />
+          <PaymentPicker value={payment} onChange={(value) => form.setFieldValue('payment', value)} />
           <Summary>
             <SummaryRow label={`Товары · ${countOf(cart.lines)}`} amount={price.subtotal} />
             {price.rewardDiscount > 0 && <SummaryRow label="Напиток в подарок" amount={price.rewardDiscount} discount />}
@@ -227,7 +243,7 @@ function CartView({ profile }: { profile: Profile }) {
             size="lg"
             fullWidth
             className="flex items-center justify-between"
-            onClick={() => void pay(name)}
+            onClick={() => void form.handleSubmit()}
             disabled={paying || isOrderingBlocked}
             aria-busy={paying}
           >

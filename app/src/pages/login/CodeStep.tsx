@@ -1,22 +1,27 @@
+import { useForm } from '@tanstack/react-form'
 import type { RefObject } from 'react'
 
 import { Button } from '../../components/Button'
 import { TextField } from '../../components/TextField'
 import { hint, textBtn } from '../../components/ui'
+import { CODE_LENGTH, codeSchema } from '../../forms/schemas'
 import { cx } from '../../utils/cx'
 import { formatPhone } from '../../utils/format'
 import { stepBox, stepLead, stepTitle } from './steps'
 
 type Props = {
   digits: string
-  code: string
+  /** The server's verdict on the last submitted code. */
   error: string | null
   /** Shown while in test/dev mode or server returns direct devCode */
   devCode: string | null
   verifying: boolean
   resendIn: number
   inputRef: RefObject<HTMLInputElement | null>
-  onChange: (code: string) => void
+  /** The guest edited the code: the previous verdict no longer applies. */
+  onEdit: () => void
+  /** All digits are in — verify them. */
+  onComplete: (code: string) => void
   onResend: () => void
 }
 
@@ -27,18 +32,27 @@ type Props = {
  */
 export function CodeStep({
   digits,
-  code,
   error,
   devCode,
   verifying,
   resendIn,
   inputRef,
-  onChange,
+  onEdit,
+  onComplete,
   onResend,
 }: Props) {
-  const chars = code.split('')
+  const form = useForm({
+    defaultValues: { code: '' },
+    validators: { onSubmit: codeSchema },
+    onSubmit: ({ value }) => onComplete(value.code),
+  })
 
   return (
+    <form.Field name="code">
+      {(field) => {
+        const code = field.state.value
+        const chars = code.split('')
+        return (
     <div className={stepBox}>
       <h1 className={stepTitle}>Код подтверждения</h1>
       <p className={stepLead}>Введите проверочный код для {formatPhone(digits)}</p>
@@ -55,13 +69,20 @@ export function CodeStep({
           ref={inputRef}
           inputMode="numeric"
           autoComplete="one-time-code"
-          maxLength={4}
+          maxLength={CODE_LENGTH}
           value={code}
           aria-invalid={!!error}
           aria-busy={verifying}
           readOnly={verifying}
           aria-describedby="code-hint"
-          onChange={(e) => onChange(e.target.value.replace(/\D/g, '').slice(0, 4))}
+          onBlur={field.handleBlur}
+          onChange={(e) => {
+            const next = e.target.value.replace(/\D/g, '').slice(0, CODE_LENGTH)
+            field.handleChange(next)
+            onEdit()
+            // The last digit submits the step: there is no separate «confirm» button.
+            if (next.length === CODE_LENGTH) void form.handleSubmit()
+          }}
           className="absolute inset-0 z-10 w-full h-full opacity-0 cursor-pointer"
         />
 
@@ -100,5 +121,8 @@ export function CodeStep({
         {resendIn > 0 ? `Отправить снова через ${resendIn} с` : 'Отправить код ещё раз'}
       </Button>
     </div>
+        )
+      }}
+    </form.Field>
   )
 }

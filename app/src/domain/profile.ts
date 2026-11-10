@@ -5,5 +5,7 @@ export type UserProfile = {
   telegramId?: string
   telegramUsername?: string
   notifications: boolean
+  notificationsApp?: boolean
+  notificationsTelegram?: boolean
   joinedAt: number
 }

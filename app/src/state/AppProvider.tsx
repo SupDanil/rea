@@ -2,6 +2,7 @@ import { type ReactNode,useCallback, useEffect, useMemo, useState } from 'react'
 
 import { usePushNotifications } from '../hooks/usePushNotifications'
 import { checkIsStandalone } from '../hooks/usePwaInstall'
+import { isTelegramWebApp } from '../utils/telegram'
 import { AppContext, type AppState, type Toast } from './AppContext'
 import { useCart } from './cart'
 import { loyaltyOf, useProfile } from './loyalty'
@@ -39,12 +40,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, [toast])
 
   // Automatically request push notification permission after PWA installation or on standalone launch,
-  // and ensure push subscription is synced to the backend under standalone PWA mode.
+  // ONLY if the user is logged in and has not yet enabled app notifications.
   useEffect(() => {
-    if (!isSupported) return
+    if (!isSupported || isTelegramWebApp()) return
     const isStandalone = checkIsStandalone()
 
     const triggerAutoPrompt = async () => {
+      if (!profile?.phone || profile.notificationsApp) return
+
       const KEY = 'shit_coffee_pwa_push_autoprompted'
       try {
         if (sessionStorage.getItem(KEY) === '1') return
@@ -52,10 +55,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
       } catch {}
 
       try {
-        const ok = await subscribe(profile?.phone)
+        const ok = await subscribe(profile.phone)
         if (ok) {
           if (updateProfile) {
-            await updateProfile({ notifications: true }).catch(() => {})
+            await updateProfile({ notificationsApp: true, notifications: true }).catch(() => {})
           }
           setToast({ text: 'Уведомления включены! Сообщим о готовности кофе ☕️' })
         }
@@ -65,15 +68,15 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
 
     if (isStandalone) {
-      if (permission === 'default') {
+      if (permission === 'default' && profile?.phone && !profile.notificationsApp) {
         void triggerAutoPrompt()
-      } else if (permission === 'granted') {
-        void syncIfGranted(profile?.phone)
+      } else if (permission === 'granted' && profile?.phone && profile.notificationsApp !== false) {
+        void syncIfGranted(profile.phone)
       }
     }
 
     const onAppInstalled = () => {
-      if (permission === 'default') {
+      if (permission === 'default' && profile?.phone && !profile.notificationsApp) {
         void triggerAutoPrompt()
       }
     }
@@ -82,7 +85,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     return () => {
       window.removeEventListener('appinstalled', onAppInstalled)
     }
-  }, [isSupported, permission, profile?.phone, subscribe, syncIfGranted, updateProfile])
+  }, [isSupported, permission, profile?.phone, profile?.notificationsApp, subscribe, syncIfGranted, updateProfile])
 
   const hideToast = useCallback(() => setToast(null), [])
   const myOrders = useMemo(() => (profile ? orders.orders.filter((o) => o.phone === profile.phone) : []), [orders.orders, profile])

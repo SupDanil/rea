@@ -38,7 +38,9 @@ export function OrderNotificationPrompt({ orderId, status }: Props) {
   // If notifications are already active, nothing to prompt
   const isTg = isTelegramWebApp()
   const isNotificationsActive = Boolean(
-    isTg ? profile?.notifications : isSupported && permission === 'granted' && profile?.notifications
+    isTg
+      ? (profile?.notificationsTelegram ?? true)
+      : isSupported && permission === 'granted' && (profile?.notificationsApp ?? profile?.notifications ?? false)
   )
   if (isNotificationsActive) {
     return null
@@ -63,7 +65,7 @@ export function OrderNotificationPrompt({ orderId, status }: Props) {
         const allowed = await requestTelegramWriteAccess()
         if (allowed) {
           if (updateProfile) {
-            await updateProfile({ notifications: true }).catch(() => {})
+            await updateProfile({ notificationsTelegram: true, notifications: true }).catch(() => {})
           }
           showToast({ text: 'Уведомления Telegram включены! Напишем о готовности ☕️' })
         } else {
@@ -75,13 +77,13 @@ export function OrderNotificationPrompt({ orderId, status }: Props) {
       const ok = await subscribe(profile?.phone)
       if (ok) {
         if (updateProfile) {
-          await updateProfile({ notifications: true }).catch(() => {})
+          await updateProfile({ notificationsApp: true, notifications: true }).catch(() => {})
         }
         showToast({ text: 'Уведомления включены! Сообщим о готовности кофе ☕️' })
       } else {
         // User declined permission — ensure profile notifications stays false
         if (updateProfile) {
-          await updateProfile({ notifications: false }).catch(() => {})
+          await updateProfile({ notificationsApp: false, notifications: false }).catch(() => {})
         }
         handleDismiss()
       }

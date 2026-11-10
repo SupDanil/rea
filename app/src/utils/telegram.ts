@@ -97,6 +97,26 @@ export function getTelegramWebApp(): TelegramWebApp | null {
  * Checks whether the app is currently running inside Telegram Mini App
  */
 export function isTelegramWebApp(): boolean {
+  if (typeof window === 'undefined') return false
+
+  const ua = (typeof navigator !== 'undefined' ? navigator.userAgent : '') || ''
+  if (/Telegram/i.test(ua)) return true
+
+  const hash = window.location?.hash || ''
+  const search = window.location?.search || ''
+  if (
+    hash.includes('tgWebAppData') ||
+    hash.includes('tgWebAppPlatform') ||
+    search.includes('tgWebAppData') ||
+    search.includes('tgWebAppPlatform')
+  ) {
+    return true
+  }
+
+  if ((window as any).TelegramWebviewProxy) {
+    return true
+  }
+
   const tg = getTelegramWebApp()
   if (!tg) return false
   // Inside Telegram, initData is present or platform is not unknown

@@ -25,12 +25,17 @@ export function InstallBanner({ onOpenGuide }: Props) {
     } else if (outcome === 'native') {
       // User tapped "Установить" and accepted native PWA install!
       // This is within active user interaction — immediately prompt for push notification permissions!
-      if (isSupported && permission === 'default') {
+      if (
+        isSupported &&
+        permission === 'default' &&
+        appContext?.profile?.phone &&
+        !appContext.profile.notificationsApp
+      ) {
         try {
-          const ok = await subscribe(appContext?.profile?.phone)
+          const ok = await subscribe(appContext.profile.phone)
           if (ok) {
             if (appContext?.updateProfile) {
-              await appContext.updateProfile({ notifications: true }).catch(() => {})
+              await appContext.updateProfile({ notificationsApp: true, notifications: true }).catch(() => {})
             }
             appContext?.showToast({ text: 'Уведомления включены! Сообщим о готовности кофе ☕️' })
           }

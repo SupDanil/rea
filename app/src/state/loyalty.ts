@@ -12,8 +12,8 @@ import {
   STAMPS_PER_GIFT,
 } from '../domain/loyalty'
 import type { UserProfile } from '../domain/profile'
-import { getTelegramInitData, isTelegramWebApp } from '../utils/telegram'
 import { hasAuthToken, readCachedProfile, writeCachedProfile } from '../utils/storage'
+import { getTelegramInitData, isTelegramWebApp } from '../utils/telegram'
 
 export type Profile = UserProfile
 export type { Level, Loyalty }
@@ -21,6 +21,22 @@ export { GIFT_DRINK_LIMIT, giftValue,levels, loyaltyOf, STAMP_MIN_TOTAL, STAMPS_
 
 // Keys the old demo build kept its fake profile and orders under.
 const LEGACY_KEYS = ['zerno-orders', 'zerno-profile', 'mock-api-orders', 'mock-api-profile']
+
+function areProfilesEqual(a: Profile | null, b: Profile | null): boolean {
+  if (a === b) return true
+  if (!a || !b) return false
+  return (
+    a.phone === b.phone &&
+    a.name === b.name &&
+    a.email === b.email &&
+    a.telegramId === b.telegramId &&
+    a.telegramUsername === b.telegramUsername &&
+    a.notifications === b.notifications &&
+    a.notificationsApp === b.notificationsApp &&
+    a.notificationsTelegram === b.notificationsTelegram &&
+    a.joinedAt === b.joinedAt
+  )
+}
 
 /** The signed-in guest, loaded from the server for the phone saved on this device. */
 export function useProfile() {
@@ -42,7 +58,7 @@ export function useProfile() {
       .then(async (p) => {
         if (!cancelled) {
           if (p) {
-            setProfile(p)
+            setProfile((prev) => (areProfilesEqual(prev, p) ? prev : p))
             writeCachedProfile(p)
             setIsAuthLoading(false)
           } else if (isTelegramWebApp()) {
@@ -51,7 +67,7 @@ export function useProfile() {
               try {
                 const tgAuth = await api.telegramWebAppAuth(initData)
                 if (!cancelled && tgAuth.profile) {
-                  setProfile(tgAuth.profile)
+                  setProfile((prev) => (areProfilesEqual(prev, tgAuth.profile) ? prev : tgAuth.profile))
                   writeCachedProfile(tgAuth.profile)
                 }
               } catch {}
@@ -70,7 +86,7 @@ export function useProfile() {
               try {
                 const tgAuth = await api.telegramWebAppAuth(initData)
                 if (!cancelled && tgAuth.profile) {
-                  setProfile(tgAuth.profile)
+                  setProfile((prev) => (areProfilesEqual(prev, tgAuth.profile) ? prev : tgAuth.profile))
                   writeCachedProfile(tgAuth.profile)
                 }
               } catch {}

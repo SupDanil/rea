@@ -1,9 +1,11 @@
-import { useState } from 'react'
+import { useForm } from '@tanstack/react-form'
+import { useMutation } from '@tanstack/react-query'
 
 import { api } from '../../api'
 import { Button } from '../../components/Button'
 import { TextField } from '../../components/TextField'
 import { block, blockTitle, hint } from '../../components/ui'
+import { promoSchema } from '../../forms/schemas'
 import { normalizePromo } from '../../state/cart'
 import { cx } from '../../utils/cx'
 import type { AppliedPromo } from './cartPricing'
@@ -14,54 +16,66 @@ import type { AppliedPromo } from './cartPricing'
  * and warm crema accenting.
  */
 export function PromoField({ applied, onApply }: { applied: AppliedPromo | null; onApply: (promo: AppliedPromo | null) => void }) {
-  const [input, setInput] = useState('')
-  const [error, setError] = useState<string | null>(null)
-  const [checking, setChecking] = useState(false)
+  const check = useMutation({
+    mutationFn: (code: string) => api.checkPromo(code),
+    onSuccess: (res) => onApply(res.valid && res.percent ? { code: res.code, percent: res.percent, label: res.label } : null),
+  })
 
-  const apply = async () => {
-    const code = normalizePromo(input)
-    if (!code || checking) return
-    setChecking(true)
-    try {
-      const res = await api.checkPromo(code)
-      if (res.valid && res.percent) {
-        onApply({ code: res.code, percent: res.percent, label: res.label })
-        setError(null)
-      } else {
-        onApply(null)
-        setError('Такого промокода нет')
-      }
-    } catch {
-      setError('Не удалось проверить промокод — попробуйте ещё раз')
-    } finally {
-      setChecking(false)
-    }
+  const form = useForm({
+    defaultValues: { code: '' },
+    validators: { onSubmit: promoSchema },
+    onSubmit: async ({ value }) => {
+      await check.mutateAsync(normalizePromo(value.code)).catch(() => {})
+    },
+  })
+
+  const checking = check.isPending
+  const error = check.isError
+    ? 'Не удалось проверить промокод — попробуйте ещё раз'
+    : check.data && !(check.data.valid && check.data.percent)
+      ? 'Такого промокода нет'
+      : null
+  const apply = () => {
+    if (!checking) void form.handleSubmit()
   }
 
   return (
     <section className={block}>
       <h2 className={blockTitle}>Промокод</h2>
       <div className="flex gap-2">
-        <TextField
-           error={!!error} fieldSize="md"
-          value={input}
-          placeholder="Например, ЗЕРНО10"
-          autoCapitalize="characters"
-          aria-label="Промокод"
-          onChange={(e) => {
-            setInput(e.target.value)
-            setError(null)
-          }}
-          onKeyDown={(e) => e.key === 'Enter' && void apply()}
-        />
-        <Button
-          className={cx('h-12.5 flex-none px-5')} variant="secondary" size="md"
-          onClick={() => void apply()}
-          disabled={!input.trim() || checking}
-          aria-busy={checking}
-        >
-          {checking ? 'Проверяем…' : 'Применить'}
-        </Button>
+        <form.Field name="code">
+          {(field) => (
+            <TextField
+              error={!!error}
+              fieldSize="md"
+              value={field.state.value}
+              placeholder="Например, ЗЕРНО10"
+              autoCapitalize="characters"
+              aria-label="Промокод"
+              onBlur={field.handleBlur}
+              onChange={(e) => {
+                field.handleChange(e.target.value)
+                // The verdict belonged to the previous code.
+                check.reset()
+              }}
+              onKeyDown={(e) => e.key === 'Enter' && apply()}
+            />
+          )}
+        </form.Field>
+        <form.Subscribe selector={(state) => state.values.code.trim().length > 0}>
+          {(hasCode) => (
+            <Button
+              className={cx('h-12.5 flex-none px-5')}
+              variant="secondary"
+              size="md"
+              onClick={apply}
+              disabled={!hasCode || checking}
+              aria-busy={checking}
+            >
+              {checking ? 'Проверяем…' : 'Применить'}
+            </Button>
+          )}
+        </form.Subscribe>
       </div>
 
       {applied && (

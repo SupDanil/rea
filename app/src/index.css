@@ -84,6 +84,9 @@
   /* Almost to the top, whatever is inside. vh first: browsers without dvh would drop to content height. */
   height: calc(100vh - var(--page-gutter) - env(safe-area-inset-top));
   height: calc(100dvh - var(--page-gutter) - env(safe-area-inset-top));
+  transform: translate3d(0, 0, 0);
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
   animation: sheet-rise 0.42s var(--ease-sheet) backwards;
   @variant wide {
     height: min(90dvh, var(--layout-sheet-height));
@@ -95,6 +98,9 @@
   }
 }
 [data-modal-panel='screen'] {
+  transform: translate3d(0, 0, 0);
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
   animation: sheet-up 0.38s var(--ease-soft) backwards;
 }
 
@@ -151,12 +157,12 @@ html[data-scroll-lock] {
   scrollbar-gutter: stable;
 }
 
-@keyframes sheet-up { from { transform: translateY(64px); opacity: 0; } to { transform: none; opacity: 1; } }
-@keyframes sheet-down { to { transform: translateY(40px); opacity: 0; } }
-@keyframes sheet-rise { from { transform: translateY(100%); } }
-@keyframes sheet-drop { to { transform: translateY(100%); } }
-@keyframes panel-rise { from { opacity: 0; transform: translateY(24px) scale(0.98); } }
-@keyframes panel-drop { to { opacity: 0; transform: translateY(16px) scale(0.98); } }
+@keyframes sheet-up { from { transform: translate3d(0, 64px, 0); opacity: 0; } to { transform: translate3d(0, 0, 0); opacity: 1; } }
+@keyframes sheet-down { from { transform: translate3d(0, 0, 0); opacity: 1; } to { transform: translate3d(0, 40px, 0); opacity: 0; } }
+@keyframes sheet-rise { from { transform: translate3d(0, 100%, 0); } to { transform: translate3d(0, 0, 0); } }
+@keyframes sheet-drop { from { transform: translate3d(0, 0, 0); } to { transform: translate3d(0, 100%, 0); } }
+@keyframes panel-rise { from { opacity: 0; transform: translate3d(0, 24px, 0) scale(0.98); } to { opacity: 1; transform: translate3d(0, 0, 0) scale(1); } }
+@keyframes panel-drop { from { opacity: 1; transform: translate3d(0, 0, 0) scale(1); } to { opacity: 0; transform: translate3d(0, 16px, 0) scale(0.98); } }
 
 /* ---------- Custom utilities ---------- */
 

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useEffectEvent, useRef, useState } from 'react'
 import { useLocation } from 'react-router'
 
 import { api, ApiError } from '../../api'
@@ -15,8 +15,6 @@ import { RESEND_AFTER } from './steps'
 
 type Step = 'phone' | 'code' | 'name'
 
-const CODE_LENGTH = 4
-
 /** Phone → SMS code (checked by the server) → name (skipped when we already know it). */
 export function LoginPage() {
   const { profile, signIn, updateProfile, showToast } = useApp()
@@ -25,13 +23,15 @@ export function LoginPage() {
   const knownName = (profile?.name ?? readSavedName()).trim()
 
   const [step, setStep] = useState<Step>('phone')
+  // Flow state, not input state: each step keeps its own form (TanStack Form + zod).
+  // `digits` is the number the last code was sent to.
   const [digits, setDigits] = useState('')
-  const [code, setCode] = useState('')
+  const [codeAttempt, setCodeAttempt] = useState(0)
   const [codeError, setCodeError] = useState<string | null>(null)
   const [devCode, setDevCode] = useState<string | null>(null)
-  const [name, setName] = useState(knownName)
   const [resendIn, setResendIn] = useState(0)
-  const [sending, setSending] = useState(false)
+  const [tgAutoLogin] = useState(() => isTelegramWebApp() && Boolean(getTelegramInitData()))
+  const [sending, setSending] = useState(tgAutoLogin)
   const [verifying, setVerifying] = useState(false)
   const [verified, setVerified] = useState<Profile | null>(null)
   const inputRef = useRef<HTMLInputElement>(null)
@@ -51,35 +51,36 @@ export function LoginPage() {
     return () => window.clearTimeout(t)
   }, [resendIn])
 
-  const phone = `+7${digits}`
+  const done = (signedIn: Profile, finalName: string, returning: boolean) => {
+    signIn(signedIn)
+    showToast({ text: returning ? `С возвращением, ${finalName}!` : `${finalName}, напиток в подарок уже ждёт 🎁` })
+    // On #/profile the same route turns into the profile itself once signed in.
+    if (pathname === '/login') back()
+  }
 
-  // If in Telegram Mini App, attempt auto-login for already linked users
+  // Inside Telegram a guest whose account is already linked is signed in without any form.
+  const onAutoLogin = useEffectEvent(done)
   useEffect(() => {
-    if (isTelegramWebApp()) {
-      const initData = getTelegramInitData()
-      if (initData) {
-        setSending(true)
-        api
-          .telegramWebAppAuth(initData)
-          .then((res) => {
-            if (res.profile) {
-              done(res.profile, res.profile.name, !res.isNew)
-            }
-          })
-          .catch(() => {})
-          .finally(() => setSending(false))
-      }
-    }
-  }, [])
+    if (!tgAutoLogin) return
+    api
+      .telegramWebAppAuth(getTelegramInitData())
+      .then((res) => {
+        if (res.profile) onAutoLogin(res.profile, res.profile.name, !res.isNew)
+      })
+      .catch(() => {})
+      .finally(() => setSending(false))
+  }, [tgAutoLogin])
 
-  const sendCode = async () => {
+  const sendCode = async (toDigits: string) => {
+    const phone = `+7${toDigits}`
+    setDigits(toDigits)
     setSending(true)
     if (isTelegramWebApp()) {
       try {
         const initData = getTelegramInitData()
         const tgUser = getTelegramUser()
         const tgName = [tgUser?.first_name, tgUser?.last_name].filter(Boolean).join(' ') || knownName
-        const tgPhone = digits.length === 10 ? phone : undefined
+        const tgPhone = toDigits.length === 10 ? phone : undefined
         const res = await api.telegramWebAppAuth(initData, tgPhone, tgName || undefined)
         if (res.profile) {
           done(res.profile, res.profile.name, !res.isNew)
@@ -96,7 +97,8 @@ export function LoginPage() {
     try {
       const res = await api.sendSmsCode(phone)
       setDevCode(res.devCode ?? null)
-      setCode('')
+      // A fresh code starts the code step from an empty form.
+      setCodeAttempt((n) => n + 1)
       setCodeError(null)
       setResendIn(RESEND_AFTER)
       setStep('code')
@@ -107,21 +109,12 @@ export function LoginPage() {
     }
   }
 
-  const done = (signedIn: Profile, finalName: string, returning: boolean) => {
-    signIn(signedIn)
-    showToast({ text: returning ? `С возвращением, ${finalName}!` : `${finalName}, напиток в подарок уже ждёт 🎁` })
-    // On #/profile the same route turns into the profile itself once signed in.
-    if (pathname === '/login') back()
-  }
-
   const checkCode = async (value: string) => {
-    setCode(value)
-    setCodeError(null)
-    if (value.length < CODE_LENGTH || verifying) return
+    if (verifying) return
     setVerifying(true)
     try {
       // The local name only seeds a brand-new customer; a returning guest keeps their CRM name.
-      const res = await api.verifySmsCode(phone, value, knownName || undefined)
+      const res = await api.verifySmsCode(`+7${digits}`, value, knownName || undefined)
       const serverName = res.profile.name && res.profile.name !== 'Гость' ? res.profile.name : ''
       if (serverName) done(res.profile, serverName, !res.isNew)
       else {
@@ -151,21 +144,22 @@ export function LoginPage() {
   return (
     <Sheet label="Вход" onBack={stepBack} backLabel={step === 'phone' ? 'Закрыть' : 'Назад'}>
       <SheetBody className="flex flex-col">
-        {step === 'phone' && <PhoneStep digits={digits} sending={sending} inputRef={inputRef} onChange={setDigits} onSubmit={() => void sendCode()} />}
+        {step === 'phone' && <PhoneStep defaultDigits={digits} sending={sending} inputRef={inputRef} onSubmit={(value) => void sendCode(value)} />}
         {step === 'code' && (
           <CodeStep
+            key={codeAttempt}
             digits={digits}
-            code={code}
             error={codeError}
             devCode={devCode}
             verifying={verifying}
             resendIn={resendIn}
             inputRef={inputRef}
-            onChange={(value) => void checkCode(value)}
-            onResend={() => void sendCode()}
+            onEdit={() => setCodeError(null)}
+            onComplete={(value) => void checkCode(value)}
+            onResend={() => void sendCode(digits)}
           />
         )}
-        {step === 'name' && <NameStep name={name} inputRef={inputRef} onChange={setName} onSubmit={() => void finishWithName(name.trim())} />}
+        {step === 'name' && <NameStep defaultName={knownName} inputRef={inputRef} onSubmit={(value) => void finishWithName(value)} />}
       </SheetBody>
     </Sheet>
   )

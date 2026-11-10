@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 
 import * as pushHook from '../../hooks/usePushNotifications'
 import * as pwaHook from '../../hooks/usePwaInstall'
+import { AppContext } from '../../state/AppContext'
 import { InstallBanner } from './InstallBanner'
 
 const MOBILE_UA = 'Mozilla/5.0 (Linux; Android 14; Pixel 7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Mobile Safari/537.36'
@@ -66,7 +67,19 @@ describe('InstallBanner', () => {
       syncIfGranted: vi.fn(),
     })
 
-    render(<InstallBanner onOpenGuide={vi.fn()} />)
+    render(
+      <AppContext.Provider
+        value={
+          {
+            profile: { phone: '+79991112233', name: 'Данил', email: '', notifications: false, notificationsApp: false, joinedAt: 1 },
+            updateProfile: vi.fn(),
+            showToast: vi.fn(),
+          } as any
+        }
+      >
+        <InstallBanner onOpenGuide={vi.fn()} />
+      </AppContext.Provider>
+    )
     fireEvent.click(screen.getByRole('button', { name: 'Установить' }))
 
     await vi.waitFor(() => {

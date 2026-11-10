@@ -1,29 +1,30 @@
+import { useForm } from '@tanstack/react-form'
 import { type RefObject,useState } from 'react'
 
 import { Button } from '../../components/Button'
 import { LegalModal } from '../../components/LegalModal'
 import { Checkbox,TextField } from '../../components/TextField'
 import { hint } from '../../components/ui'
+import { loginPhoneSchema, type LoginPhoneValues } from '../../forms/schemas'
 import { cx } from '../../utils/cx'
-import { formatPhone, phoneDigits } from '../../utils/format'
+import { phoneDigits, phoneInputValue } from '../../utils/format'
 import { getTelegramUser, isTelegramWebApp } from '../../utils/telegram'
 import { stepBox, stepTitle } from './steps'
 
 type Props = {
-  digits: string
+  /** Number typed earlier in this flow (the guest came back from the code step). */
+  defaultDigits: string
   sending: boolean
   inputRef: RefObject<HTMLInputElement | null>
-  onChange: (digits: string) => void
-  onSubmit: () => void
+  /** Receives the ten digits; an empty string inside Telegram when the phone was skipped. */
+  onSubmit: (digits: string) => void
 }
 
 /**
  * 2026 Liquid Glass PhoneStep with 152-FZ Legal Agreements and Telegram Auth:
  * Clean, focused single-question phone entry with warm gift card lead and legal compliance.
  */
-export function PhoneStep({ digits, sending, inputRef, onChange, onSubmit }: Props) {
-  const [agreed, setAgreed] = useState(true)
-  const [marketingAgreed, setMarketingAgreed] = useState(false)
+export function PhoneStep({ defaultDigits, sending, inputRef, onSubmit }: Props) {
   const [modalType, setModalType] = useState<'terms' | 'privacy' | null>(null)
   const [showPhoneInput, setShowPhoneInput] = useState(false)
   const isTg = isTelegramWebApp()
@@ -35,17 +36,42 @@ export function PhoneStep({ digits, sending, inputRef, onChange, onSubmit }: Pro
       ? `@${tgUser.username}`
       : 'Telegram'
 
-  const canSubmit = isTg
-    ? agreed && !sending && (!showPhoneInput || digits.length === 0 || digits.length === 10)
-    : digits.length === 10 && agreed && !sending
+  const schema = loginPhoneSchema(isTg)
+  const defaultValues: LoginPhoneValues = { digits: defaultDigits, agreed: true, marketingAgreed: false }
+  const form = useForm({
+    defaultValues,
+    validators: { onSubmit: schema },
+    onSubmit: ({ value }) => onSubmit(value.digits),
+  })
+
+  const phoneField = (
+    <form.Field name="digits">
+      {(field) => (
+        <TextField
+          id="phone"
+          ref={inputRef}
+          data-autofocus
+          error={field.state.meta.errors.length > 0}
+          fieldSize="xl"
+          inputMode="tel"
+          autoComplete="tel"
+          placeholder="+7 (___) ___-__-__"
+          value={phoneInputValue(field.state.value)}
+          onBlur={field.handleBlur}
+          onChange={(e) => field.handleChange(phoneDigits(e.target.value))}
+        />
+      )}
+    </form.Field>
+  )
 
   return (
     <>
       <form
         className={stepBox}
+        noValidate
         onSubmit={(e) => {
           e.preventDefault()
-          if (canSubmit) onSubmit()
+          if (!sending) void form.handleSubmit()
         }}
       >
         <h1 className={stepTitle}>{isTg ? 'Вход через Telegram' : 'Вход по номеру'}</h1>
@@ -71,18 +97,7 @@ export function PhoneStep({ digits, sending, inputRef, onChange, onSubmit }: Pro
                 <label className="block text-left text-xs text-muted mb-1 font-medium" htmlFor="phone">
                   Номер телефона (необязательно)
                 </label>
-                <TextField
-                  id="phone"
-                  ref={inputRef}
-                  data-autofocus
-                  error={false}
-                  fieldSize="xl"
-                  inputMode="tel"
-                  autoComplete="tel"
-                  placeholder="+7 (___) ___-__-__"
-                  value={formatPhone(digits)}
-                  onChange={(e) => onChange(phoneDigits(e.target.value))}
-                />
+                {phoneField}
               </div>
             ) : (
               <Button
@@ -102,18 +117,7 @@ export function PhoneStep({ digits, sending, inputRef, onChange, onSubmit }: Pro
               Телефон
             </label>
             <div className="w-full">
-              <TextField
-                id="phone"
-                ref={inputRef}
-                data-autofocus
-                error={false}
-                fieldSize="xl"
-                inputMode="tel"
-                autoComplete="tel"
-                placeholder="+7 (___) ___-__-__"
-                value={formatPhone(digits)}
-                onChange={(e) => onChange(phoneDigits(e.target.value))}
-              />
+              {phoneField}
             </div>
           </>
         )}
@@ -121,11 +125,15 @@ export function PhoneStep({ digits, sending, inputRef, onChange, onSubmit }: Pro
         {/* Legal Agreements (152-FZ & Offer) */}
         <div className="space-y-2 mt-2 text-left w-full text-caption text-ink/75">
           <label className="flex items-start gap-2.5 cursor-pointer select-none">
-            <Checkbox
-              checked={agreed}
-              onChange={(e) => setAgreed(e.target.checked)}
-              className="mt-0.5 size-4 shrink-0 rounded accent-accent text-accent focus:ring-accent/20 cursor-pointer"
-            />
+            <form.Field name="agreed">
+              {(field) => (
+                <Checkbox
+                  checked={field.state.value}
+                  onChange={(e) => field.handleChange(e.target.checked)}
+                  className="mt-0.5 size-4 shrink-0 rounded accent-accent text-accent focus:ring-accent/20 cursor-pointer"
+                />
+              )}
+            </form.Field>
             <span className="leading-tight">
               Согласен с{' '}
               <Button
@@ -147,29 +155,37 @@ export function PhoneStep({ digits, sending, inputRef, onChange, onSubmit }: Pro
           </label>
 
           <label className="flex items-start gap-2.5 cursor-pointer select-none">
-            <Checkbox
-              checked={marketingAgreed}
-              onChange={(e) => setMarketingAgreed(e.target.checked)}
-              className="mt-0.5 size-4 shrink-0 rounded accent-accent text-accent focus:ring-accent/20 cursor-pointer"
-            />
+            <form.Field name="marketingAgreed">
+              {(field) => (
+                <Checkbox
+                  checked={field.state.value}
+                  onChange={(e) => field.handleChange(e.target.checked)}
+                  className="mt-0.5 size-4 shrink-0 rounded accent-accent text-accent focus:ring-accent/20 cursor-pointer"
+                />
+              )}
+            </form.Field>
             <span className="leading-tight text-muted">
               Получать персональные акции, подарки и секретные промокоды
             </span>
           </label>
         </div>
 
-        <Button
-          className={cx('mt-3 w-full')}
-          variant="primary"
-          size="lg"
-          fullWidth
-          type="submit"
-          aria-label={isTg ? `Войти как ${displayName}` : 'Получить код'}
-          disabled={!canSubmit}
-          aria-busy={sending}
-        >
-          {sending ? 'Входим…' : isTg ? `Войти как ${displayName}` : 'Получить код'}
-        </Button>
+        <form.Subscribe selector={(state) => schema.safeParse(state.values).success}>
+          {(isValid) => (
+            <Button
+              className={cx('mt-3 w-full')}
+              variant="primary"
+              size="lg"
+              fullWidth
+              type="submit"
+              aria-label={isTg ? `Войти как ${displayName}` : 'Получить код'}
+              disabled={!isValid || sending}
+              aria-busy={sending}
+            >
+              {sending ? 'Входим…' : isTg ? `Войти как ${displayName}` : 'Получить код'}
+            </Button>
+          )}
+        </form.Subscribe>
 
         {!isTg && (
           <p className={cx(hint(), 'text-center text-micro text-muted mt-1')}>
