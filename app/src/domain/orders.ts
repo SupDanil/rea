@@ -15,6 +15,7 @@ export type Order = {
   name: string
   pickup: Pickup
   payment: PaymentMethod
+  channel?: 'web' | 'installed' | 'telegram'
   cancelledAt?: number
   rating?: 'good' | 'bad'
   status?: OrderStatus | 'completed'

@@ -8,6 +8,7 @@ export type CreateOrderDto = {
   name: string
   pickup: Pickup
   payment: PaymentMethod
+  channel?: 'web' | 'installed' | 'telegram'
   phone?: string
   shopId?: string
   levelDiscount?: number

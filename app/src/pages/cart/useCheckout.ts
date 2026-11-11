@@ -4,6 +4,7 @@ import { ApiError } from '../../api'
 import { useAppNavigate } from '../../hooks/useAppNavigate'
 import { useApp } from '../../state/AppContext'
 import type { PaymentMethod, Pickup } from '../../state/orders'
+import { getClientChannel } from '../../utils/platform'
 import { SAVED_NAME_KEY, writeString } from '../../utils/storage'
 import type { AppliedPromo, cartPricing } from './cartPricing'
 
@@ -44,6 +45,7 @@ export function useCheckout({ pricing, promo, shopId, pickup, payment, onMissing
         name: trimmed,
         pickup,
         payment,
+        channel: getClientChannel(),
         phone: profile.phone,
         shopId,
         levelDiscount: pricing.levelDiscount || undefined,
